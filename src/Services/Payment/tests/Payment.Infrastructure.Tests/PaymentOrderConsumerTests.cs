@@ -208,8 +208,8 @@ public sealed class PaymentOrderConsumerTests
 
         public Task<Order?> GetByIdAsync(Guid id) => throw new NotSupportedException();
         public Task<Order?> GetByIdAsync(Guid id, CancellationToken cancellationToken) => throw new NotSupportedException();
-        public Task<PaginatedResult<Order>> GetByBuyerUsernameAsync(OrderQueryParams queryParams) => throw new NotSupportedException();
-        public Task<PaginatedResult<Order>> GetBySellerUsernameAsync(OrderQueryParams queryParams) => throw new NotSupportedException();
+        public Task<PaginatedResult<Order>> GetByBuyerUsernameAsync(OrderQueryParams queryParams, CancellationToken cancellationToken = default) => throw new NotSupportedException();
+        public Task<PaginatedResult<Order>> GetBySellerUsernameAsync(OrderQueryParams queryParams, CancellationToken cancellationToken = default) => throw new NotSupportedException();
         public Task<Order> UpdateAsync(Order order) => throw new NotSupportedException();
         public Task<Order> UpdateAsync(Order order, CancellationToken cancellationToken) => throw new NotSupportedException();
         public Task<int> GetCountByBuyerUsernameAsync(string username) => throw new NotSupportedException();

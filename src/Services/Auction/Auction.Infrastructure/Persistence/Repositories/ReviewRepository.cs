@@ -1,3 +1,4 @@
+using BuildingBlocks.Infrastructure.Extensions;
 #nullable enable
 using System.Linq.Expressions;
 using Auctions.Application.Filtering;
@@ -40,13 +41,9 @@ public class ReviewRepository : IReviewRepository
             .AsNoTracking()
             .OrderByDescending(x => x.CreatedAt);
 
-        var totalCount = await query.CountAsync(cancellationToken);
-        var items = await query
-            .Skip((page - 1) * pageSize)
-            .Take(pageSize)
-            .ToListAsync(cancellationToken);
-
-        return new PaginatedResult<Review>(items, totalCount, page, pageSize);
+        return await query
+            .ThenBy(entity => entity.Id)
+            .ToPaginatedResultAsync(page, pageSize, cancellationToken);
     }
 
     public async Task<Review?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
@@ -85,7 +82,7 @@ public class ReviewRepository : IReviewRepository
                 .ThenInclude(a => a!.Item)
             .AsNoTracking()
             .ApplyFiltering(filterBuilder)
-            .ApplySorting(queryParams, ReviewSortMap, x => x.CreatedAt);
+            .ApplySorting(queryParams, ReviewSortMap, x => x.CreatedAt, tieBreaker: x => x.Id);
 
         var totalCount = await query.CountAsync(cancellationToken);
 
@@ -115,7 +112,7 @@ public class ReviewRepository : IReviewRepository
                 .ThenInclude(a => a!.Item)
             .AsNoTracking()
             .ApplyFiltering(filterBuilder)
-            .ApplySorting(queryParams, ReviewSortMap, x => x.CreatedAt);
+            .ApplySorting(queryParams, ReviewSortMap, x => x.CreatedAt, tieBreaker: x => x.Id);
 
         var totalCount = await query.CountAsync(cancellationToken);
 
@@ -145,7 +142,7 @@ public class ReviewRepository : IReviewRepository
                 .ThenInclude(a => a!.Item)
             .AsNoTracking()
             .ApplyFiltering(filterBuilder)
-            .ApplySorting(queryParams, ReviewSortMap, x => x.CreatedAt);
+            .ApplySorting(queryParams, ReviewSortMap, x => x.CreatedAt, tieBreaker: x => x.Id);
 
         var totalCount = await query.CountAsync(cancellationToken);
 

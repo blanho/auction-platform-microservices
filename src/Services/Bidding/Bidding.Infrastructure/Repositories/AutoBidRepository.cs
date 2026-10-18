@@ -1,3 +1,4 @@
+using BuildingBlocks.Infrastructure.Extensions;
 
 
 using System.Linq.Expressions;
@@ -46,13 +47,9 @@ public class AutoBidRepository : IAutoBidRepository
             .Where(x => !x.IsDeleted)
             .OrderByDescending(x => x.CreatedAt);
 
-        var totalCount = await query.CountAsync(cancellationToken);
-        var items = await query
-            .Skip((page - 1) * pageSize)
-            .Take(pageSize)
-            .ToListAsync(cancellationToken);
-
-        return new PaginatedResult<AutoBid>(items, totalCount, page, pageSize);
+        return await query
+            .ThenBy(entity => entity.Id)
+            .ToPaginatedResultAsync(page, pageSize, cancellationToken);
     }
 
     public async Task<AutoBid?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
@@ -192,7 +189,7 @@ public class AutoBidRepository : IAutoBidRepository
         var query = _context.AutoBids
             .AsNoTracking()
             .ApplyFiltering(filterBuilder)
-            .ApplySorting(queryParams, AutoBidSortMap, ab => ab.CreatedAt);
+            .ApplySorting(queryParams, AutoBidSortMap, ab => ab.CreatedAt, tieBreaker: ab => ab.Id);
 
         var totalCount = await query.CountAsync(cancellationToken);
 

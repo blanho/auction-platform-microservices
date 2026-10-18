@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using BuildingBlocks.Application.Constants;
 
 namespace Search.Infrastructure.Configuration;
 
@@ -38,10 +39,10 @@ public class SearchOptions
     public const string SectionName = "Search";
 
     [Range(1, 100, ErrorMessage = "Default page size must be between 1 and 100")]
-    public int DefaultPageSize { get; set; } = 20;
+    public int DefaultPageSize { get; set; } = PaginationDefaults.LargePageSize;
 
-    [Range(1, 1000, ErrorMessage = "Max page size must be between 1 and 1000")]
-    public int MaxPageSize { get; set; } = 100;
+    [Range(1, PaginationDefaults.MaxPageSize)]
+    public int MaxPageSize { get; set; } = PaginationDefaults.MaxPageSize;
 
     [Range(100, 100000, ErrorMessage = "Max result window must be between 100 and 100000")]
     public int MaxResultWindow { get; set; } = 10000;

@@ -84,10 +84,10 @@ Redirects to the OAuth provider. After authentication, the user is redirected ba
 
 ### Pagination
 
-List endpoints support pagination via query parameters:
+Paged list endpoints use one-based `page` and bounded `pageSize` query parameters:
 
 ```
-GET /auctions?pageNumber=1&pageSize=20
+GET /api/v1/auctions?page=1&pageSize=20
 ```
 
 **Response wrapper:**
@@ -95,7 +95,7 @@ GET /auctions?pageNumber=1&pageSize=20
 ```json
 {
   "items": [...],
-  "pageNumber": 1,
+  "page": 1,
   "pageSize": 20,
   "totalCount": 150,
   "totalPages": 8,
@@ -104,10 +104,18 @@ GET /auctions?pageNumber=1&pageSize=20
 }
 ```
 
+The common page size is 10 and the maximum is 100. Existing endpoint defaults
+such as featured auctions (8), Search (20), and Job items/history (50) are
+retained. Nonpositive numeric ranges are normalized, and response metadata
+reflects the executed query. Payment keeps array responses with pagination in
+`X-Total-Count`, `X-Page`, and `X-Page-Size`; Search retains its facet response.
+See the [service audit](paging-consistency.md) for compatibility details, sorting
+conventions, and Search's result-window limit.
+
 ### Filtering and Sorting
 
 ```
-GET /auctions?status=Active&categoryId=123&sortBy=endTime&sortOrder=desc
+GET /api/v1/auctions?status=Live&category=Electronics&orderBy=enddate&descending=false
 ```
 
 ### Error Format

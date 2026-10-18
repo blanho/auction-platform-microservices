@@ -1,3 +1,4 @@
+using BuildingBlocks.Infrastructure.Extensions;
 using System.Linq.Expressions;
 using Bidding.Application.Filtering;
 using Bidding.Application.Interfaces;
@@ -46,13 +47,9 @@ namespace Bidding.Infrastructure.Repositories
                 .Where(x => !x.IsDeleted)
                 .OrderByDescending(x => x.BidTime);
 
-            var totalCount = await query.CountAsync(cancellationToken);
-            var items = await query
-                .Skip((page - 1) * pageSize)
-                .Take(pageSize)
-                .ToListAsync(cancellationToken);
-
-            return new PaginatedResult<Bid>(items, totalCount, page, pageSize);
+            return await query
+                .ThenBy(entity => entity.Id)
+                .ToPaginatedResultAsync(page, pageSize, cancellationToken);
         }
 
         public async Task<Bid?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
@@ -379,7 +376,7 @@ namespace Bidding.Infrastructure.Repositories
             var query = _context.Bids
                 .AsNoTracking()
                 .ApplyFiltering(filterBuilder)
-                .ApplySorting(queryParams, BidSortMap, x => x.BidTime);
+                .ApplySorting(queryParams, BidSortMap, x => x.BidTime, tieBreaker: x => x.Id);
 
             var totalCount = await query.CountAsync(cancellationToken);
 
@@ -407,7 +404,7 @@ namespace Bidding.Infrastructure.Repositories
             var query = _context.Bids
                 .AsNoTracking()
                 .ApplyFiltering(filterBuilder)
-                .ApplySorting(queryParams, BidSortMap, x => x.BidTime);
+                .ApplySorting(queryParams, BidSortMap, x => x.BidTime, tieBreaker: x => x.Id);
 
             var totalCount = await query.CountAsync(cancellationToken);
 
@@ -453,7 +450,7 @@ namespace Bidding.Infrastructure.Repositories
             var totalCount = await baseQuery.CountAsync(cancellationToken);
 
             var winningBids = await baseQuery
-                .OrderByDescending(b => b.BidTime)
+                .ApplySorting(queryParams, BidSortMap, b => b.BidTime, tieBreaker: b => b.Id)
                 .ApplyPaging(queryParams)
                 .ToListAsync(cancellationToken);
 
@@ -475,7 +472,7 @@ namespace Bidding.Infrastructure.Repositories
             var query = _context.Bids
                 .AsNoTracking()
                 .ApplyFiltering(filterBuilder)
-                .ApplySorting(queryParams, BidSortMap, x => x.BidTime);
+                .ApplySorting(queryParams, BidSortMap, x => x.BidTime, tieBreaker: x => x.Id);
 
             var totalCount = await query.CountAsync(cancellationToken);
 

@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <root>
+  <data name="Label.Page" xml:space="preserve"><value>ページ</value></data>
+  <data name="Label.PageSize" xml:space="preserve"><value>ページサイズ</value></data>
+  <data name="Label.SortBy" xml:space="preserve"><value>並び替え項目</value></data>
+  <data name="Label.Sort" xml:space="preserve"><value>並び順</value></data>
+  <data name="Search pagination cannot exceed {0} results." xml:space="preserve"><value>検索のページ指定は{0}件の上限を超えることはできません。</value></data>
   <data name="Account locked due to {0} days of inactivity" xml:space="preserve"><value>{0}日間ログインがなかったため、アカウントがロックされました</value></data>
   <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
   <resheader name="version"><value>2.0</value></resheader>

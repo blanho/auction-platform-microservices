@@ -1,3 +1,4 @@
+using BuildingBlocks.Infrastructure.Extensions;
 using Microsoft.EntityFrameworkCore;
 using MassTransit;
 using Microsoft.Extensions.Logging;
@@ -39,13 +40,9 @@ public class PlatformSettingRepository : IPlatformSettingRepository
             .OrderBy(s => s.Category)
             .ThenBy(s => s.Key);
 
-        var totalCount = await query.CountAsync(cancellationToken);
-        var items = await query
-            .Skip((page - 1) * pageSize)
-            .Take(pageSize)
-            .ToListAsync(cancellationToken);
-
-        return new PaginatedResult<PlatformSetting>(items, totalCount, page, pageSize);
+        return await query
+            .ThenBy(entity => entity.Id)
+            .ToPaginatedResultAsync(page, pageSize, cancellationToken);
     }
 
     public async Task<List<PlatformSetting>> GetByCategoryAsync(SettingCategory category, CancellationToken cancellationToken = default)

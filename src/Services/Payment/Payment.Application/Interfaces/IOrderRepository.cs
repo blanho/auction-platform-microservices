@@ -11,8 +11,8 @@ public interface IOrderRepository
     Task<Order?> GetByIdAsync(Guid id, CancellationToken cancellationToken);
     Task<Order?> GetByAuctionIdAsync(Guid auctionId);
     Task<Order?> GetByAuctionIdAsync(Guid auctionId, CancellationToken cancellationToken);
-    Task<PaginatedResult<Order>> GetByBuyerUsernameAsync(OrderQueryParams queryParams);
-    Task<PaginatedResult<Order>> GetBySellerUsernameAsync(OrderQueryParams queryParams);
+    Task<PaginatedResult<Order>> GetByBuyerUsernameAsync(OrderQueryParams queryParams, CancellationToken cancellationToken = default);
+    Task<PaginatedResult<Order>> GetBySellerUsernameAsync(OrderQueryParams queryParams, CancellationToken cancellationToken = default);
     Task<Order> AddAsync(Order order);
     Task<Order> AddAsync(Order order, CancellationToken cancellationToken);
     Task<Order> UpdateAsync(Order order);

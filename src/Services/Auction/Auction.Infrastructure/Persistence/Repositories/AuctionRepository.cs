@@ -1,3 +1,4 @@
+using BuildingBlocks.Infrastructure.Extensions;
 #nullable enable
 using System.Linq.Expressions;
 using Auctions.Application.DTOs;
@@ -45,13 +46,9 @@ namespace Auctions.Infrastructure.Persistence.Repositories
                 .AsNoTracking()
                 .OrderByDescending(x => x.UpdatedAt ?? x.CreatedAt);
 
-            var totalCount = await query.CountAsync(cancellationToken);
-            var items = await query
-                .Skip((page - 1) * pageSize)
-                .Take(pageSize)
-                .ToListAsync(cancellationToken);
-
-            return new PaginatedResult<Auction>(items, totalCount, page, pageSize);
+            return await query
+                .ThenBy(entity => entity.Id)
+                .ToPaginatedResultAsync(page, pageSize, cancellationToken);
         }
 
         public async Task<PaginatedResult<Auction>> GetPagedAsync(
@@ -102,7 +99,7 @@ namespace Auctions.Infrastructure.Persistence.Repositories
 
             var totalCount = await query.CountAsync(cancellationToken);
 
-            query = query.ApplySorting(filter, AuctionSortMap, x => x.UpdatedAt ?? x.CreatedAt);
+            query = query.ApplySorting(filter, AuctionSortMap, x => x.UpdatedAt ?? x.CreatedAt, tieBreaker: x => x.Id);
 
             var items = await query
                 .ApplyPaging(filter)

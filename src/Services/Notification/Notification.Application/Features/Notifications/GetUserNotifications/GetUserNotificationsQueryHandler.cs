@@ -29,7 +29,7 @@ public class GetUserNotificationsQueryHandler : IQueryHandler<GetUserNotificatio
             request.PageSize,
             request.UserId,
             null,
-            null,
+            request.Status,
             cancellationToken);
 
         var dtos = result.Items.ToDtoList(_mapper);

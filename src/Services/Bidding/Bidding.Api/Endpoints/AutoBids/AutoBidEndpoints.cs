@@ -121,9 +121,7 @@ public class AutoBidEndpoints : ICarterModule
         CancellationToken ct = default)
     {
         var userId = UserHelper.GetRequiredUserId(context.User);
-        var page = filter.Page < 1 ? BidDefaults.DefaultPage : filter.Page;
-        var pageSize = filter.PageSize < 1 ? BidDefaults.DefaultPageSize : Math.Min(filter.PageSize, BidDefaults.MaxPageSize);
-        var query = new GetMyAutoBidsQuery(userId, IsActive: filter.ActiveOnly, Page: page, PageSize: pageSize);
+        var query = new GetMyAutoBidsQuery(userId, IsActive: filter.ActiveOnly, Page: filter.Page, PageSize: filter.PageSize);
         var result = await mediator.Send(query, ct);
         return result.ToOkResult();
     }

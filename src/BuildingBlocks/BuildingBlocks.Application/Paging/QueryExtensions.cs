@@ -1,5 +1,4 @@
 using System.Linq.Expressions;
-using BuildingBlocks.Application.Constants;
 using BuildingBlocks.Application.Filtering;
 
 namespace BuildingBlocks.Application.Paging;
@@ -8,40 +7,47 @@ public static class QueryExtensions
 {
     public static IQueryable<T> ApplyPaging<T>(this IQueryable<T> query, int page, int pageSize)
     {
-        var normalizedPageSize = Math.Clamp(pageSize, 1, PaginationDefaults.MaxPageSize);
-        var normalizedPage = Math.Max(page, 1);
-
-        return query
-            .Skip((normalizedPage - 1) * normalizedPageSize)
-            .Take(normalizedPageSize);
+        return query.ApplyPaging(QueryParameters.Create(page, pageSize));
     }
 
     public static IQueryable<T> ApplyPaging<T>(this IQueryable<T> query, QueryParameters parameters) =>
-        query.ApplyPaging(parameters.Page, parameters.PageSize);
+        query.Skip(parameters.Skip).Take(parameters.Take);
+
+    public static IQueryable<T> ApplyOffsetPaging<T>(this IQueryable<T> query, int skip, int take) =>
+        query.Skip(Math.Max(skip, 0)).Take(QueryParameters.Create(1, take).Take);
 
     public static IQueryable<T> ApplySorting<T>(
         this IQueryable<T> query,
         IReadOnlyList<SortDescriptor>? sorts,
         IReadOnlyDictionary<string, Expression<Func<T, object>>> sortMap,
         Expression<Func<T, object>>? defaultSort = null,
-        bool defaultDesc = true)
+        bool defaultDesc = true,
+        Expression<Func<T, object>>? tieBreaker = null)
     {
-        if (sorts == null || sorts.Count == 0)
-        {
-            return ApplyDefaultSort(query, defaultSort, defaultDesc);
-        }
-
         IOrderedQueryable<T>? ordered = null;
+        var appliedFields = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-        foreach (var sort in sorts)
+        foreach (var sort in sorts ?? [])
         {
-            if (!sortMap.TryGetValue(sort.Field.ToLowerInvariant(), out var expr))
+            if (sort is null || string.IsNullOrWhiteSpace(sort.Field))
+                continue;
+
+            var field = sort.Field.Trim();
+            var expr = sortMap.FirstOrDefault(entry =>
+                string.Equals(entry.Key, field, StringComparison.OrdinalIgnoreCase)).Value;
+            if (expr is null || !appliedFields.Add(field))
                 continue;
 
             ordered = ordered == null
                 ? OrderByDirection(query, expr, sort.Desc)
                 : ThenByDirection(ordered, expr, sort.Desc);
         }
+
+        if (ordered is null && defaultSort is not null)
+            ordered = OrderByDirection(query, defaultSort, defaultDesc);
+
+        if (tieBreaker is not null)
+            return ordered is null ? query.OrderBy(tieBreaker) : ordered.ThenBy(tieBreaker);
 
         return ordered ?? query;
     }
@@ -50,33 +56,15 @@ public static class QueryExtensions
         this IQueryable<T> query,
         QueryParameters parameters,
         IReadOnlyDictionary<string, Expression<Func<T, object>>> sortMap,
-        Expression<Func<T, object>>? defaultSort = null)
+        Expression<Func<T, object>>? defaultSort = null,
+        Expression<Func<T, object>>? tieBreaker = null)
     {
-        if (parameters.Sorts is { Count: > 0 })
-            return query.ApplySorting(parameters.Sorts, sortMap, defaultSort, parameters.SortDescending);
-
-        if (string.IsNullOrWhiteSpace(parameters.SortBy))
-        {
-            return ApplyDefaultSort(query, defaultSort, parameters.SortDescending);
-        }
-
-        if (!sortMap.TryGetValue(parameters.SortBy.ToLowerInvariant(), out var sortExpr))
-        {
-            return ApplyDefaultSort(query, defaultSort, parameters.SortDescending);
-        }
-
-        return OrderByDirection(query, sortExpr, parameters.SortDescending);
-    }
-
-    private static IQueryable<T> ApplyDefaultSort<T>(
-        IQueryable<T> query,
-        Expression<Func<T, object>>? defaultSort,
-        bool descending)
-    {
-        if (defaultSort == null)
-            return query;
-
-        return descending ? query.OrderByDescending(defaultSort) : query.OrderBy(defaultSort);
+        IReadOnlyList<SortDescriptor>? sorts = parameters.Sorts is { Count: > 0 }
+            ? parameters.Sorts
+            : string.IsNullOrWhiteSpace(parameters.SortBy)
+                ? null
+                : [new SortDescriptor { Field = parameters.SortBy, Desc = parameters.SortDescending }];
+        return query.ApplySorting(sorts, sortMap, defaultSort, parameters.SortDescending, tieBreaker);
     }
 
     private static IOrderedQueryable<T> OrderByDirection<T>(

@@ -60,4 +60,27 @@ public class WinningBidPaymentTests
             NullLogger<GetWinningBidsQueryHandler>.Instance);
         await Assert.ThrowsAsync<TimeoutException>(() => handler.Handle(new GetWinningBidsQuery(Guid.NewGuid()), default));
     }
+
+    [PostgresFact]
+    public async Task EqualBidTimes_UseIdTieBreakerAndHonorWhitelistedSorts()
+    {
+        await using var database = await PostgresTestDatabase.CreateAsync();
+        await using var db = new BidDbContext(new DbContextOptionsBuilder<BidDbContext>()
+            .UseNpgsql(database.ConnectionString).Options);
+        await db.Database.MigrateAsync();
+        var user = Guid.NewGuid();
+        var timestamp = DateTimeOffset.UtcNow.AddDays(-1);
+        var bids = Enumerable.Range(1, 3).Select(index => Bid.Create(Guid.NewGuid(), user, "buyer", index * 10m, timestamp)).ToArray();
+        foreach (var bid in bids) bid.Accept();
+        db.Bids.AddRange(bids);
+        await db.SaveChangesAsync();
+        var repository = new BidRepository(db, new DateTimeProvider(), null!);
+        var first = await repository.GetWinningBidsForUserAsync(user, new WinningBidQueryParams { PageSize = 1 });
+        var second = await repository.GetWinningBidsForUserAsync(user, new WinningBidQueryParams { Page = 2, PageSize = 1 });
+        Assert.Equal(bids.OrderBy(bid => bid.Id).Take(2).Select(bid => bid.Id),
+            first.Items.Concat(second.Items).Select(bid => bid.Id));
+        var sorted = await repository.GetWinningBidsForUserAsync(user,
+            new WinningBidQueryParams { SortBy = "amount", SortDescending = true, PageSize = 1 });
+        Assert.Equal(30m, Assert.Single(sorted.Items).Amount);
+    }
 }

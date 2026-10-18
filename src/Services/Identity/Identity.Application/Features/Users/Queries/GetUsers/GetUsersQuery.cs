@@ -36,7 +36,7 @@ public class GetUsersListQueryHandler(
             .Include(u => u.UserRoles)
             .ApplyUserFilters(query.Filter?.Search, query.Filter?.IsActive, query.Filter?.IsSuspended)
             .ApplyRoleFilter(roleId)
-            .ApplySorting(query, UserSortMap.Map, u => u.CreatedAt);
+            .ApplySorting(query, UserSortMap.Map, u => u.CreatedAt, tieBreaker: u => u.Id);
 
         var totalCount = await dbQuery.CountAsync(cancellationToken);
 

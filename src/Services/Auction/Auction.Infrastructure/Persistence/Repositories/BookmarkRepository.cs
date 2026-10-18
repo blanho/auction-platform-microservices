@@ -82,7 +82,7 @@ public class BookmarkRepository : IBookmarkRepository
             .ThenInclude(a => a.Item)
             .AsNoTracking()
             .ApplyFiltering(filterBuilder)
-            .ApplySorting(queryParams, BookmarkSortMap, x => x.AddedAt);
+            .ApplySorting(queryParams, BookmarkSortMap, x => x.AddedAt, tieBreaker: x => x.Id);
 
         var totalCount = await query.CountAsync(cancellationToken);
 

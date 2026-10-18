@@ -24,5 +24,10 @@ public record JobHistoryDto
     public JobType Type { get; init; }
     public JobStatus CurrentStatus { get; init; }
     public int TotalLogEntries { get; init; }
+    public int Page { get; init; }
+    public int PageSize { get; init; }
+    public int TotalPages => PageSize > 0 ? (int)Math.Ceiling((double)TotalLogEntries / PageSize) : 0;
+    public bool HasPreviousPage => Page > 1;
+    public bool HasNextPage => Page < TotalPages;
     public IReadOnlyList<JobExecutionLogDto> Entries { get; init; } = [];
 }

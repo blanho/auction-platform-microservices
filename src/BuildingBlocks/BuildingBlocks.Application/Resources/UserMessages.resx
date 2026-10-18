@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <root>
+  <data name="Label.Page" xml:space="preserve"><value>Page</value></data>
+  <data name="Label.PageSize" xml:space="preserve"><value>Page size</value></data>
+  <data name="Label.SortBy" xml:space="preserve"><value>Sort field</value></data>
+  <data name="Label.Sort" xml:space="preserve"><value>Sort</value></data>
+  <data name="Search pagination cannot exceed {0} results." xml:space="preserve"><value>Search pagination cannot exceed {0} results.</value></data>
   <data name="Account locked due to {0} days of inactivity" xml:space="preserve"><value>Account locked due to {0} days of inactivity</value></data>
   <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
   <resheader name="version"><value>2.0</value></resheader>

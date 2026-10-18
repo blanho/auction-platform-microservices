@@ -1,3 +1,4 @@
+using BuildingBlocks.Infrastructure.Extensions;
 using BuildingBlocks.Application.Abstractions.Auditing;
 using BuildingBlocks.Application.Abstractions.Providers;
 using Jobs.Application.Interfaces;
@@ -70,13 +71,9 @@ public class JobItemRepository : IJobItemRepository
 
         var orderedQuery = query.OrderBy(x => x.SequenceNumber);
 
-        var totalCount = await orderedQuery.CountAsync(cancellationToken);
-        var items = await orderedQuery
-            .Skip((page - 1) * pageSize)
-            .Take(pageSize)
-            .ToListAsync(cancellationToken);
-
-        return new PaginatedResult<JobItem>(items, totalCount, page, pageSize);
+        return await orderedQuery
+            .ThenBy(entity => entity.Id)
+            .ToPaginatedResultAsync(page, pageSize, cancellationToken);
     }
 
     public async Task<int> GetCountByStatusAsync(

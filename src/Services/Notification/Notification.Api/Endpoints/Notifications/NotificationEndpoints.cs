@@ -130,19 +130,11 @@ public class NotificationEndpoints : ICarterModule
         var query = new GetUserNotificationsQuery(
             userId,
             pagination.Page ?? PaginationDefaults.DefaultPage,
-            pagination.PageSize ?? PaginationDefaults.DefaultPageSize);
+            pagination.PageSize ?? PaginationDefaults.DefaultPageSize,
+            Status: NotificationStatus.Unread);
         var result = await sender.Send(query, cancellationToken);
 
-        return result.ToApiResult(paginatedResult =>
-        {
-            var unreadOnly = new PaginatedResult<NotificationDto>(
-                paginatedResult.Items.Where(n => n.Status == nameof(NotificationStatus.Unread)).ToList(),
-                paginatedResult.TotalCount,
-                paginatedResult.Page,
-                paginatedResult.PageSize);
-
-            return Results.Ok(unreadOnly);
-        });
+        return result.ToOkResult();
     }
 
     private static async Task<IResult> MarkAsRead(

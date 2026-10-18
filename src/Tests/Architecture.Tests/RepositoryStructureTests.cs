@@ -12,6 +12,18 @@ public sealed class RepositoryStructureTests
     private static readonly string ServicesRoot = Path.Combine(RepositoryRoot, "src", "Services");
 
     [Fact]
+    public void ServiceRepositories_DoNotCalculatePageOffsets()
+    {
+        var violations = Directory.EnumerateFiles(ServicesRoot, "*.cs", SearchOption.AllDirectories)
+            .Where(IsProductionSource)
+            .Where(path => path.Contains($"{Path.DirectorySeparatorChar}Repositories{Path.DirectorySeparatorChar}"))
+            .Where(path => Regex.IsMatch(File.ReadAllText(path), @"\.Skip\s*\([^\r\n]*[Pp]age"))
+            .Select(path => $"Use shared paging extensions in {Relative(path)}")
+            .ToList();
+        Assert.True(violations.Count == 0, FormatViolations(violations));
+    }
+
+    [Fact]
     public void ServiceMessageKeysHaveEnglishAndJapaneseResources()
     {
         var shared = Path.Combine(SourceRoot, "BuildingBlocks", "BuildingBlocks.Application", "Resources");

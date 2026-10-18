@@ -35,7 +35,7 @@ public class GetOrdersByBuyerQueryHandler : IQueryHandler<GetOrdersByBuyerQuery,
             }
         };
 
-        var orders = await _repository.GetByBuyerUsernameAsync(queryParams);
+        var orders = await _repository.GetByBuyerUsernameAsync(queryParams, cancellationToken);
 
         var result = new PaginatedResult<OrderDto>(
             orders.Items.ToDtoList(_mapper),

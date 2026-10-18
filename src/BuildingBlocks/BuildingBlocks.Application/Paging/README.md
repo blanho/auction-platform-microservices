@@ -8,7 +8,7 @@ The pagination system provides:
 - **Unified QueryParameters** - Single source of truth for page, pageSize, sorting
 - **Type-Safe Filtering** - FilterBuilder for conditional filter composition
 - **Sortable Fields Map** - Whitelisted sort fields (prevents SQL injection)
-- **Paged Responses** - StandardPaginatedResult with metadata
+- **Paged Responses** - PaginatedResult with metadata
 - **Validation** - QueryParametersValidator for input validation
 
 ## Quick Start
@@ -63,7 +63,7 @@ public async Task<PaginatedResult<UserDto>> GetUsersAsync(
     return await _db.Users
         .AsNoTracking()
         .ApplyFiltering(filterBuilder)
-        .ApplySorting(query, UserSortMap.Map, u => u.CreatedAt)
+        .ApplySorting(query, UserSortMap.Map, u => u.CreatedAt, tieBreaker: u => u.Id)
         .ToPaginatedResultAsync(query, u => new UserDto
         {
             Id = u.Id,
@@ -95,6 +95,34 @@ GET /api/users?page=2&pageSize=10&filter.search=john&filter.isActive=true
 
 GET /api/users?sorts[0].field=name&sorts[0].desc=false&sorts[1].field=createdAt&sorts[1].desc=true
 ```
+
+HTTP parameter names and multi-sort binding depend on the endpoint's request DTO.
+An application query supporting `Sorts` does not automatically expose it over HTTP.
+See the [service audit](../../../../docs/paging-consistency.md) for existing API
+differences and omitted-input defaults across all ten services.
+
+## Bounds, Sorting, and Validation
+
+`QueryParameters.Create`, `ApplyPaging`, the EF helpers, and `PaginatedResult.Empty`
+share the same normalization: page values below 1 become 1, nonpositive page sizes
+become 10, and sizes above 100 become 100. Services may retain explicit defaults
+such as 20 or 50 when an input is omitted. Pages whose offsets would overflow
+`int` are normalized to the largest page whose offset fits. Metadata and HTTP
+pagination headers must use these effective values.
+
+Numeric ranges are normalized rather than rejected; invalid numeric syntax still
+fails HTTP binding. `QueryParametersValidator` runs after normalization, validates
+sort-name length and malformed sort-list entries, and can compose typed filter
+validation. Include it explicitly in the owning request validator: inheriting
+`QueryParameters` does not register a validator. Shared validation messages and
+field labels support English and Japanese.
+
+Sort fields are trimmed and matched case-insensitively against the map. Unknown
+fields are ignored; a list with no supported fields falls back to the default
+sort. Repeated fields use their first direction. `Sorts` takes precedence over
+`SortBy`. Always supply a default sort and a unique tie-breaker when paging; the
+helper does not infer entity identifiers. Cache keys must include every filter
+and ordering descriptor.
 
 ## Response Format
 
@@ -133,6 +161,8 @@ GET /api/users?sorts[0].field=name&sorts[0].desc=false&sorts[1].field=createdAt&
 - Use `FilterBuilder` for complex conditional filtering
 - Index fields used in filters and sorting
 - Apply paging at database level
+- Add a unique tie-breaker, such as ID, after the selected sort fields
+- Pass cancellation through count and page reads, executing them sequentially on one DbContext
 
 ### DON'T
 - Accept raw field names for sorting (SQL injection risk)
@@ -174,9 +204,23 @@ query = query.ApplyFiltering(filters);
 ```csharp
 return await _db.Users
     .AsNoTracking()
-    .ApplySorting(query, UserSortMap.Map)
+    .ApplySorting(query, UserSortMap.Map, u => u.CreatedAt, tieBreaker: u => u.Id)
     .ToPaginatedResultAsync(
         query,
         u => new UserDto { Id = u.Id, Name = u.Name }, 
         ct);
 ```
+
+Count the filtered rows before paging, then select the page. Application projects
+with EF query interfaces can use `CountAsync`, `ApplyPaging`, and `Select` directly;
+do not add an Infrastructure dependency to Application just to use the EF helper.
+Use `ApplyOffsetPaging` only to adapt an existing offset/take contract. It clamps
+negative offsets to zero and applies the common size bounds.
+
+Unique ordering makes tied rows deterministic for unchanged data. It does not
+freeze records across requests or make separate count/page reads a transaction
+snapshot. Cursor/snapshot pagination is appropriate when stable traversal under
+concurrent writes or deep browsing is required. Elasticsearch rejects requests
+beyond its configured result window. Index filtering/ordering combinations based
+on actual query plans. Worker batches, category trees, lookups, autocomplete, and
+export streams have separate contracts and are not API pages.

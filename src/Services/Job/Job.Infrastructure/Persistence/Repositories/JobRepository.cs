@@ -1,3 +1,4 @@
+using BuildingBlocks.Infrastructure.Extensions;
 using BuildingBlocks.Application.Abstractions.Auditing;
 using BuildingBlocks.Application.Abstractions.Providers;
 using Jobs.Application.Interfaces;
@@ -59,13 +60,9 @@ public class JobRepository : IJobRepository
             .AsNoTracking()
             .OrderByDescending(x => x.CreatedAt);
 
-        var totalCount = await query.CountAsync(cancellationToken);
-        var items = await query
-            .Skip((page - 1) * pageSize)
-            .Take(pageSize)
-            .ToListAsync(cancellationToken);
-
-        return new PaginatedResult<Job>(items, totalCount, page, pageSize);
+        return await query
+            .ThenBy(entity => entity.Id)
+            .ToPaginatedResultAsync(page, pageSize, cancellationToken);
     }
 
     public async Task<PaginatedResult<Job>> GetFilteredAsync(
@@ -91,13 +88,9 @@ public class JobRepository : IJobRepository
 
         var orderedQuery = query.OrderByDescending(x => x.CreatedAt);
 
-        var totalCount = await orderedQuery.CountAsync(cancellationToken);
-        var items = await orderedQuery
-            .Skip((page - 1) * pageSize)
-            .Take(pageSize)
-            .ToListAsync(cancellationToken);
-
-        return new PaginatedResult<Job>(items, totalCount, page, pageSize);
+        return await orderedQuery
+            .ThenBy(entity => entity.Id)
+            .ToPaginatedResultAsync(page, pageSize, cancellationToken);
     }
 
     public async Task<List<Job>> GetPendingJobsByPriorityAsync(

@@ -58,12 +58,13 @@ public class TemplateEndpoints : ICarterModule
     }
 
     private static async Task<IResult> GetAllTemplates(
-        int page,
-        int pageSize,
+        int? page,
+        int? pageSize,
         ISender sender,
         CancellationToken ct)
     {
-        var query = new GetTemplatesQuery(page, pageSize);
+        var query = new GetTemplatesQuery(page ?? PaginationDefaults.DefaultPage,
+            pageSize ?? NotificationDefaults.Pagination.DefaultPageSize);
         var result = await sender.Send(query, ct);
         return result.ToOkResult();
     }

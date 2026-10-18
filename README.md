@@ -792,6 +792,7 @@ retention, batch limits, and token security behavior.
 | [Getting Started Guide](docs/getting-started.md) | Step-by-step onboarding for new developers |
 | [API Reference](docs/api-reference.md) | Gateway routes, authentication, request/response schemas |
 | [Background Jobs](docs/background-jobs.md) | Supported job operations, payload examples, retries, and staged roadmap |
+| [Paging Consistency](docs/paging-consistency.md) | Shared paging rules, service coverage, compatibility differences, and verification |
 | [Deployment Guide](docs/deployment.md) | Docker, Kubernetes, CI/CD pipeline details |
 | [Azure Deployment Guide](deploy/azure/README.md) | Provision and deploy the Azure AKS environment |
 

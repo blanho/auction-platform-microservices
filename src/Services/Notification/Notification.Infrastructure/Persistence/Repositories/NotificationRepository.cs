@@ -1,3 +1,4 @@
+using BuildingBlocks.Infrastructure.Extensions;
 using BuildingBlocks.Application.Abstractions;
 using Microsoft.EntityFrameworkCore;
 using Notification.Application.Interfaces;
@@ -124,15 +125,10 @@ public class NotificationRepository : INotificationRepository
         if (status.HasValue)
             query = query.Where(n => n.Status == status.Value);
 
-        var totalCount = await query.CountAsync(cancellationToken);
-
-        var items = await query
+        return await query
             .OrderByDescending(n => n.CreatedAt)
-            .Skip((page - 1) * pageSize)
-            .Take(pageSize)
-            .ToListAsync(cancellationToken);
-
-        return new PaginatedResult<NotificationEntity>(items, totalCount, page, pageSize);
+            .ThenBy(entity => entity.Id)
+            .ToPaginatedResultAsync(page, pageSize, cancellationToken);
     }
 
     public async Task<NotificationStats> GetStatsAsync(CancellationToken cancellationToken = default)

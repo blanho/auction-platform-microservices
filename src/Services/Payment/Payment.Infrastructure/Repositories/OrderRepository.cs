@@ -59,17 +59,17 @@ public class OrderRepository : IOrderRepository
             .FirstOrDefaultAsync(cancellationToken);
     }
 
-    public async Task<PaginatedResult<Order>> GetByBuyerUsernameAsync(OrderQueryParams queryParams)
+    public async Task<PaginatedResult<Order>> GetByBuyerUsernameAsync(OrderQueryParams queryParams, CancellationToken cancellationToken = default)
     {
-        return await GetOrdersByQueryParamsAsync(queryParams);
+        return await GetOrdersByQueryParamsAsync(queryParams, cancellationToken);
     }
 
-    public async Task<PaginatedResult<Order>> GetBySellerUsernameAsync(OrderQueryParams queryParams)
+    public async Task<PaginatedResult<Order>> GetBySellerUsernameAsync(OrderQueryParams queryParams, CancellationToken cancellationToken = default)
     {
-        return await GetOrdersByQueryParamsAsync(queryParams);
+        return await GetOrdersByQueryParamsAsync(queryParams, cancellationToken);
     }
 
-    private async Task<PaginatedResult<Order>> GetOrdersByQueryParamsAsync(OrderQueryParams queryParams)
+    private async Task<PaginatedResult<Order>> GetOrdersByQueryParamsAsync(OrderQueryParams queryParams, CancellationToken cancellationToken)
     {
         var query = _context.Orders.AsNoTracking();
 
@@ -78,12 +78,12 @@ public class OrderRepository : IOrderRepository
             query = queryParams.Filter.Apply(query);
         }
 
-        var totalCount = await query.CountAsync();
+        var totalCount = await query.CountAsync(cancellationToken);
 
         var items = await query
-            .ApplySorting(queryParams, OrderSortMap, o => o.CreatedAt)
+            .ApplySorting(queryParams, OrderSortMap, o => o.CreatedAt, tieBreaker: o => o.Id)
             .ApplyPaging(queryParams)
-            .ToListAsync();
+            .ToListAsync(cancellationToken);
 
         return new PaginatedResult<Order>(items, totalCount, queryParams.Page, queryParams.PageSize);
     }
@@ -277,7 +277,7 @@ public class OrderRepository : IOrderRepository
         var totalCount = await query.CountAsync(cancellationToken);
 
         var items = await query
-            .ApplySorting(queryParams, OrderSortMap, o => o.CreatedAt)
+            .ApplySorting(queryParams, OrderSortMap, o => o.CreatedAt, tieBreaker: o => o.Id)
             .ApplyPaging(queryParams)
             .ToListAsync(cancellationToken);
 

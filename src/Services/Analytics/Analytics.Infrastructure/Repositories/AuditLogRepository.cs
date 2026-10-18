@@ -74,7 +74,7 @@ public class AuditLogRepository : IAuditLogRepository
         var query = _context.AuditLogs
             .AsNoTracking()
             .ApplyFiltering(filterBuilder)
-            .ApplySorting(queryParams, SortMap, x => x.Timestamp);
+            .ApplySorting(queryParams, SortMap, x => x.Timestamp, tieBreaker: x => x.Id);
 
         var totalCount = await query.CountAsync(cancellationToken);
 
