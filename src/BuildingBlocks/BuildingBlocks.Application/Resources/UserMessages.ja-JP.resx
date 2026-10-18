@@ -264,4 +264,14 @@
   <data name="Bid must be at least ${0}. Minimum increment is ${1} for bids at this level." xml:space="preserve"><value>入札額は${0}以上である必要があります。この金額帯の最小入札増分は${1}です。</value></data>
   <data name="Auction is not active. Current status: {0}" xml:space="preserve"><value>オークションは開催されていません。現在のステータス: {0}。</value></data>
   <data name="{0} must not exceed {1} days from now." xml:space="preserve"><value>{0}は現在から{1}日以内である必要があります。</value></data>
+  <data name="Notification.Bulk.RequesterRequired" xml:space="preserve"><value>ジョブ項目とリクエスト者は必須です。</value></data>
+  <data name="Notification.Bulk.ContentRequired" xml:space="preserve"><value>テンプレートキー、タイトル、メッセージ、共通パラメーターは必須です。</value></data>
+  <data name="Notification.Bulk.RecipientsRequired" xml:space="preserve"><value>有効なユーザーIDを含む、件数上限内の空でない宛先リストは必須です。</value></data>
+  <data name="Notification.Bulk.DuplicateRecipients" xml:space="preserve"><value>同じジョブ項目内の宛先ユーザーIDは重複できません。</value></data>
+  <data name="Notification.Bulk.ChannelsRequired" xml:space="preserve"><value>対応している通知チャネルを指定してください。</value></data>
+  <data name="Notification.Bulk.EmailRequired" xml:space="preserve"><value>すべてのメール宛先にメールアドレスが必要です。</value></data>
+  <data name="Notification.Bulk.PhoneRequired" xml:space="preserve"><value>すべてのSMS宛先に電話番号が必要です。</value></data>
+  <data name="Notification.Bulk.SchedulingUnsupported" xml:space="preserve"><value>ジョブから実行する通知では配信日時を指定できません。配信時刻になってからジョブを送信してください。</value></data>
+  <data name="Notification.Bulk.BatchSizeOutOfRange" xml:space="preserve"><value>バッチサイズは{0}から{1}の間である必要があります。</value></data>
+  <data name="Notification.Bulk.DeliveryFailed" xml:space="preserve"><value>{1}人の宛先のうち{0}人への配信に失敗しました。</value></data>
 </root>

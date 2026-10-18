@@ -93,6 +93,31 @@ attempts. The current Redis receipts expire after 24 hours: retries after expiry
 Redis data loss, or a crash between sending and recording a receipt can resend a
 notification. This is not an exactly-once delivery guarantee.
 
+### Notification validation messages
+
+Bulk notification validation returns a stable message key and an array of invariant
+string arguments. The Notification consumer publishes these as `errorCode` and
+`errorArguments` along with a neutral English `errorMessage` for compatibility.
+Both single-item and batch result consumers persist all three fields on the item.
+
+For example, an invalid batch size yields:
+
+```json
+{
+  "errorCode": "Notification.Bulk.BatchSizeOutOfRange",
+  "errorArguments": ["10", "500"],
+  "errorMessage": "BatchSize must be between 10 and 500."
+}
+```
+
+On `GET /api/v1/jobs/{id}/items`, `errorMessage` is formatted from the key and
+arguments in the reader's `Accept-Language` culture. English/Japanese responses
+use the same code and arguments, and do not depend on matching stored English
+wording. Existing rows without a code still use legacy diagnostic translation.
+Unknown keys or incomplete arguments fall back to the stored diagnostic.
+Successful completion, skipping, and operator retry clear obsolete error metadata.
+Delivery failures use the same protocol with failed/total recipient counts.
+
 ## Storage jobs
 
 Both storage job types use the same create-job envelope above, with one file per
@@ -255,9 +280,17 @@ terminal results are ignored. Invalid payloads fail the item; service exceptions
 use broker retry policies, then a fault consumer records a terminal item failure.
 The report and notification paths require an explicit job retry after that point.
 
-Deploy the updated Payment, Notification, Storage, Search, and Analytics consumers
-before the updated Job service. Older consumers do not understand the added command routes
-or parent-item tracking. No database migration is required for stages 1–3.
+Before enabling a job type, deploy its owning service with support for the command
+route and parent-item tracking.
+
+Key-based notification errors require Job migration
+`20261018023620_LocalizedJobItemErrors`, which adds nullable `ErrorCode` and an
+`ErrorArguments` text array to `JobItems`. Existing rows receive an empty argument
+array and retain their original diagnostic. Apply the migration before deploying
+the updated Job API/worker, then deploy the updated Notification consumer. The Job
+service's `--migrate-only` mode supports deployment migrations; configure its usual
+database connection. Older producers remain readable, and older consumers can use
+the English fallback while they are being upgraded.
 
 ## Remaining implementation stages
 

@@ -12,6 +12,28 @@ public sealed class RepositoryStructureTests
     private static readonly string ServicesRoot = Path.Combine(RepositoryRoot, "src", "Services");
 
     [Fact]
+    public void ServiceMessageKeysHaveEnglishAndJapaneseResources()
+    {
+        var shared = Path.Combine(SourceRoot, "BuildingBlocks", "BuildingBlocks.Application", "Resources");
+        var violations = new List<string>();
+        foreach (var service in Directory.EnumerateDirectories(ServicesRoot))
+        {
+            var keys = Directory.EnumerateFiles(service, "*MessageKeys.cs", SearchOption.AllDirectories)
+                .Where(IsProductionSource)
+                .SelectMany(path => Regex.Matches(File.ReadAllText(path),
+                    "public const string \\w+\\s*=\\s*\"([^\"]+)\"")
+                    .Select(match => match.Groups[1].Value)).ToList();
+            foreach (var culture in new[] { "", "ja-JP" })
+            {
+                var available = ReadResourceKeys(shared, culture).Concat(ReadResourceKeys(service, culture)).ToHashSet();
+                violations.AddRange(keys.Where(key => !available.Contains(key))
+                    .Select(key => $"Missing {culture} message resource '{key}' for {Relative(service)}"));
+            }
+        }
+        Assert.True(violations.Count == 0, FormatViolations(violations));
+    }
+
+    [Fact]
     public void ServiceValidationFieldLabelsHaveJapaneseTranslations()
     {
         var available = ReadResourceKeysFromFile(Path.Combine(SourceRoot, "BuildingBlocks",

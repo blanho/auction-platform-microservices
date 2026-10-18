@@ -4,6 +4,7 @@ using JobService.Contracts.Commands;
 using MassTransit;
 using Microsoft.Extensions.Logging.Abstractions;
 using Notification.Application.Interfaces;
+using Notification.Application.Localization;
 using Notification.Domain.Constants;
 using Notification.Domain.Entities;
 using Notification.Infrastructure.Messaging.Consumers;
@@ -25,6 +26,8 @@ public class JobNotificationExecutionTests
         var failure = Assert.Single(fixture.Published.OfType<ReportJobItemResultCommand>());
         Assert.False(failure.IsSuccess);
         Assert.True(failure.IsFinalFailure);
+        Assert.Equal(BulkNotificationMessageKeys.DeliveryFailed, failure.ErrorCode);
+        Assert.Equal(new[] { "1", "1" }, failure.ErrorArguments);
         Assert.Equal(fixture.Command.ParentJobId, failure.JobId);
         Assert.Equal(fixture.Command.ParentJobItemId, failure.JobItemId);
         Assert.Equal(0, failure.Attempt);
@@ -37,6 +40,9 @@ public class JobNotificationExecutionTests
         await fixture.Consume(retry);
         var success = Assert.Single(fixture.Published.OfType<ReportJobItemResultCommand>());
         Assert.True(success.IsSuccess);
+        Assert.Null(success.ErrorCode);
+        Assert.Null(success.ErrorMessage);
+        Assert.Empty(success.ErrorArguments);
         Assert.Equal(1, success.Attempt);
         Assert.Equal(1, fixture.EmailSends);
         Assert.Equal(2, fixture.PushSends);
@@ -92,12 +98,33 @@ public class JobNotificationExecutionTests
         using (new RequestCultureScope("ja-JP"))
             await fixture.Consume(command);
         var result = Assert.Single(fixture.Published.OfType<ReportJobItemResultCommand>());
+        var expectedCode = scenario switch
+        {
+            "empty-recipients" or "null-recipients" => BulkNotificationMessageKeys.RecipientsRequired,
+            "duplicate-recipients" => BulkNotificationMessageKeys.DuplicateRecipients,
+            "invalid-batch" => BulkNotificationMessageKeys.BatchSizeOutOfRange,
+            "unknown-channel" or "null-channels" => BulkNotificationMessageKeys.ChannelsRequired,
+            "missing-address" => BulkNotificationMessageKeys.EmailRequired,
+            "scheduled" => BulkNotificationMessageKeys.SchedulingUnsupported,
+            "missing-requester" => BulkNotificationMessageKeys.RequesterRequired,
+            "missing-template" => BulkNotificationMessageKeys.ContentRequired,
+            "missing-sms-number" => BulkNotificationMessageKeys.PhoneRequired,
+            _ => throw new ArgumentOutOfRangeException(nameof(scenario))
+        };
+        Assert.Equal(expectedCode, result.ErrorCode);
+        Assert.Equal(scenario == "invalid-batch" ? new[] { "10", "500" } : Array.Empty<string>(), result.ErrorArguments);
         Assert.NotNull(result.ErrorMessage);
         Assert.DoesNotMatch(@"[\p{IsHiragana}\p{IsKatakana}\p{IsCJKUnifiedIdeographs}]", result.ErrorMessage);
         using (new RequestCultureScope("ja-JP"))
+        {
             Assert.Equal(japanese, UserMessageLocalizer.Translate(result.ErrorMessage));
+            Assert.Equal(japanese, UserMessageLocalizer.Format(result.ErrorCode!, result.ErrorArguments, "Changed fallback wording"));
+        }
         using (new RequestCultureScope("en-US"))
+        {
             Assert.Equal(result.ErrorMessage, UserMessageLocalizer.Translate(result.ErrorMessage));
+            Assert.Equal(result.ErrorMessage, UserMessageLocalizer.Format(result.ErrorCode!, result.ErrorArguments));
+        }
         Assert.False(result.IsSuccess);
         Assert.True(result.IsFinalFailure);
         Assert.Equal(0, fixture.EmailSends);

@@ -264,4 +264,14 @@
   <data name="Bid must be at least ${0}. Minimum increment is ${1} for bids at this level." xml:space="preserve"><value>Bid must be at least ${0}. Minimum increment is ${1} for bids at this level.</value></data>
   <data name="Auction is not active. Current status: {0}" xml:space="preserve"><value>Auction is not active. Current status: {0}</value></data>
   <data name="{0} must not exceed {1} days from now." xml:space="preserve"><value>{0} must not exceed {1} days from now.</value></data>
+  <data name="Notification.Bulk.RequesterRequired" xml:space="preserve"><value>A job item and requester are required.</value></data>
+  <data name="Notification.Bulk.ContentRequired" xml:space="preserve"><value>TemplateKey, Title, Message, and GlobalParameters are required.</value></data>
+  <data name="Notification.Bulk.RecipientsRequired" xml:space="preserve"><value>A nonempty, bounded recipient list with valid user IDs is required.</value></data>
+  <data name="Notification.Bulk.DuplicateRecipients" xml:space="preserve"><value>Recipient user IDs must be unique within a job item.</value></data>
+  <data name="Notification.Bulk.ChannelsRequired" xml:space="preserve"><value>Specify supported notification channels.</value></data>
+  <data name="Notification.Bulk.EmailRequired" xml:space="preserve"><value>Every email recipient must have an email address.</value></data>
+  <data name="Notification.Bulk.PhoneRequired" xml:space="preserve"><value>Every SMS recipient must have a phone number.</value></data>
+  <data name="Notification.Bulk.SchedulingUnsupported" xml:space="preserve"><value>ScheduledAt is not supported for Jobs-dispatched notifications; submit the job when it is due.</value></data>
+  <data name="Notification.Bulk.BatchSizeOutOfRange" xml:space="preserve"><value>BatchSize must be between {0} and {1}.</value></data>
+  <data name="Notification.Bulk.DeliveryFailed" xml:space="preserve"><value>Delivery failed for {0} of {1} recipients.</value></data>
 </root>

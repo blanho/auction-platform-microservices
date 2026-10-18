@@ -552,6 +552,15 @@ the shared localized fallback. Notification-provider responses keep their full
 stored diagnostics; translated summaries retain provider status/error codes.
 Architecture tests check validation field labels and literal messages in consumer,
 sender, processing, and validator code for translation coverage.
+Bulk notification job validation now returns `LocalizedMessage` keys and invariant
+string arguments. `ReportJobItemResultCommand` and batch results carry `ErrorCode`
+and `ErrorArguments`; Job items persist them with an English compatibility
+fallback. DTO mapping formats the key directly in the reader's culture, avoiding
+English-text matching. Legacy rows still use diagnostic translation, and unknown
+keys or malformed arguments use the stored fallback. Add both resource values
+whenever introducing a new key; architecture tests check `*MessageKeys.cs` constants.
+The deployment and migration order is described in the background jobs guide.
+
 Use service error codes and `ProblemDetailsHelper` for API errors. Keep job error
 text invariant in storage and resolve it through `UserMessageLocalizer` on reads;
 never persist a worker's current language as a replacement for the diagnostic.

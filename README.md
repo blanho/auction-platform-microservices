@@ -766,7 +766,9 @@ background-job diagnostics unchanged, then localize job DTOs in the reader's
 request culture. Add matching English/Japanese resources and localization tests
 for new messages. Mark nested failure reasons with `LocalizableError.WithDiagnostic`
 so they are translated inside localized errors; keep error codes, API fields, and
-user-authored content stable.
+user-authored content stable. New notification job validation uses stable message
+keys and arguments, persisted with an English compatibility fallback; see the
+[background jobs guide](docs/background-jobs.md) for the required Job migration.
 
 
 ---

@@ -22,6 +22,28 @@ public static partial class UserMessageLocalizer
 
     public static string? TranslateOptional(string? message) => message is null ? null : Translate(message);
 
+    public static string FormatInvariant(string key, IReadOnlyList<string> arguments)
+    {
+        var template = Resources.GetString(key, CultureInfo.InvariantCulture)
+            ?? throw new KeyNotFoundException($"Message resource '{key}' was not found.");
+        return string.Format(CultureInfo.InvariantCulture, template, arguments.Cast<object>().ToArray());
+    }
+
+    public static string Format(string key, IReadOnlyList<string> arguments, string? fallbackMessage = null)
+    {
+        var culture = CultureInfo.CurrentUICulture;
+        var template = Resources.GetString(key, culture);
+        if (template is not null)
+        {
+            try
+            {
+                return string.Format(culture, template, arguments.Cast<object>().ToArray());
+            }
+            catch (FormatException) { }
+        }
+        return Translate(fallbackMessage ?? DefaultFallback);
+    }
+
     public static string Translate(string message, string? fallback = null)
     {
         var culture = CultureInfo.CurrentUICulture;

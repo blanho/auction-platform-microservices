@@ -214,6 +214,14 @@ namespace Jobs.Infrastructure.Persistence.Migrations
                     b.Property<Guid>("DeletedBy")
                         .HasColumnType("uuid");
 
+                    b.PrimitiveCollection<string[]>("ErrorArguments")
+                        .IsRequired()
+                        .HasColumnType("text[]");
+
+                    b.Property<string>("ErrorCode")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
                     b.Property<string>("ErrorMessage")
                         .HasMaxLength(4000)
                         .HasColumnType("character varying(4000)");

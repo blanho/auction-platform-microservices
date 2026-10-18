@@ -10,6 +10,52 @@ namespace Jobs.Application.Tests;
 
 public class JobLocalizationTests
 {
+    [Fact]
+    public void KeyedItemErrorsDoNotDependOnEnglishFallbackWording()
+    {
+        var mapper = new MapperConfiguration(config => config.AddProfile<JobMappingProfile>(),
+            NullLoggerFactory.Instance).CreateMapper();
+        var job = Jobs.Domain.Entities.Job.Create(JobType.BulkNotification, "keyed-job", "{}", Guid.NewGuid(), 1);
+        var item = job.AddItem("{}", 1);
+        job.Start();
+        item.MarkProcessing();
+        const string code = "Notification.Bulk.BatchSizeOutOfRange";
+        const string diagnostic = "Different English fallback wording";
+        var arguments = new[] { "10", "500" };
+        item.MarkFailed(diagnostic, terminal: true, errorCode: code, errorArguments: arguments);
+        arguments[0] = "changed by caller";
+
+        foreach (var language in new[] { "ja-JP", "en-US", "ja-JP" })
+        {
+            using var culture = new RequestCultureScope(language);
+            var dto = mapper.Map<JobItemDto>(item);
+            Assert.Equal(language == "ja-JP"
+                ? "バッチサイズは10から500の間である必要があります。"
+                : "BatchSize must be between 10 and 500.", dto.ErrorMessage);
+            Assert.Equal(code, dto.ErrorCode);
+            Assert.Equal(new[] { "10", "500" }, dto.ErrorArguments);
+        }
+        Assert.Equal(diagnostic, item.ErrorMessage);
+        Assert.Equal(new[] { "10", "500" }, item.ErrorArguments);
+        item.ResetForRetry();
+        Assert.Null(item.ErrorCode);
+        Assert.Empty(item.ErrorArguments);
+        Assert.Null(item.ErrorMessage);
+        item.MarkProcessing();
+        item.MarkCompleted();
+        Assert.Null(mapper.Map<JobItemDto>(item).ErrorMessage);
+    }
+
+    [Theory]
+    [InlineData("Notification.Bulk.UnknownKey", false)]
+    [InlineData("Notification.Bulk.BatchSizeOutOfRange", true)]
+    public void UnknownKeysAndMissingArgumentsUseTheLegacyDiagnostic(string code, bool missingArguments)
+    {
+        using var culture = new RequestCultureScope("ja-JP");
+        Assert.Equal("ファイルのアップロードが完了していません。",
+            UserMessageLocalizer.Format(code, missingArguments ? ["10"] : [], "The uploaded file is incomplete."));
+    }
+
     [Theory]
     [InlineData("Image processing failed after broker retries.", "再試行後も画像処理に失敗しました。")]
     [InlineData("File upload finalization failed after broker retries.", "再試行後もファイルのアップロード確定に失敗しました。")]
