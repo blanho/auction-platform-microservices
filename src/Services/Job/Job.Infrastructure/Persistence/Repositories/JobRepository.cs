@@ -1,3 +1,4 @@
+using BuildingBlocks.Infrastructure.Repository;
 using BuildingBlocks.Infrastructure.Extensions;
 using BuildingBlocks.Application.Abstractions.Auditing;
 using BuildingBlocks.Application.Abstractions.Providers;
@@ -7,62 +8,41 @@ using Jobs.Domain.Enums;
 
 namespace Jobs.Infrastructure.Persistence.Repositories;
 
-public class JobRepository : IJobRepository
+public class JobRepository : EfRepository<Job, JobDbContext>, IJobRepository
 {
-    private readonly JobDbContext _context;
-    private readonly IDateTimeProvider _dateTime;
-    private readonly IAuditContext _auditContext;
-
-    public JobRepository(JobDbContext context, IDateTimeProvider dateTime, IAuditContext auditContext)
+    protected override void ApplyCreatedAudit(Job job, DateTimeOffset timestamp)
     {
-        _context = context;
-        _dateTime = dateTime;
-        _auditContext = auditContext;
+        base.ApplyCreatedAudit(job, timestamp);
+        foreach (var item in job.Items)
+            item.SetCreatedAudit(GetCreatedBy(job), timestamp);
     }
 
-    public async Task<Job?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
+    protected override void TrackUpdate(Job job)
     {
-        return await _context.Jobs
-            .Where(x => !x.IsDeleted)
-            .AsNoTracking()
-            .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
+        if (Context.Entry(job).State == EntityState.Detached)
+            Context.Jobs.Update(job);
+    }
+
+    public JobRepository(JobDbContext context, IDateTimeProvider dateTime, IAuditContext auditContext)
+        : base(context, dateTime, auditContext)
+    {
     }
 
     public async Task<Job?> GetByIdWithItemsAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        return await _context.Jobs
+        return await Context.Jobs
             .Where(x => !x.IsDeleted)
             .Include(x => x.Items)
             .AsNoTracking()
             .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
     }
 
-    public async Task<Job?> GetByIdForUpdateAsync(Guid id, CancellationToken cancellationToken = default)
-    {
-        return await _context.Jobs
-            .Where(x => !x.IsDeleted)
-            .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
-    }
-
     public async Task<Job?> GetByCorrelationIdAsync(string correlationId, CancellationToken cancellationToken = default)
     {
-        return await _context.Jobs
+        return await Context.Jobs
             .Where(x => !x.IsDeleted)
             .AsNoTracking()
             .FirstOrDefaultAsync(x => x.CorrelationId == correlationId, cancellationToken);
-    }
-
-    public async Task<PaginatedResult<Job>> GetPagedAsync(
-        int page, int pageSize, CancellationToken cancellationToken = default)
-    {
-        var query = _context.Jobs
-            .Where(x => !x.IsDeleted)
-            .AsNoTracking()
-            .OrderByDescending(x => x.CreatedAt);
-
-        return await query
-            .ThenBy(entity => entity.Id)
-            .ToPaginatedResultAsync(page, pageSize, cancellationToken);
     }
 
     public async Task<PaginatedResult<Job>> GetFilteredAsync(
@@ -73,7 +53,7 @@ public class JobRepository : IJobRepository
         int pageSize,
         CancellationToken cancellationToken = default)
     {
-        var query = _context.Jobs
+        var query = Context.Jobs
             .Where(x => !x.IsDeleted)
             .AsNoTracking();
 
@@ -96,7 +76,7 @@ public class JobRepository : IJobRepository
     public async Task<List<Job>> GetPendingJobsByPriorityAsync(
         int batchSize, CancellationToken cancellationToken = default)
     {
-        return await _context.Jobs
+        return await Context.Jobs
             .Where(x => !x.IsDeleted
                 && (x.Status == JobStatus.Pending || x.Status == JobStatus.Processing)
                 && x.Items.Any(item => !item.IsDeleted && item.Status == JobItemStatus.Pending))
@@ -109,33 +89,12 @@ public class JobRepository : IJobRepository
     public async Task<List<Job>> GetStuckProcessingJobsAsync(
         TimeSpan timeout, CancellationToken cancellationToken = default)
     {
-        var cutoff = _dateTime.UtcNowOffset.Subtract(timeout);
-        return await _context.Jobs
+        var cutoff = Clock.UtcNowOffset.Subtract(timeout);
+        return await Context.Jobs
             .Where(x => !x.IsDeleted
                 && x.Status == JobStatus.Processing
                 && x.StartedAt.HasValue
                 && x.StartedAt.Value < cutoff)
             .ToListAsync(cancellationToken);
-    }
-
-    public async Task<Job> CreateAsync(Job job, CancellationToken cancellationToken = default)
-    {
-        var utcNow = _dateTime.UtcNowOffset;
-        job.SetCreatedAudit(_auditContext.UserId, utcNow);
-
-        foreach (var item in job.Items)
-        {
-            item.SetCreatedAudit(_auditContext.UserId, utcNow);
-        }
-
-        await _context.Jobs.AddAsync(job, cancellationToken);
-        return job;
-    }
-
-    public Task UpdateAsync(Job job, CancellationToken cancellationToken = default)
-    {
-        job.SetUpdatedAudit(_auditContext.UserId, _dateTime.UtcNowOffset);
-        _context.Jobs.Update(job);
-        return Task.CompletedTask;
     }
 }

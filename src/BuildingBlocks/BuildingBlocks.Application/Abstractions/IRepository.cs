@@ -1,3 +1,5 @@
+using BuildingBlocks.Domain.Entities;
+
 namespace BuildingBlocks.Application.Abstractions;
 
 public interface IReadRepository<T> where T : class
@@ -10,22 +12,21 @@ public interface IReadRepository<T> where T : class
         CancellationToken cancellationToken = default);
 }
 
-public interface IWriteRepository<T> where T : class
+public interface IWriteRepository<T> where T : AggregateRoot
 {
     Task<T> CreateAsync(T entity, CancellationToken cancellationToken = default);
     Task UpdateAsync(T entity, CancellationToken cancellationToken = default);
     Task DeleteAsync(Guid id, CancellationToken cancellationToken = default);
 }
 
-public interface IBatchRepository<T> where T : class
+public interface IBatchRepository<T> where T : AggregateRoot
 {
     Task AddRangeAsync(IEnumerable<T> entities, CancellationToken cancellationToken = default);
     Task UpdateRangeAsync(IEnumerable<T> entities, CancellationToken cancellationToken = default);
     Task DeleteRangeAsync(IEnumerable<Guid> ids, CancellationToken cancellationToken = default);
 }
 
-public interface IRepository<T> : IReadRepository<T>, IWriteRepository<T> where T : class
+public interface IRepository<T> : IReadRepository<T>, IWriteRepository<T> where T : AggregateRoot
 {
-    Task<T?> GetByIdForUpdateAsync(Guid id, CancellationToken cancellationToken = default)
-        => GetByIdAsync(id, cancellationToken);
+    Task<T?> GetByIdForUpdateAsync(Guid id, CancellationToken cancellationToken = default);
 }

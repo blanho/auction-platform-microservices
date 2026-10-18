@@ -699,7 +699,7 @@ managed observability integration only when the project needs it.
 
 ## Testing
 
-The backend has 31 test projects covering service behavior, architecture rules,
+The backend has 32 test projects covering service behavior, architecture rules,
 PostgreSQL persistence, bid/finalization serialization, and RabbitMQ-backed sale
 workflow recovery. Start disposable PostgreSQL and RabbitMQ before running the
 backend tests so provider-backed coverage can execute.
@@ -793,6 +793,7 @@ retention, batch limits, and token security behavior.
 | [API Reference](docs/api-reference.md) | Gateway routes, authentication, request/response schemas |
 | [Background Jobs](docs/background-jobs.md) | Supported job operations, payload examples, retries, and staged roadmap |
 | [Paging Consistency](docs/paging-consistency.md) | Shared paging rules, service coverage, compatibility differences, and verification |
+| [Common Repositories](docs/common-repositories.md) | Research, shared EF Core CRUD, audit policies, transaction boundaries, and adoption |
 | [Deployment Guide](docs/deployment.md) | Docker, Kubernetes, CI/CD pipeline details |
 | [Azure Deployment Guide](deploy/azure/README.md) | Provision and deploy the Azure AKS environment |
 

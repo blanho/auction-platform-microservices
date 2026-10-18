@@ -46,6 +46,63 @@ public class AuctionRepositoryTrackingTests
         return proxy;
     }
 
+    [Fact]
+    public async Task CreatingAuction_UsesOneAuditTimestampForRootAndItem()
+    {
+        await using var context = new AuctionDbContext(new DbContextOptionsBuilder<AuctionDbContext>()
+            .UseNpgsql("Host=localhost;Database=auction_tracking_test").Options);
+        var actor = Guid.NewGuid();
+        var audit = Stub<IAuditContext>((_, _) => actor);
+        var repository = new AuctionRepository(context, new DateTimeProvider(), audit);
+        var auction = AuctionEntity.CreateScheduled(Guid.NewGuid(), "seller",
+            Item.Create("Item", "Description"), 1m, DateTimeOffset.UtcNow.AddDays(1));
+
+        await repository.CreateAsync(auction);
+
+        Assert.Equal(actor, auction.CreatedBy);
+        Assert.Equal(actor, auction.Item.CreatedBy);
+        Assert.Equal(auction.CreatedAt, auction.Item.CreatedAt);
+        Assert.Equal(EntityState.Added, context.Entry(auction).State);
+        Assert.Equal(EntityState.Added, context.Entry(auction.Item).State);
+    }
+
+    [Fact]
+    public async Task DetachedAuctionUpdate_PreservesExplicitGraphUpdateBehavior()
+    {
+        await using var context = new AuctionDbContext(new DbContextOptionsBuilder<AuctionDbContext>()
+            .UseNpgsql("Host=localhost;Database=auction_tracking_test").Options);
+        var audit = Stub<IAuditContext>((_, _) => Guid.Empty);
+        var repository = new AuctionRepository(context, new DateTimeProvider(), audit);
+        var auction = AuctionEntity.CreateScheduled(Guid.NewGuid(), "seller",
+            Item.Create("Item", "Description"), 1m, DateTimeOffset.UtcNow.AddDays(1));
+        auction.Item.UpdateTitle("Changed title");
+
+        await repository.UpdateAsync(auction);
+
+        Assert.Equal(EntityState.Modified, context.Entry(auction).State);
+        Assert.Equal(EntityState.Modified, context.Entry(auction.Item).State);
+    }
+
+    [Fact]
+    public async Task BookmarkWrites_KeepOwnerAsAuditActor()
+    {
+        await using var context = new AuctionDbContext(new DbContextOptionsBuilder<AuctionDbContext>()
+            .UseNpgsql("Host=localhost;Database=auction_tracking_test").Options);
+        var owner = Guid.NewGuid();
+        var audit = Stub<IAuditContext>((_, _) => Guid.NewGuid());
+        var repository = new BookmarkRepository(context, new DateTimeProvider(), audit);
+        var bookmark = Bookmark.Create(owner, "owner", Guid.NewGuid(), BookmarkType.Watchlist);
+
+        await repository.AddAsync(bookmark);
+        await repository.UpdateAsync(bookmark);
+        await repository.DeleteAsync(bookmark);
+
+        Assert.Equal(owner, bookmark.CreatedBy);
+        Assert.Equal(owner, bookmark.UpdatedBy);
+        Assert.Equal(owner, bookmark.DeletedBy);
+        Assert.True(bookmark.IsDeleted);
+    }
+
     public class TestProxy : DispatchProxy
     {
         public Func<MethodInfo, object?[]?, object?> Handler { get; set; } = null!;

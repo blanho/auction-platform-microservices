@@ -1,4 +1,6 @@
 #nullable enable
+using BuildingBlocks.Infrastructure.Repository;
+using BuildingBlocks.Application.Abstractions.Auditing;
 using System.Linq.Expressions;
 using Auctions.Application.Filtering;
 using Auctions.Domain.Entities;
@@ -9,10 +11,17 @@ using BuildingBlocks.Application.Paging;
 
 namespace Auctions.Infrastructure.Persistence.Repositories;
 
-public class BookmarkRepository : IBookmarkRepository
+public class BookmarkRepository : EfRepository<Bookmark, AuctionDbContext>, IBookmarkRepository
 {
-    private readonly AuctionDbContext _context;
-    private readonly IDateTimeProvider _dateTime;
+    protected override IQueryable<Bookmark> Query => base.Query
+        .Include(bookmark => bookmark.Auction!)
+        .ThenInclude(auction => auction.Item);
+
+    protected override Guid GetCreatedBy(Bookmark bookmark) => bookmark.UserId;
+
+    protected override Guid GetUpdatedBy(Bookmark bookmark) => bookmark.UserId;
+
+    protected override Guid GetDeletedBy(Bookmark bookmark) => bookmark.UserId;
 
     private static readonly Dictionary<string, Expression<Func<Bookmark, object>>> BookmarkSortMap =
         new(StringComparer.OrdinalIgnoreCase)
@@ -22,25 +31,14 @@ public class BookmarkRepository : IBookmarkRepository
             ["currentbid"] = x => x.Auction != null ? (object)(x.Auction.CurrentHighBid ?? 0m) : 0m
         };
 
-    public BookmarkRepository(AuctionDbContext context, IDateTimeProvider dateTime)
+    public BookmarkRepository(AuctionDbContext context, IDateTimeProvider dateTime, IAuditContext auditContext)
+        : base(context, dateTime, auditContext)
     {
-        _context = context;
-        _dateTime = dateTime;
-    }
-
-    public async Task<Bookmark?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
-    {
-        return await _context.Bookmarks
-            .Where(b => !b.IsDeleted)
-            .Include(b => b.Auction!)
-                .ThenInclude(a => a.Item)
-            .AsNoTracking()
-            .FirstOrDefaultAsync(b => b.Id == id, cancellationToken);
     }
 
     public async Task<Bookmark?> GetByUserAndAuctionAsync(Guid userId, Guid auctionId, BookmarkType type, CancellationToken cancellationToken = default)
     {
-        return await _context.Bookmarks
+        return await Context.Bookmarks
             .Where(b => !b.IsDeleted)
             .AsNoTracking()
             .FirstOrDefaultAsync(b => b.UserId == userId && b.AuctionId == auctionId && b.Type == type, cancellationToken);
@@ -48,7 +46,7 @@ public class BookmarkRepository : IBookmarkRepository
 
     public async Task<List<Bookmark>> GetByUserIdAsync(Guid userId, BookmarkType? type = null, CancellationToken cancellationToken = default)
     {
-        var query = _context.Bookmarks
+        var query = Context.Bookmarks
             .Where(b => !b.IsDeleted && b.UserId == userId);
 
         if (type.HasValue)
@@ -77,7 +75,7 @@ public class BookmarkRepository : IBookmarkRepository
             .WhenHasValue(filter.FromDate, x => x.AddedAt >= filter.FromDate!.Value)
             .WhenHasValue(filter.ToDate, x => x.AddedAt <= filter.ToDate!.Value);
 
-        var query = _context.Bookmarks
+        var query = Context.Bookmarks
             .Include(b => b.Auction!)
             .ThenInclude(a => a.Item)
             .AsNoTracking()
@@ -96,7 +94,7 @@ public class BookmarkRepository : IBookmarkRepository
 
     public async Task<List<string>> GetUsersWatchingAuctionAsync(Guid auctionId, bool notifyOnEnd = true, CancellationToken cancellationToken = default)
     {
-        return await _context.Bookmarks
+        return await Context.Bookmarks
             .Where(b => !b.IsDeleted
                 && b.AuctionId == auctionId
                 && b.Type == BookmarkType.Watchlist
@@ -108,13 +106,13 @@ public class BookmarkRepository : IBookmarkRepository
 
     public async Task<bool> ExistsAsync(Guid userId, Guid auctionId, BookmarkType type, CancellationToken cancellationToken = default)
     {
-        return await _context.Bookmarks
+        return await Context.Bookmarks
             .AnyAsync(b => !b.IsDeleted && b.UserId == userId && b.AuctionId == auctionId && b.Type == type, cancellationToken);
     }
 
     public async Task<int> GetCountAsync(Guid userId, BookmarkType? type = null, CancellationToken cancellationToken = default)
     {
-        var query = _context.Bookmarks
+        var query = Context.Bookmarks
             .Where(b => !b.IsDeleted && b.UserId == userId);
 
         if (type.HasValue)
@@ -123,39 +121,12 @@ public class BookmarkRepository : IBookmarkRepository
         return await query.CountAsync(cancellationToken);
     }
 
-    public async Task<Bookmark> AddAsync(Bookmark bookmark, CancellationToken cancellationToken = default)
-    {
-        var utcNow = _dateTime.UtcNow;
-        bookmark.SetCreatedAudit(bookmark.UserId, utcNow);
-
-        await _context.Bookmarks.AddAsync(bookmark, cancellationToken);
-        return bookmark;
-    }
-
-    public Task UpdateAsync(Bookmark bookmark, CancellationToken cancellationToken = default)
-    {
-        bookmark.SetUpdatedAudit(bookmark.UserId, _dateTime.UtcNow);
-        _context.Bookmarks.Update(bookmark);
-        return Task.CompletedTask;
-    }
-
-    public async Task DeleteAsync(Guid id, CancellationToken cancellationToken = default)
-    {
-        var bookmark = await _context.Bookmarks.FindAsync([id], cancellationToken);
-        if (bookmark != null)
-        {
-            bookmark.MarkAsDeleted(bookmark.UserId, _dateTime.UtcNow);
-            _context.Bookmarks.Update(bookmark);
-        }
-    }
-
     public async Task DeleteByUserAndAuctionAsync(Guid userId, Guid auctionId, BookmarkType type, CancellationToken cancellationToken = default)
     {
         var bookmark = await GetByUserAndAuctionAsync(userId, auctionId, type, cancellationToken);
         if (bookmark != null)
         {
-            bookmark.MarkAsDeleted(userId, _dateTime.UtcNow);
-            _context.Bookmarks.Update(bookmark);
+            await DeleteAsync(bookmark, cancellationToken);
         }
     }
 }

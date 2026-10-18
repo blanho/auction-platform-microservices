@@ -308,6 +308,16 @@ graph LR
 
 ---
 
+## Shared Repository Implementation
+
+`EfRepository<TEntity, TContext>` shares audited aggregate CRUD and soft deletion
+across Auction, Bidding, Catalog, and Job repositories. Read/write/batch contracts
+stay in BuildingBlocks.Application; the EF implementation stays in Infrastructure.
+Service interfaces, domain queries, scoped contexts, and unit-of-work commits are
+preserved. Required includes, owner audit, and child graph behavior remain explicit
+service policies. See [Common Repositories](common-repositories.md) for the research,
+usage example, constraints, and services with different persistence contracts.
+
 ## Auction Close Consistency
 
 Bid placement first takes the Redis bid lock and then executes its validation,

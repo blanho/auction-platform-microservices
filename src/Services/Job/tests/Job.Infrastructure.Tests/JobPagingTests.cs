@@ -3,6 +3,8 @@ using Jobs.Domain.Entities;
 using Jobs.Domain.Enums;
 using Jobs.Infrastructure.Persistence;
 using Jobs.Infrastructure.Persistence.Repositories;
+using BuildingBlocks.Application.Abstractions.Auditing;
+using BuildingBlocks.Application.Abstractions.Providers;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
 using TestSupport;
@@ -82,4 +84,36 @@ public sealed class JobPagingTests
 
     private static JobDbContext Open(PostgresTestDatabase database) => new(new DbContextOptionsBuilder<JobDbContext>()
         .UseNpgsql(database.ConnectionString).Options);
+
+    [PostgresFact]
+    public async Task JobRepository_PreservesChildAuditAndDetachedItemUpdates()
+    {
+        await using var database = await PostgresTestDatabase.CreateAsync();
+        await using var db = Open(database);
+        await db.Database.MigrateAsync();
+        var actor = Guid.NewGuid();
+        var audit = TestProxy.Create<IAuditContext>((_, _) => actor);
+        var repository = new JobRepository(db, new DateTimeProvider(), audit);
+        var job = Job.Create(JobType.AuctionImport, Guid.NewGuid().ToString(), "{}", actor, 1);
+        job.AddItem("{}", 1);
+
+        await repository.CreateAsync(job);
+        var item = Assert.Single(job.Items);
+        Assert.Equal(actor, item.CreatedBy);
+        Assert.Equal(job.CreatedAt, item.CreatedAt);
+        await db.SaveChangesAsync();
+        db.ChangeTracker.Clear();
+        var detached = await repository.GetByIdWithItemsAsync(job.Id);
+        Assert.NotNull(detached);
+        Assert.Empty(db.ChangeTracker.Entries());
+        var child = Assert.Single(detached.Items);
+        child.MarkProcessing();
+        child.MarkCompleted();
+        await repository.UpdateAsync(detached);
+        await db.SaveChangesAsync();
+        db.ChangeTracker.Clear();
+
+        Assert.Equal(JobItemStatus.Completed, (await db.JobItems.SingleAsync()).Status);
+        Assert.Equal(actor, (await db.Jobs.SingleAsync()).UpdatedBy);
+    }
 }

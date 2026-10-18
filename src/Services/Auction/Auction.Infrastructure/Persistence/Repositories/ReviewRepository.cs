@@ -1,5 +1,6 @@
-using BuildingBlocks.Infrastructure.Extensions;
 #nullable enable
+using BuildingBlocks.Infrastructure.Repository;
+using BuildingBlocks.Infrastructure.Extensions;
 using System.Linq.Expressions;
 using Auctions.Application.Filtering;
 using Auctions.Domain.Entities;
@@ -10,11 +11,11 @@ using BuildingBlocks.Application.Paging;
 
 namespace Auctions.Infrastructure.Persistence.Repositories;
 
-public class ReviewRepository : IReviewRepository
+public class ReviewRepository : EfRepository<Review, AuctionDbContext>, IReviewRepository
 {
-    private readonly AuctionDbContext _context;
-    private readonly IDateTimeProvider _dateTime;
-    private readonly IAuditContext _auditContext;
+    protected override IQueryable<Review> Query => base.Query
+        .Include(review => review.Auction)
+        .ThenInclude(auction => auction!.Item);
 
     private static readonly Dictionary<string, Expression<Func<Review, object>>> ReviewSortMap =
         new(StringComparer.OrdinalIgnoreCase)
@@ -25,18 +26,16 @@ public class ReviewRepository : IReviewRepository
         };
 
     public ReviewRepository(AuctionDbContext context, IDateTimeProvider dateTime, IAuditContext auditContext)
+        : base(context, dateTime, auditContext)
     {
-        _context = context;
-        _dateTime = dateTime;
-        _auditContext = auditContext;
     }
 
-    public async Task<PaginatedResult<Review>> GetPagedAsync(
+    public override async Task<PaginatedResult<Review>> GetPagedAsync(
         int page,
         int pageSize,
         CancellationToken cancellationToken = default)
     {
-        var query = _context.Reviews
+        var query = Context.Reviews
             .Where(x => !x.IsDeleted)
             .AsNoTracking()
             .OrderByDescending(x => x.CreatedAt);
@@ -46,19 +45,9 @@ public class ReviewRepository : IReviewRepository
             .ToPaginatedResultAsync(page, pageSize, cancellationToken);
     }
 
-    public async Task<Review?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
-    {
-        return await _context.Reviews
-            .Where(x => !x.IsDeleted)
-            .Include(x => x.Auction)
-                .ThenInclude(a => a!.Item)
-            .AsNoTracking()
-            .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
-    }
-
     public async Task<Review?> GetByAuctionAndReviewerAsync(Guid auctionId, string reviewerUsername, CancellationToken cancellationToken = default)
     {
-        return await _context.Reviews
+        return await Context.Reviews
             .Where(x => !x.IsDeleted)
             .AsNoTracking()
             .FirstOrDefaultAsync(x => x.AuctionId == auctionId && x.ReviewerUsername == reviewerUsername, cancellationToken);
@@ -77,7 +66,7 @@ public class ReviewRepository : IReviewRepository
             .WhenHasValue(filter.FromDate, x => x.CreatedAt >= filter.FromDate!.Value)
             .WhenHasValue(filter.ToDate, x => x.CreatedAt <= filter.ToDate!.Value);
 
-        var query = _context.Reviews
+        var query = Context.Reviews
             .Include(x => x.Auction)
                 .ThenInclude(a => a!.Item)
             .AsNoTracking()
@@ -107,7 +96,7 @@ public class ReviewRepository : IReviewRepository
             .WhenHasValue(filter.FromDate, x => x.CreatedAt >= filter.FromDate!.Value)
             .WhenHasValue(filter.ToDate, x => x.CreatedAt <= filter.ToDate!.Value);
 
-        var query = _context.Reviews
+        var query = Context.Reviews
             .Include(x => x.Auction)
                 .ThenInclude(a => a!.Item)
             .AsNoTracking()
@@ -137,7 +126,7 @@ public class ReviewRepository : IReviewRepository
             .WhenHasValue(filter.FromDate, x => x.CreatedAt >= filter.FromDate!.Value)
             .WhenHasValue(filter.ToDate, x => x.CreatedAt <= filter.ToDate!.Value);
 
-        var query = _context.Reviews
+        var query = Context.Reviews
             .Include(x => x.Auction)
                 .ThenInclude(a => a!.Item)
             .AsNoTracking()
@@ -155,7 +144,7 @@ public class ReviewRepository : IReviewRepository
 
     public async Task<(double AverageRating, int TotalReviews)> GetRatingSummaryAsync(string username, CancellationToken cancellationToken = default)
     {
-        var query = _context.Reviews
+        var query = Context.Reviews
             .Where(x => !x.IsDeleted && x.ReviewedUsername == username)
             .AsNoTracking();
 
@@ -167,45 +156,6 @@ public class ReviewRepository : IReviewRepository
 
         var averageRating = await query.AverageAsync(x => (double)x.Rating, cancellationToken);
         return (averageRating, totalReviews);
-    }
-
-    public async Task<Review> CreateAsync(Review review, CancellationToken cancellationToken = default)
-    {
-        review.SetCreatedAudit(_auditContext.UserId, _dateTime.UtcNow);
-
-        await _context.Reviews.AddAsync(review, cancellationToken);
-
-        return review;
-    }
-
-    public Task UpdateAsync(Review review, CancellationToken cancellationToken = default)
-    {
-        review.SetUpdatedAudit(_auditContext.UserId, _dateTime.UtcNow);
-        _context.Reviews.Update(review);
-
-        return Task.CompletedTask;
-    }
-
-    public async Task DeleteAsync(Guid id, CancellationToken cancellationToken = default)
-    {
-
-        var review = await _context.Reviews
-            .Where(x => !x.IsDeleted)
-            .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
-
-        if (review is null)
-        {
-            return;
-        }
-
-        review.MarkAsDeleted(_auditContext.UserId, _dateTime.UtcNow);
-    }
-
-    public async Task<bool> ExistsAsync(Guid id, CancellationToken cancellationToken = default)
-    {
-        return await _context.Reviews
-            .Where(x => !x.IsDeleted)
-            .AnyAsync(x => x.Id == id, cancellationToken);
     }
 }
 

@@ -1,5 +1,6 @@
-using BuildingBlocks.Infrastructure.Extensions;
 #nullable enable
+using BuildingBlocks.Infrastructure.Repository;
+using BuildingBlocks.Infrastructure.Extensions;
 using Catalog.Domain.Entities;
 using Catalog.Infrastructure.Persistence;
 using BuildingBlocks.Application.Abstractions;
@@ -7,25 +8,22 @@ using BuildingBlocks.Application.Abstractions.Auditing;
 
 namespace Catalog.Infrastructure.Persistence.Repositories;
 
-public class CategoryRepository : ICategoryRepository
+public class CategoryRepository : EfRepository<Category, CatalogDbContext>, ICategoryRepository
 {
-    private readonly CatalogDbContext _context;
-    private readonly IDateTimeProvider _dateTime;
-    private readonly IAuditContext _auditContext;
+    protected override IQueryable<Category> Query => base.Query
+        .Include(category => category.SubCategories.Where(child => !child.IsDeleted));
 
     public CategoryRepository(CatalogDbContext context, IDateTimeProvider dateTime, IAuditContext auditContext)
+        : base(context, dateTime, auditContext)
     {
-        _context = context;
-        _dateTime = dateTime;
-        _auditContext = auditContext;
     }
 
     public Task<bool> HasChildrenAsync(Guid id, CancellationToken cancellationToken = default) =>
-        _context.Categories.AnyAsync(x => !x.IsDeleted && x.ParentCategoryId == id, cancellationToken);
+        Context.Categories.AnyAsync(x => !x.IsDeleted && x.ParentCategoryId == id, cancellationToken);
 
-    public async Task<PaginatedResult<Category>> GetPagedAsync(int page, int pageSize, CancellationToken cancellationToken = default)
+    public override async Task<PaginatedResult<Category>> GetPagedAsync(int page, int pageSize, CancellationToken cancellationToken = default)
     {
-        var query = _context.Categories
+        var query = Context.Categories
             .Where(x => !x.IsDeleted)
             .AsNoTracking()
             .OrderBy(x => x.DisplayOrder)
@@ -36,18 +34,9 @@ public class CategoryRepository : ICategoryRepository
             .ToPaginatedResultAsync(page, pageSize, cancellationToken);
     }
 
-    public async Task<Category?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
-    {
-        return await _context.Categories
-            .Where(x => !x.IsDeleted)
-            .Include(x => x.SubCategories.Where(s => !s.IsDeleted))
-            .AsNoTracking()
-            .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
-    }
-
     public async Task<Category?> GetBySlugAsync(string slug, CancellationToken cancellationToken = default)
     {
-        return await _context.Categories
+        return await Context.Categories
             .Where(x => !x.IsDeleted && x.Slug == slug)
             .Include(x => x.SubCategories.Where(s => !s.IsDeleted))
             .AsNoTracking()
@@ -59,7 +48,7 @@ public class CategoryRepository : ICategoryRepository
 
     public async Task<List<Category>> GetAllAsync(bool includeInactive = false, CancellationToken cancellationToken = default)
     {
-        var query = _context.Categories.Where(x => !x.IsDeleted);
+        var query = Context.Categories.Where(x => !x.IsDeleted);
         if (!includeInactive)
             query = query.Where(x => x.IsActive);
 
@@ -71,7 +60,7 @@ public class CategoryRepository : ICategoryRepository
 
     public async Task<List<Category>> GetRootCategoriesWithChildrenAsync(CancellationToken cancellationToken = default)
     {
-        return await _context.Categories
+        return await Context.Categories
             .Where(x => !x.IsDeleted && x.IsActive && x.ParentCategoryId == null)
             .Include(x => x.SubCategories.Where(s => !s.IsDeleted && s.IsActive))
             .AsNoTracking()
@@ -86,7 +75,7 @@ public class CategoryRepository : ICategoryRepository
         if (idList.Count == 0)
             return new List<Category>();
 
-        return await _context.Categories
+        return await Context.Categories
             .Where(x => !x.IsDeleted && idList.Contains(x.Id))
             .AsNoTracking()
             .ToListAsync(cancellationToken);
@@ -94,45 +83,9 @@ public class CategoryRepository : ICategoryRepository
 
     public async Task<bool> SlugExistsAsync(string slug, Guid? excludeId = null, CancellationToken cancellationToken = default)
     {
-        var query = _context.Categories.Where(x => x.Slug == slug);
+        var query = Context.Categories.Where(x => x.Slug == slug);
         if (excludeId.HasValue)
             query = query.Where(x => x.Id != excludeId.Value);
         return await query.AnyAsync(cancellationToken);
-    }
-
-    public async Task<bool> ExistsAsync(Guid id, CancellationToken cancellationToken = default)
-    {
-        return await _context.Categories
-            .Where(x => !x.IsDeleted)
-            .AnyAsync(x => x.Id == id, cancellationToken);
-    }
-
-    public async Task<Category> CreateAsync(Category category, CancellationToken cancellationToken = default)
-    {
-        category.SetCreatedAudit(_auditContext.UserId, _dateTime.UtcNow);
-        await _context.Categories.AddAsync(category, cancellationToken);
-        return category;
-    }
-
-    public Task UpdateAsync(Category category, CancellationToken cancellationToken = default)
-    {
-        category.SetUpdatedAudit(_auditContext.UserId, _dateTime.UtcNow);
-        _context.Entry(category).State = EntityState.Modified;
-        return Task.CompletedTask;
-    }
-
-    public Task DeleteAsync(Category category, CancellationToken cancellationToken = default)
-    {
-        category.MarkAsDeleted(_auditContext.UserId, _dateTime.UtcNow);
-        _context.Entry(category).State = EntityState.Modified;
-        return Task.CompletedTask;
-    }
-
-    public async Task DeleteAsync(Guid id, CancellationToken cancellationToken = default)
-    {
-        var category = await _context.Categories
-            .FirstOrDefaultAsync(x => !x.IsDeleted && x.Id == id, cancellationToken);
-        if (category is null) return;
-        category.MarkAsDeleted(_auditContext.UserId, _dateTime.UtcNow);
     }
 }

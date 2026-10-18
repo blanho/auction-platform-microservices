@@ -83,4 +83,26 @@ public class WinningBidPaymentTests
             new WinningBidQueryParams { SortBy = "amount", SortDescending = true, PageSize = 1 });
         Assert.Equal(30m, Assert.Single(sorted.Items).Amount);
     }
+
+    [Fact]
+    public async Task AutoBidWrites_KeepOwnerAuditAndRequesterDeletionAudit()
+    {
+        await using var db = new BidDbContext(new DbContextOptionsBuilder<BidDbContext>()
+            .UseNpgsql("Host=localhost;Database=auto_bid_audit_state").Options);
+        var requester = Guid.NewGuid();
+        var audit = TestProxy.Create<BuildingBlocks.Application.Abstractions.Auditing.IAuditContext>((_, _) => requester);
+        var repository = new AutoBidRepository(db, new DateTimeProvider(), audit);
+        var first = AutoBid.Create(Guid.NewGuid(), Guid.NewGuid(), "first", 100);
+        var second = AutoBid.Create(Guid.NewGuid(), Guid.NewGuid(), "second", 100);
+
+        await repository.AddRangeAsync([first, second]);
+        await repository.UpdateRangeAsync([first, second]);
+        await repository.DeleteAsync(first);
+
+        Assert.Equal(first.UserId, first.CreatedBy);
+        Assert.Equal(second.UserId, second.CreatedBy);
+        Assert.Equal(first.UserId, first.UpdatedBy);
+        Assert.Equal(second.UserId, second.UpdatedBy);
+        Assert.Equal(requester, first.DeletedBy);
+    }
 }
