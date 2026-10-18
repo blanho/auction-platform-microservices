@@ -17,6 +17,15 @@ public class NotificationLocalizationTests
 {
     [Theory]
     [InlineData("Bulk notification failed after broker retries.", "再試行後も一括通知に失敗しました。")]
+    [InlineData("Recipient email is required", "宛先メールアドレスは必須です。")]
+    [InlineData("Phone number is required", "電話番号は必須です。")]
+    [InlineData("Title or body is required", "タイトルまたは本文は必須です。")]
+    [InlineData("Twilio not configured", "SMS配信が設定されていません。")]
+    [InlineData("Invalid phone number format", "電話番号の形式が無効です。")]
+    [InlineData("No device tokens provided", "デバイストークンが指定されていません。")]
+    [InlineData("All 5 sends failed", "すべての5件の配信に失敗しました。")]
+    [InlineData("SendGrid error: BadRequest - provider-specific diagnostic", "メールの配信に失敗しました（ステータス: BadRequest）。")]
+    [InlineData("Twilio error 21211: provider-specific diagnostic", "SMSの配信に失敗しました（エラーコード: 21211）。")]
     [InlineData("Provider connection failed at internal-host:123", "操作を完了できませんでした。もう一度お試しいただくか、サポートにお問い合わせください。")]
     [InlineData(null, null)]
     public async Task DeliveryRecordErrorsLocalizeWithoutChangingStoredContent(string? diagnostic, string? japanese)

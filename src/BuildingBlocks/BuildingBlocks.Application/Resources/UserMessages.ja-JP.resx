@@ -242,4 +242,26 @@
   <data name="Request timeout" xml:space="preserve"><value>リクエストがタイムアウトしました。</value></data>
   <data name="An internal server error occurred. Please try again later." xml:space="preserve"><value>サーバー内部でエラーが発生しました。しばらくしてからもう一度お試しください。</value></data>
   <data name="Label.BatchSize" xml:space="preserve"><value>バッチサイズ</value></data>
+  <data name="Label.Buyer notes" xml:space="preserve"><value>購入者の備考</value></data>
+  <data name="Label.Setting key" xml:space="preserve"><value>設定キー</value></data>
+  <data name="Label.Setting value" xml:space="preserve"><value>設定値</value></data>
+  <data name="Label.setting category" xml:space="preserve"><value>設定カテゴリ</value></data>
+  <data name="Label.Recipient email" xml:space="preserve"><value>宛先メールアドレス</value></data>
+  <data name="Label.Phone number" xml:space="preserve"><value>電話番号</value></data>
+  <data name="Label.Title or body" xml:space="preserve"><value>タイトルまたは本文</value></data>
+  <data name="Twilio not configured" xml:space="preserve"><value>SMS配信が設定されていません。</value></data>
+  <data name="Invalid phone number format" xml:space="preserve"><value>電話番号の形式が無効です。</value></data>
+  <data name="No device tokens provided" xml:space="preserve"><value>デバイストークンが指定されていません。</value></data>
+  <data name="All {0} sends failed" xml:space="preserve"><value>すべての{0}件の配信に失敗しました。</value></data>
+  <data name="SendGrid error: {0} - {1}" xml:space="preserve"><value>メールの配信に失敗しました（ステータス: {0}）。</value></data>
+  <data name="Twilio error {0}: {1}" xml:space="preserve"><value>SMSの配信に失敗しました（エラーコード: {0}）。</value></data>
+  <data name="Unsupported export format: {0}" xml:space="preserve"><value>エクスポート形式「{0}」には対応していません。</value></data>
+  <data name="Auction service request timed out" xml:space="preserve"><value>オークションサービスへのリクエストがタイムアウトしました。</value></data>
+  <data name="Auction service temporarily unavailable" xml:space="preserve"><value>現在、オークションサービスを利用できません。</value></data>
+  <data name="Failed to validate auction" xml:space="preserve"><value>オークションの検証に失敗しました。</value></data>
+  <data name="Failed to extend auction" xml:space="preserve"><value>オークション期間の延長に失敗しました。</value></data>
+  <data name="Bid amount must be greater than zero." xml:space="preserve"><value>入札額は0より大きい必要があります。</value></data>
+  <data name="Bid must be at least ${0}. Minimum increment is ${1} for bids at this level." xml:space="preserve"><value>入札額は${0}以上である必要があります。この金額帯の最小入札増分は${1}です。</value></data>
+  <data name="Auction is not active. Current status: {0}" xml:space="preserve"><value>オークションは開催されていません。現在のステータス: {0}。</value></data>
+  <data name="{0} must not exceed {1} days from now." xml:space="preserve"><value>{0}は現在から{1}日以内である必要があります。</value></data>
 </root>

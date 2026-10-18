@@ -23,6 +23,7 @@ public class JobLocalizationTests
     [InlineData("Provide a requester and 1–500 distinct, nonempty auction IDs.", "リクエスト者と、重複のない有効なオークションIDを1〜500件指定してください。")]
     [InlineData("Provide a requester and an inclusive range of 1–31 UTC dates, ending no later than today.", "リクエスト者と、今日以前に終了する1〜31日間のUTC日付範囲（開始日と終了日を含む）を指定してください。")]
     [InlineData("Delivery failed for 2 of 10 recipients.", "10人の宛先のうち2人への配信に失敗しました。")]
+    [InlineData("Unsupported export format: Xml", "エクスポート形式「Xml」には対応していません。")]
     [InlineData("BatchSize must be between 10 and 500.", "バッチサイズは10から500の間である必要があります。")]
     public void ServiceJobDiagnosticsUseTheReadersLanguage(string diagnostic, string japanese)
     {

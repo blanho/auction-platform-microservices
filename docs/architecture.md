@@ -544,6 +544,14 @@ The web app and HTTP APIs support English (`en-US`) and Japanese (`ja-JP`). The 
 Queued auction imports and order reports carry the requesting culture. Consumers scope the culture to each delivery; older messages without a culture use English. Deploy updated consumers before producers to ensure queued requests retain their language. Job DTOs, notification delivery records, and notification metadata resolve stored messages in the reader's current language without modifying the original diagnostic or template arguments. This includes validation and broker-failure results for reports, bulk notifications, image processing, upload finalization, search reindexing, and analytics aggregation. Shared validation and exception responses also localize when a service-specific localizer is unavailable.
 
 New user-facing backend messages require matching English and Japanese resources.
+Use `LocalizableError.WithDiagnostic` when the final template argument is a failure
+reason: the API translates that argument in the request culture while preserving
+the original error and parameters. Other arguments, including user-entered text,
+IDs, and numeric values, retain their original meaning. Unknown diagnostics use
+the shared localized fallback. Notification-provider responses keep their full
+stored diagnostics; translated summaries retain provider status/error codes.
+Architecture tests check validation field labels and literal messages in consumer,
+sender, processing, and validator code for translation coverage.
 Use service error codes and `ProblemDetailsHelper` for API errors. Keep job error
 text invariant in storage and resolve it through `UserMessageLocalizer` on reads;
 never persist a worker's current language as a replacement for the diagnostic.

@@ -1,4 +1,5 @@
 using BuildingBlocks.Application.Abstractions;
+using BuildingBlocks.Application.Localization;
 using JobService.Contracts.Commands;
 using MassTransit;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -59,15 +60,18 @@ public class JobNotificationExecutionTests
     }
 
     [Theory]
-    [InlineData("empty-recipients")]
-    [InlineData("null-recipients")]
-    [InlineData("duplicate-recipients")]
-    [InlineData("invalid-batch")]
-    [InlineData("unknown-channel")]
-    [InlineData("null-channels")]
-    [InlineData("missing-address")]
-    [InlineData("scheduled")]
-    public async Task InvalidPayload_FailsWithoutSending(string scenario)
+    [InlineData("empty-recipients", "有効なユーザーIDを含む、件数上限内の空でない宛先リストは必須です。")]
+    [InlineData("null-recipients", "有効なユーザーIDを含む、件数上限内の空でない宛先リストは必須です。")]
+    [InlineData("duplicate-recipients", "同じジョブ項目内の宛先ユーザーIDは重複できません。")]
+    [InlineData("invalid-batch", "バッチサイズは10から500の間である必要があります。")]
+    [InlineData("unknown-channel", "対応している通知チャネルを指定してください。")]
+    [InlineData("null-channels", "対応している通知チャネルを指定してください。")]
+    [InlineData("missing-address", "すべてのメール宛先にメールアドレスが必要です。")]
+    [InlineData("scheduled", "ジョブから実行する通知では配信日時を指定できません。配信時刻になってからジョブを送信してください。")]
+    [InlineData("missing-requester", "ジョブ項目とリクエスト者は必須です。")]
+    [InlineData("missing-template", "テンプレートキー、タイトル、メッセージ、共通パラメーターは必須です。")]
+    [InlineData("missing-sms-number", "すべてのSMS宛先に電話番号が必要です。")]
+    public async Task InvalidPayload_FailsWithoutSending(string scenario, string japanese)
     {
         var fixture = new Fixture();
         var command = scenario switch
@@ -80,10 +84,20 @@ public class JobNotificationExecutionTests
             "null-channels" => fixture.Command with { Channels = null! },
             "missing-address" => fixture.Command with { Recipients = [new BulkNotificationRecipient { UserId = Guid.NewGuid() }] },
             "scheduled" => fixture.Command with { ScheduledAt = DateTimeOffset.UtcNow.AddHours(1) },
+            "missing-requester" => fixture.Command with { RequestedBy = Guid.Empty },
+            "missing-template" => fixture.Command with { TemplateKey = "" },
+            "missing-sms-number" => fixture.Command with { Channels = [NotificationChannelNames.Sms] },
             _ => throw new ArgumentOutOfRangeException(nameof(scenario))
         };
-        await fixture.Consume(command);
+        using (new RequestCultureScope("ja-JP"))
+            await fixture.Consume(command);
         var result = Assert.Single(fixture.Published.OfType<ReportJobItemResultCommand>());
+        Assert.NotNull(result.ErrorMessage);
+        Assert.DoesNotMatch(@"[\p{IsHiragana}\p{IsKatakana}\p{IsCJKUnifiedIdeographs}]", result.ErrorMessage);
+        using (new RequestCultureScope("ja-JP"))
+            Assert.Equal(japanese, UserMessageLocalizer.Translate(result.ErrorMessage));
+        using (new RequestCultureScope("en-US"))
+            Assert.Equal(result.ErrorMessage, UserMessageLocalizer.Translate(result.ErrorMessage));
         Assert.False(result.IsSuccess);
         Assert.True(result.IsFinalFailure);
         Assert.Equal(0, fixture.EmailSends);

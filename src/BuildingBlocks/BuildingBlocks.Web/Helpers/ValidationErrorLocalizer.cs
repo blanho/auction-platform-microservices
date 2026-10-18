@@ -51,7 +51,8 @@ public static partial class ValidationErrorLocalizer
         var arguments = groupIndexes
             .Select(index => (object)UserMessageLocalizer.Label(match.Groups[index].Value))
             .ToArray();
-        return localizer.GetString(key, arguments);
+        var localized = localizer.GetLocalizedString(key, arguments);
+        return localized.ResourceNotFound ? null : localized.Value;
     }
 
     [GeneratedRegex("^At least one (.+) is required\\.?$", RegexOptions.IgnoreCase)]

@@ -20,7 +20,7 @@ public static class AuctionErrors
         public static Error NotAvailable => Error.Create("BuyNow.NotAvailable", "Buy Now is not available for this auction");
         public static Error OwnAuction => Error.Create("BuyNow.OwnAuction", "You cannot buy your own auction");
         public static Error AuctionNotLive => Error.Create("BuyNow.AuctionNotLive", "This auction is no longer active");
-        public static Error Failed(string reason) => LocalizableError.Localizable("BuyNow.Failed", $"Failed to process Buy Now: {reason}", reason);
+        public static Error Failed(string reason) => LocalizableError.WithDiagnostic("BuyNow.Failed", $"Failed to process Buy Now: {reason}", reason);
     }
 
     public static class Bookmark

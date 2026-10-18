@@ -764,7 +764,9 @@ Backend user-facing messages must support English (`en-US`) and Japanese
 (`ja-JP`). Use the service/shared resources for API errors and validation. Persist
 background-job diagnostics unchanged, then localize job DTOs in the reader's
 request culture. Add matching English/Japanese resources and localization tests
-for new messages; keep error codes, API fields, and user-authored content stable.
+for new messages. Mark nested failure reasons with `LocalizableError.WithDiagnostic`
+so they are translated inside localized errors; keep error codes, API fields, and
+user-authored content stable.
 
 
 ---
