@@ -27,6 +27,10 @@ Identity groups `UserFilter`, `UserQueryParams`, and `UserSortMap` under
 name into the filter's `RoleId`, then applies all filters before counting and
 paging. The CQRS handler delegates to that same service pipeline. HTTP query
 parameter names and the paged response shape are unchanged.
+Identity's sort map uses the common `SortMapBuilder<ApplicationUser, AdminUserDto>`
+to derive public names from typed DTO members and map them to typed entity
+expressions. Its immutable lookup retains the existing names and null ordering;
+DTO JSON aliases can preserve those names across CLR property renames.
 
 Paged relational responses use `PaginatedResult<T>` internally. Most APIs expose
 that object directly. Payment, Search, and Job history retain their existing

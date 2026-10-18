@@ -30,18 +30,41 @@ public class GetUsersQuery : QueryParameters<UserFilter> { }
 
 ### 2. Define Sort Map (whitelisted fields only)
 
+Reference properties on the public read model and the entity with typed
+expressions. This example assumes `UserDto` exposes the four registered fields:
+
 ```csharp
 public static class UserSortMap
 {
-    public static readonly Dictionary<string, Expression<Func<User, object>>> Map = new()
-    {
-        ["name"] = u => u.Name,
-        ["email"] = u => u.Email,
-        ["createdat"] = u => u.CreatedAt,
-        ["status"] = u => u.Status
-    };
+    public static IReadOnlyDictionary<string, Expression<Func<User, object>>> Map { get; } =
+        new SortMapBuilder<User, UserDto>()
+            .Add(field => field.Name, user => user.Name)
+            .Add(field => field.Email, user => user.Email)
+            .Add(field => field.CreatedAt, user => user.CreatedAt)
+            .Add(field => field.Status, user => user.Status)
+            .Build();
 }
 ```
+
+Keys come from the DTO property name, or its `[JsonPropertyName]` when present,
+and are matched case-insensitively. Renaming/removing a referenced DTO or entity
+property requires updating the expression at compile time. DTO aliases can stay
+stable when entity properties change; a retained `[JsonPropertyName]` can also
+preserve a public sort name when a DTO's CLR property is renamed. Database column
+changes still require the appropriate EF mappings and migrations.
+
+The registration is an explicit allowlist. Adding entity properties does not
+automatically expose them as sort fields. Computed selectors are supported, such
+as `.Add(field => field.FullName, user => user.FullName ?? string.Empty)` for an
+explicit null-ordering policy. Expressions stay in the query for EF translation;
+they are not compiled into per-row delegates.
+
+`Build()` returns an immutable, case-insensitive
+[`FrozenDictionary`](https://learn.microsoft.com/en-us/dotnet/api/system.collections.frozen.frozendictionary-2?view=net-9.0).
+Create it once in a static registration. Subsequent builder changes do not alter
+the built map. Duplicate public names and non-property contract expressions fail
+during registration. The sorting helper uses dictionary lookup first and retains
+compatibility with existing case-sensitive maps.
 
 ### 3. Repository Implementation
 
@@ -146,6 +169,7 @@ and ordering descriptor.
 | `QueryParameters<TFilter>` | `src/BuildingBlocks/BuildingBlocks.Application/Paging/QueryParameters.cs` | Generic version with typed filter |
 | `FilterBuilder<T>` | `src/BuildingBlocks/BuildingBlocks.Application/Filtering/FilterBuilder.cs` | Fluent filter building |
 | `QueryExtensions` | `src/BuildingBlocks/BuildingBlocks.Application/Paging/QueryExtensions.cs` | IQueryable extensions (paging, sorting, filtering) |
+| `SortMapBuilder<TEntity, TContract>` | `src/BuildingBlocks/BuildingBlocks.Application/Paging/SortMapBuilder.cs` | Typed public-field registration and immutable sort maps |
 | `EfCoreQueryExtensions` | `src/BuildingBlocks/BuildingBlocks.Infrastructure/Extensions/EfCoreQueryExtensions.cs` | EF Core specific extensions |
 | `PaginatedResult<T>` | `src/BuildingBlocks/BuildingBlocks.Application/Abstractions/PaginatedResult.cs` | Standard response |
 | `QueryParametersValidator` | `src/BuildingBlocks/BuildingBlocks.Application/Paging/QueryParametersValidator.cs` | Input validation |

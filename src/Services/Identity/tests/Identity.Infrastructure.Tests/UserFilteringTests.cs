@@ -97,6 +97,23 @@ public sealed class UserFilteringTests
         Assert.Empty(host.Db.ChangeTracker.Entries());
     }
 
+    [PostgresFact]
+    public async Task TypedSortMap_PreservesPublicNamesAndNullPoliciesInPostgreSql()
+    {
+        await using var host = await UserHost.CreateAsync();
+        var latest = DateTimeOffset.UtcNow;
+        await host.Db.Users.Where(user => user.Id == "02")
+            .ExecuteUpdateAsync(setters => setters.SetProperty(user => user.LastLoginAt, latest));
+        var service = host.Service();
+        var byLogin = await service.GetUsersPagedAsync(new UserQueryParams { SortBy = "lastLoginAt", SortDescending = false });
+        Assert.Equal(new[] { "01", "03", "04", "05", "06", "07", "02" }, byLogin.Items.Select(user => user.Id));
+        var byName = await service.GetUsersPagedAsync(new UserQueryParams { SortBy = "fullName", SortDescending = false });
+        Assert.Equal(new[] { "03", "04", "05", "02", "01", "07", "06" }, byName.Items.Select(user => user.Id));
+        var hiddenField = await service.GetUsersPagedAsync(new UserQueryParams { SortBy = nameof(ApplicationUser.PasswordHash) });
+        Assert.Equal(new[] { "01", "02", "03", "04", "05", "06", "07" }, hiddenField.Items.Select(user => user.Id));
+        Assert.Empty(host.Db.ChangeTracker.Entries());
+    }
+
     private sealed class UserHost(PostgresTestDatabase database, ServiceProvider services, AsyncServiceScope scope) : IAsyncDisposable
     {
         public ApplicationDbContext Db => scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();

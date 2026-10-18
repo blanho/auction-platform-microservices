@@ -33,8 +33,9 @@ public static class QueryExtensions
                 continue;
 
             var field = sort.Field.Trim();
-            var expr = sortMap.FirstOrDefault(entry =>
-                string.Equals(entry.Key, field, StringComparison.OrdinalIgnoreCase)).Value;
+            if (!sortMap.TryGetValue(field, out var expr))
+                expr = sortMap.FirstOrDefault(entry =>
+                    string.Equals(entry.Key, field, StringComparison.OrdinalIgnoreCase)).Value;
             if (expr is null || !appliedFields.Add(field))
                 continue;
 
