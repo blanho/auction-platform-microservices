@@ -699,7 +699,7 @@ managed observability integration only when the project needs it.
 
 ## Testing
 
-The backend has 30 test projects covering service behavior, architecture rules,
+The backend has 31 test projects covering service behavior, architecture rules,
 PostgreSQL persistence, bid/finalization serialization, and RabbitMQ-backed sale
 workflow recovery. Start disposable PostgreSQL and RabbitMQ before running the
 backend tests so provider-backed coverage can execute.
@@ -781,6 +781,10 @@ finalization, bounded search reindexing, and daily analytics aggregation to thei
 owning services. See the
 [background jobs guide](docs/background-jobs.md) for request payloads, retry
 behavior, and the remaining implementation stages.
+
+Identity also runs scheduled inactivity locks, expired refresh-token cleanup,
+and disabled-account session revocation. The guide documents their schedules,
+retention, batch limits, and token security behavior.
 
 | Document | Description |
 |---|---|

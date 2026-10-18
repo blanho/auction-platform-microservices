@@ -5,6 +5,56 @@ completion and failures. Domain operations execute in the owning service. Quartz
 jobs such as auction activation and orphan-file cleanup run separately in their
 services.
 
+## Identity maintenance
+
+Identity runs three service-local Quartz jobs against its own database:
+
+| Job | Schedule | Behavior |
+|---|---|---|
+| `inactive-user-lock` | Daily at 02:00 | Deactivate active, nonsuspended accounts created more than 30 days ago with no login in the last 30 days. Preserve the existing `UserSuspendedEvent` contract. |
+| `refresh-token-cleanup` | Daily at 03:00 | Remove tokens whose effective expiration is at least 30 days old, only when their user has no live refresh session. |
+| `disabled-user-token-revocation` | At startup, then every 5 minutes | Revoke unrevoked refresh tokens for inactive or suspended accounts. |
+
+Daily schedules use the server's local time zone. Database timestamps and age
+comparisons use UTC. These jobs do not create tracked Job service items.
+
+Configure `IdentityJobs` in the Identity API configuration:
+
+```json
+{
+  "IdentityJobs": {
+    "BatchSize": 500,
+    "MaxBatchesPerRun": 10,
+    "ExpiredTokenRetentionDays": 30,
+    "RefreshTokenCleanupEnabled": true,
+    "DisabledUserTokenRevocationEnabled": true
+  }
+}
+```
+
+Every run processes at most `BatchSize * MaxBatchesPerRun` records. Remaining
+work is picked up on the next scheduled run. Positive limits and retention are
+validated at startup. Cleanup retains revoked token history while any refresh
+session remains live for that user, so replay detection can still terminate the
+user's sessions. Effective expiration is the earlier of sliding expiration and
+absolute expiration, when present. Cleanup never deletes accounts.
+
+Token issuance and refresh reject inactive or suspended accounts immediately,
+before the revocation job runs. This guard does not invalidate already issued
+access JWTs; those retain their existing 15-minute lifetime. Administrative
+revocations of disabled accounts do not trigger token-theft alerts on refresh.
+
+The inactivity job rotates concurrency and security stamps to reject stale
+account updates. User changes and their suspension events are saved together
+through Identity's existing EF bus outbox per batch. Publication failure or
+cancellation aborts the current batch; previously committed batches remain
+complete. The inactivity reason has English and Japanese resources and is
+published with a stable English compatibility message.
+
+Redis authorization codes already expire through their TTL, and temporary
+ASP.NET Identity lockouts expire through `LockoutEnd`; neither needs a polling
+cleanup job.
+
 ## Operations available through Jobs
 
 An administrator can create these item-based jobs with `POST /api/v1/jobs/`:

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <root>
+  <data name="Account locked due to {0} days of inactivity" xml:space="preserve"><value>Account locked due to {0} days of inactivity</value></data>
   <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
   <resheader name="version"><value>2.0</value></resheader>
   <data name="The operation could not be completed. Please try again or contact support." xml:space="preserve"><value>The operation could not be completed. Please try again or contact support.</value></data>

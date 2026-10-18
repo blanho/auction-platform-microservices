@@ -1,7 +1,6 @@
 using MassTransit;
 using BuildingBlocks.Application.Abstractions.Messaging;
 using BuildingBlocks.Infrastructure.Authorization;
-using BuildingBlocks.Infrastructure.Scheduling;
 using Identity.Infrastructure.Persistence;
 using Identity.Infrastructure.Persistence.Repositories;
 using Identity.Application.Features.Auth.Helpers;
@@ -100,15 +99,6 @@ internal static class ServiceCollectionExtensions
 
     public static IServiceCollection AddBackgroundJobs(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddScheduling(configuration, q =>
-        {
-            q.AddCronJob<InactiveUserLockJob>(
-                cronExpression: "0 0 2 * * ?",
-                jobId: InactiveUserLockJob.JobId,
-                description: InactiveUserLockJob.Description,
-                runOnStartup: false);
-        });
-
-        return services;
+        return services.AddIdentityJobs(configuration);
     }
 }

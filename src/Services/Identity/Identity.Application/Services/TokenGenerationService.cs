@@ -43,9 +43,9 @@ public class TokenGenerationService : ITokenGenerationService
         try
         {
             var user = await _userManager.FindByIdAsync(userId);
-            if (user == null)
+            if (user == null || !user.IsActive || user.IsSuspended)
             {
-                _logger.LogWarning("User {UserId} not found for token generation", userId);
+                _logger.LogWarning("User {UserId} is missing or disabled for token generation", userId);
                 return null;
             }
 
@@ -70,9 +70,9 @@ public class TokenGenerationService : ITokenGenerationService
         try
         {
             var user = await _userManager.FindByIdAsync(userId);
-            if (user == null)
+            if (user == null || !user.IsActive || user.IsSuspended)
             {
-                _logger.LogWarning("User {UserId} not found for token generation", userId);
+                _logger.LogWarning("User {UserId} is missing or disabled for token generation", userId);
                 return null;
             }
 
@@ -105,6 +105,13 @@ public class TokenGenerationService : ITokenGenerationService
             if (storedToken == null)
             {
                 _logger.LogWarning("Refresh token not found - potential token theft attempt");
+                return RefreshTokenResult.Failure(RefreshTokenFailureReason.TokenNotFound);
+            }
+
+            var account = await _userManager.FindByIdAsync(storedToken.UserId);
+            if (account == null || !account.IsActive || account.IsSuspended)
+            {
+                _logger.LogWarning("Refresh denied for missing or disabled user {UserId}", storedToken.UserId);
                 return RefreshTokenResult.Failure(RefreshTokenFailureReason.TokenNotFound);
             }
 

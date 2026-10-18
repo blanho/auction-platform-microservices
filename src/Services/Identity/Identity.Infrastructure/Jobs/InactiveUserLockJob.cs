@@ -1,8 +1,10 @@
 using BuildingBlocks.Application.Abstractions.Messaging;
+using BuildingBlocks.Application.Localization;
 using BuildingBlocks.Infrastructure.Scheduling;
 using Identity.Infrastructure.Persistence;
 using IdentityService.Contracts.Events;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Quartz;
 
 namespace Identity.Infrastructure.Jobs;
@@ -28,47 +30,45 @@ public class InactiveUserLockJob : BaseJob
         var dbContext = scopedProvider.GetRequiredService<ApplicationDbContext>();
         var eventPublisher = scopedProvider.GetRequiredService<IEventPublisher>();
 
-        var thresholdDate = DateTimeOffset.UtcNow.AddDays(-InactiveDaysThreshold);
-
-        var inactiveUsers = await dbContext.Users
-            .Where(u => u.IsActive && !u.IsSuspended)
-            .Where(u => u.LastLoginAt == null || u.LastLoginAt < thresholdDate)
-            .Where(u => u.CreatedAt < thresholdDate)
-            .ToListAsync(cancellationToken);
-
-        if (inactiveUsers.Count == 0)
-        {
-            return;
-        }
-
-        Logger.LogInformation("Found {Count} inactive users to lock", inactiveUsers.Count);
+        var options = scopedProvider.GetRequiredService<IOptions<IdentityJobOptions>>().Value;
+        var now = scopedProvider.GetRequiredService<TimeProvider>().GetUtcNow();
+        var thresholdDate = now.AddDays(-InactiveDaysThreshold);
         var processedCount = 0;
 
-        foreach (var user in inactiveUsers)
+        for (var batch = 0; batch < options.MaxBatchesPerRun; batch++)
         {
-            try
+            cancellationToken.ThrowIfCancellationRequested();
+            var inactiveUsers = await dbContext.Users
+                .Where(u => u.IsActive && !u.IsSuspended)
+                .Where(u => u.LastLoginAt == null || u.LastLoginAt < thresholdDate)
+                .Where(u => u.CreatedAt < thresholdDate)
+                .OrderBy(u => u.CreatedAt).ThenBy(u => u.Id)
+                .Take(options.BatchSize)
+                .ToListAsync(cancellationToken);
+            if (inactiveUsers.Count == 0)
+                break;
+
+            foreach (var user in inactiveUsers)
             {
+                cancellationToken.ThrowIfCancellationRequested();
                 user.IsActive = false;
-                processedCount++;
+                user.ConcurrencyStamp = Guid.NewGuid().ToString();
+                user.SecurityStamp = Guid.NewGuid().ToString();
 
                 await eventPublisher.PublishAsync(new UserSuspendedEvent
                 {
                     UserId = user.Id,
                     Username = user.UserName!,
-                    Reason = $"Account locked due to {InactiveDaysThreshold} days of inactivity",
-                    SuspendedAt = DateTimeOffset.UtcNow
+                    Reason = UserMessageLocalizer.FormatInvariant(
+                        "Account locked due to {0} days of inactivity", [InactiveDaysThreshold.ToString()]),
+                    SuspendedAt = now
                 }, cancellationToken);
+            }
 
-                Logger.LogDebug("Locked inactive user {UserId}", user.Id);
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex, "Failed to lock inactive user {UserId}", user.Id);
-            }
+            await dbContext.SaveChangesAsync(cancellationToken);
+            processedCount += inactiveUsers.Count;
         }
 
-        await dbContext.SaveChangesAsync(cancellationToken);
-        Logger.LogInformation("Completed locking {ProcessedCount}/{TotalCount} inactive users",
-            processedCount, inactiveUsers.Count);
+        Logger.LogInformation("Locked {Count} inactive users", processedCount);
     }
 }
