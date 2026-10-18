@@ -20,7 +20,7 @@ public class StoredFileRepository : EfRepository<StoredFile, StorageDbContext>, 
         GetByIdForUpdateAsync(id, cancellationToken);
 
     public Task<StoredFile?> GetByReportRequestIdAsync(Guid ownerId, Guid requestId, CancellationToken ct = default) =>
-        Context.StoredFiles.AsNoTracking().SingleOrDefaultAsync(f => f.OwnerId == ownerId && f.ReportRequestId == requestId, ct);
+        SingleOrDefaultAsync(file => file.OwnerId == ownerId && file.ReportRequestId == requestId, ct);
 
     public Task<StoredFile?> GetByStoredFileNameAsync(string storedFileName, CancellationToken ct = default) =>
         Context.StoredFiles.SingleOrDefaultAsync(f => f.StoredFileName == storedFileName, ct);

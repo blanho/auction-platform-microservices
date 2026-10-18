@@ -14,13 +14,8 @@ public class BrandRepository : EfRepository<Brand, CatalogDbContext>, IBrandRepo
     {
     }
 
-    public async Task<Brand?> GetBySlugAsync(string slug, CancellationToken cancellationToken = default)
-    {
-        return await Context.Brands
-            .Where(b => !b.IsDeleted)
-            .AsNoTracking()
-            .FirstOrDefaultAsync(b => b.Slug == slug, cancellationToken);
-    }
+    public Task<Brand?> GetBySlugAsync(string slug, CancellationToken cancellationToken = default) =>
+        FirstOrDefaultAsync(brand => brand.Slug == slug, cancellationToken);
 
     public async Task<PaginatedResult<Brand>> GetPagedAsync(BrandQueryParams parameters, CancellationToken cancellationToken = default)
     {

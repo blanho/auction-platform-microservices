@@ -33,6 +33,10 @@ public sealed class JobPagingTests
         var first = await repository.GetFilteredAsync(JobType.AuctionImport, null, requester, 1, 1);
         var second = await repository.GetFilteredAsync(JobType.AuctionImport, null, requester, 2, 1);
         Assert.Equal(2, first.TotalCount);
+        Assert.Equal(3, (await repository.GetFilteredAsync(null, null, null, 1, 10)).TotalCount);
+        Assert.Equal(3, (await repository.GetFilteredAsync(null, JobStatus.Pending, requester, 1, 10)).TotalCount);
+        Assert.Equal(0, (await repository.GetFilteredAsync(null, null, Guid.NewGuid(), 1, 10)).TotalCount);
+        Assert.Equal(jobs[0].Id, (await repository.GetByCorrelationIdAsync(jobs[0].CorrelationId))!.Id);
         Assert.Equal(jobs.Take(2).OrderBy(job => job.Id).Select(job => job.Id),
             first.Items.Concat(second.Items).Select(job => job.Id));
         var normalized = await repository.GetPagedAsync(0, 500);

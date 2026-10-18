@@ -1,3 +1,6 @@
+using System.Data.Common;
+using BuildingBlocks.Application.Abstractions;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using BuildingBlocks.Application.Abstractions.Auditing;
 using BuildingBlocks.Application.Abstractions.Providers;
 using BuildingBlocks.Domain.Entities;
@@ -236,11 +239,241 @@ public sealed class EfRepositoryTests
         Assert.Empty(db.ChangeTracker.Entries());
     }
 
-    private static async Task<TestDbContext> OpenAsync(PostgresTestDatabase database)
+    [PostgresFact]
+    public async Task PredicateQueries_RespectVisibilityGlobalFiltersAndSingleResultSemantics()
     {
-        var db = new TestDbContext(new DbContextOptionsBuilder<TestDbContext>().UseNpgsql(database.ConnectionString).Options);
+        await using var database = await PostgresTestDatabase.CreateAsync();
+        await using var db = await OpenAsync(database);
+        var own = TestAggregate.Create("unique", Actor);
+        var deleted = TestAggregate.Create("deleted", Actor);
+        deleted.MarkAsDeleted(Actor, Now);
+        db.AddRange(own, deleted, TestAggregate.Create("duplicate", Actor), TestAggregate.Create("duplicate", Actor),
+            TestAggregate.Create("other", Guid.NewGuid()), TestAggregate.Create("globally-hidden", Actor));
+        await db.SaveChangesAsync();
+        db.ChangeTracker.Clear();
+        IQueryRepository<TestAggregate> repository = new ScopedRepository(db);
+
+        Assert.Equal(3, await repository.CountAsync());
+        Assert.Equal(2, await repository.CountAsync(row => row.Name == "duplicate"));
+        Assert.True(await repository.AnyAsync(row => row.Name == "unique"));
+        Assert.False(await repository.AnyAsync(row => row.IsDeleted || row.Name == "other" || row.Name == "globally-hidden"));
+        Assert.Equal(own.Id, (await repository.FirstOrDefaultAsync(row => row.Name == "unique"))!.Id);
+        Assert.Equal(own.Id, (await repository.SingleOrDefaultAsync(row => row.Name == "unique"))!.Id);
+        Assert.Null(await repository.FirstOrDefaultAsync(row => row.Name == "missing"));
+        Assert.Null(await repository.SingleOrDefaultAsync(row => row.Name == "missing"));
+        Assert.Null(await repository.FirstOrDefaultForUpdateAsync(row => row.Name == "other"));
+        await Assert.ThrowsAsync<InvalidOperationException>(() => repository.SingleOrDefaultAsync(row => row.Name == "duplicate"));
+        Assert.Empty(db.ChangeTracker.Entries());
+        db.Add(TestAggregate.Create("not committed", Actor));
+        Assert.Equal(3, await repository.CountAsync());
+    }
+
+    [PostgresFact]
+    public async Task PredicateWriteLookup_TracksWithNoTrackingDefaultAndPreservesPendingChanges()
+    {
+        await using var database = await PostgresTestDatabase.CreateAsync();
+        await using var db = await OpenAsync(database);
+        var entity = TestAggregate.Create("original", Actor);
+        db.Add(entity);
+        await db.SaveChangesAsync();
+        db.ChangeTracker.Clear();
+        db.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
+        var repository = new ScopedRepository(db);
+
+        var tracked = (await repository.FirstOrDefaultForUpdateAsync(row => row.Id == entity.Id))!;
+        tracked.Rename("pending");
+        Assert.Same(tracked, await repository.FirstOrDefaultForUpdateAsync(row => row.Id == entity.Id));
+        Assert.Equal("pending", tracked.Name);
+        await repository.UpdateAsync(tracked);
+        await using var observer = await OpenAsync(database);
+        Assert.Equal("original", (await observer.Aggregates.AsNoTracking().SingleAsync()).Name);
+        await db.SaveChangesAsync();
+        Assert.Equal("pending", (await observer.Aggregates.AsNoTracking().SingleAsync()).Name);
+    }
+
+    [PostgresFact]
+    public async Task IdBatchReads_EnumerateOnceFilterVisibilityAndSeparateReadAndWriteTracking()
+    {
+        await using var database = await PostgresTestDatabase.CreateAsync();
+        await using var db = await OpenAsync(database);
+        var own = new[] { TestAggregate.Create("one", Actor), TestAggregate.Create("two", Actor) };
+        var deleted = TestAggregate.Create("deleted", Actor);
+        deleted.MarkAsDeleted(Actor, Now);
+        var other = TestAggregate.Create("other", Guid.NewGuid());
+        var globallyHidden = TestAggregate.Create("globally-hidden", Actor);
+        db.AddRange(own.Concat([deleted, other, globallyHidden]));
+        await db.SaveChangesAsync();
+        db.ChangeTracker.Clear();
+        db.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
+        var repository = new ScopedRepository(db);
+        var enumerations = 0;
+        IEnumerable<Guid> Keys()
+        {
+            if (++enumerations != 1) throw new InvalidOperationException("Input enumerated twice");
+            yield return own[1].Id;
+            yield return own[0].Id;
+            yield return own[1].Id;
+            yield return other.Id;
+            yield return deleted.Id;
+            yield return globallyHidden.Id;
+            yield return Guid.NewGuid();
+        }
+
+        var reads = await repository.GetByIdsAsync(Keys());
+        Assert.Equal(own.Select(row => row.Id).Order(), reads.Select(row => row.Id));
+        Assert.Equal(1, enumerations);
+        Assert.Empty(db.ChangeTracker.Entries());
+        enumerations = 0;
+        var writes = await repository.GetByIdsForUpdateAsync(Keys());
+        Assert.Equal(reads.Select(row => row.Id), writes.Select(row => row.Id));
+        Assert.Equal(1, enumerations);
+        Assert.Equal(2, db.ChangeTracker.Entries<TestAggregate>().Count());
+        foreach (var row in writes) row.Rename("updated");
+        await repository.UpdateRangeAsync(writes);
+        await db.SaveChangesAsync();
+        await using var observer = await OpenAsync(database);
+        Assert.Equal(2, await observer.Aggregates.CountAsync(row => row.Name == "updated"));
+    }
+
+    [Fact]
+    public async Task EmptyIdBatches_DoNotAccessTheDatabase()
+    {
+        var commands = new CommandRecorder();
+        await using var db = new TestDbContext(new DbContextOptionsBuilder<TestDbContext>()
+            .UseNpgsql("Host=localhost;Database=repository_state_only").AddInterceptors(commands).Options);
+        var repository = new TestRepository(db);
+        Assert.Empty(await repository.GetByIdsAsync([]));
+        Assert.Empty(await repository.GetByIdsForUpdateAsync([]));
+        Assert.Empty(commands.Commands);
+        Assert.Empty(db.ChangeTracker.Entries());
+    }
+
+    [Fact]
+    public async Task NullQueryArguments_AreRejectedInsteadOfRunningAnUnfilteredQuery()
+    {
+        await using var db = new TestDbContext(new DbContextOptionsBuilder<TestDbContext>()
+            .UseNpgsql("Host=localhost;Database=repository_state_only").Options);
+        var repository = new TestRepository(db);
+        await Assert.ThrowsAsync<ArgumentNullException>(() => repository.FirstOrDefaultAsync(null!));
+        await Assert.ThrowsAsync<ArgumentNullException>(() => repository.FirstOrDefaultForUpdateAsync(null!));
+        await Assert.ThrowsAsync<ArgumentNullException>(() => repository.SingleOrDefaultAsync(null!));
+        await Assert.ThrowsAsync<ArgumentNullException>(() => repository.AnyAsync(null!));
+        await Assert.ThrowsAsync<ArgumentNullException>(() => repository.CountAsync(null!));
+        await Assert.ThrowsAsync<ArgumentNullException>(() => repository.GetByIdsAsync(null!));
+        await Assert.ThrowsAsync<ArgumentNullException>(() => repository.GetByIdsForUpdateAsync(null!));
+        await Assert.ThrowsAsync<ArgumentNullException>(() => repository.GetPagedAsync(null!, 1, 10));
+        await Assert.ThrowsAsync<ArgumentNullException>(() => repository.GetPagedAsync<string>(row => true, null!, 1, 10));
+        await Assert.ThrowsAsync<ArgumentNullException>(() => repository.GetPagedAsync(null!, row => row.Name, 1, 10));
+        Assert.Empty(db.ChangeTracker.Entries());
+    }
+
+    [PostgresFact]
+    public async Task FilteredPaging_CountsOnlyVisibleMatchesAndUsesStableBoundedPages()
+    {
+        await using var database = await PostgresTestDatabase.CreateAsync();
+        await using var db = await OpenAsync(database);
+        var repository = new ScopedRepository(db);
+        var keep = new[] { TestAggregate.Create("keep one", Actor), TestAggregate.Create("keep two", Actor) };
+        var deleted = TestAggregate.Create("keep deleted", Actor);
+        await repository.AddRangeAsync(keep.Concat([deleted, TestAggregate.Create("skip", Actor),
+            TestAggregate.Create("keep other", Guid.NewGuid()), TestAggregate.Create("globally-hidden", Actor)]));
+        deleted.MarkAsDeleted(Actor, Now);
+        await db.SaveChangesAsync();
+        db.ChangeTracker.Clear();
+
+        var first = await repository.GetPagedAsync(row => row.Name.StartsWith("keep"), 1, 1);
+        var second = await repository.GetPagedAsync(row => row.Name.StartsWith("keep"), 2, 1);
+        Assert.Equal(2, first.TotalCount);
+        Assert.Equal(keep.Select(row => row.Id).Order(), first.Items.Concat(second.Items).Select(row => row.Id));
+        var normalized = await repository.GetPagedAsync(row => row.Name.StartsWith("keep"), 0, 500);
+        Assert.Equal(1, normalized.Page);
+        Assert.Equal(100, normalized.PageSize);
+        var empty = await repository.GetPagedAsync(row => row.Name.StartsWith("keep"), int.MaxValue, 100);
+        Assert.Empty(empty.Items);
+        Assert.Equal(2, empty.TotalCount);
+        Assert.Empty(db.ChangeTracker.Entries());
+    }
+
+    [PostgresFact]
+    public async Task ProjectedPaging_SelectsOnlyRequestedColumnsAndNeverTracksNestedEntities()
+    {
+        await using var database = await PostgresTestDatabase.CreateAsync();
+        var commands = new CommandRecorder();
+        await using var db = await OpenAsync(database, commands);
+        var repository = new ScopedRepository(db);
+        await repository.AddRangeAsync([TestAggregate.Create("keep", Actor), TestAggregate.Create("skip", Actor),
+            TestAggregate.Create("keep", Guid.NewGuid())]);
+        await db.SaveChangesAsync();
+        db.ChangeTracker.Clear();
+        commands.Commands.Clear();
+
+        var page = await repository.GetPagedAsync(row => row.Name == "keep",
+            row => new Projection(row.Id, row.Name), 0, 500);
+        Assert.Equal(1, page.TotalCount);
+        Assert.Equal("keep", Assert.Single(page.Items).Name);
+        Assert.Equal(1, page.Page);
+        Assert.Equal(100, page.PageSize);
+        Assert.Equal(2, commands.Commands.Count);
+        var pageCommand = Assert.Single(commands.Commands, command => command.Contains("LIMIT"));
+        var selectedColumns = pageCommand[..pageCommand.IndexOf("FROM", StringComparison.Ordinal)];
+        Assert.Contains("\"Name\"", selectedColumns);
+        Assert.DoesNotContain("\"OwnerId\"", selectedColumns);
+        Assert.DoesNotContain("\"Version\"", selectedColumns);
+        Assert.Empty(db.ChangeTracker.Entries());
+        var nested = await repository.GetPagedAsync(row => row.Name == "keep", row => new { Entity = row }, 1, 10);
+        Assert.Equal("keep", Assert.Single(nested.Items).Entity.Name);
+        Assert.Empty(db.ChangeTracker.Entries());
+    }
+
+    [Fact]
+    public async Task CancelledQueries_HonorCancellationIncludingEmptyBatchesWithoutEnumeratingInput()
+    {
+        await using var db = new TestDbContext(new DbContextOptionsBuilder<TestDbContext>()
+            .UseNpgsql("Host=localhost;Database=repository_state_only").Options);
+        var repository = new TestRepository(db);
+        using var cancellation = new CancellationTokenSource();
+        cancellation.Cancel();
+        IEnumerable<Guid> Keys()
+        {
+            yield return UnexpectedKey();
+        }
+        Guid UnexpectedKey() => throw new InvalidOperationException("Cancelled input must not be enumerated");
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => repository.FirstOrDefaultAsync(row => true, cancellation.Token));
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => repository.FirstOrDefaultForUpdateAsync(row => true, cancellation.Token));
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => repository.SingleOrDefaultAsync(row => true, cancellation.Token));
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => repository.AnyAsync(row => true, cancellation.Token));
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => repository.CountAsync(cancellation.Token));
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => repository.CountAsync(row => true, cancellation.Token));
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => repository.GetByIdsAsync(Keys(), cancellation.Token));
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => repository.GetByIdsForUpdateAsync([], cancellation.Token));
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => repository.GetPagedAsync(row => true, 1, 10, cancellation.Token));
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => repository.GetPagedAsync(row => true, row => row.Name, 1, 10, cancellation.Token));
+        Assert.Empty(db.ChangeTracker.Entries());
+    }
+
+    private static async Task<TestDbContext> OpenAsync(PostgresTestDatabase database, CommandRecorder? commands = null)
+    {
+        var options = new DbContextOptionsBuilder<TestDbContext>().UseNpgsql(database.ConnectionString);
+        if (commands is not null) options.AddInterceptors(commands);
+        var db = new TestDbContext(options.Options);
         await db.Database.EnsureCreatedAsync();
         return db;
+    }
+
+    private sealed record Projection(Guid Id, string Name);
+
+    private sealed class CommandRecorder : DbCommandInterceptor
+    {
+        public List<string> Commands { get; } = [];
+
+        public override ValueTask<InterceptionResult<DbDataReader>> ReaderExecutingAsync(
+            DbCommand command, CommandEventData eventData, InterceptionResult<DbDataReader> result,
+            CancellationToken cancellationToken = default)
+        {
+            Commands.Add(command.CommandText);
+            return ValueTask.FromResult(result);
+        }
     }
 
     private sealed class TestRepository(TestDbContext db) : EfRepository<TestAggregate, TestDbContext>(db, new FixedClock(), Audit())
@@ -267,6 +500,7 @@ public sealed class EfRepositoryTests
         public DbSet<TestAggregate> Aggregates => Set<TestAggregate>();
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.Entity<TestAggregate>().HasQueryFilter(entity => entity.Name != "globally-hidden");
             modelBuilder.Entity<TestAggregate>().Property(entity => entity.Version).IsRowVersion();
             modelBuilder.Entity<TestAggregate>().HasMany(entity => entity.Children).WithOne()
                 .HasForeignKey(child => child.AggregateId);

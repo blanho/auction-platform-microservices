@@ -117,19 +117,6 @@ namespace Auctions.Infrastructure.Persistence.Repositories
             return new PaginatedResult<Auction>(items, totalCount, filter.Page, filter.PageSize);
         }
 
-        public async Task<List<Auction>> GetByIdsForUpdateAsync(
-            IEnumerable<Guid> ids,
-            CancellationToken cancellationToken = default)
-        {
-            var idList = ids.ToList();
-            if (idList.Count == 0)
-                return [];
-
-            return await ActiveAuctionsWithItemDetails
-                .Where(x => idList.Contains(x.Id))
-                .ToListAsync(cancellationToken);
-        }
-
         public async Task<List<Auction>> GetFinishedAuctionsAsync(CancellationToken cancellationToken = default)
         {
             var now = Clock.UtcNow;
@@ -227,18 +214,6 @@ namespace Auctions.Infrastructure.Persistence.Repositories
                 .OrderByDescending(x => x.CurrentHighBid ?? 0)
                 .ThenByDescending(x => x.IsFeatured)
                 .Take(limit)
-                .ToListAsync(cancellationToken);
-        }
-
-        public async Task<List<Auction>> GetByIdsAsync(IEnumerable<Guid> ids, CancellationToken cancellationToken = default)
-        {
-            var idList = ids.ToList();
-            if (idList.Count == 0)
-                return new List<Auction>();
-
-            return await ActiveAuctionsWithItemDetails
-                .Where(x => idList.Contains(x.Id))
-                .AsNoTracking()
                 .ToListAsync(cancellationToken);
         }
 

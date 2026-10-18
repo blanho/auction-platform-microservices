@@ -798,7 +798,7 @@ retention, batch limits, and token security behavior.
 | [API Reference](docs/api-reference.md) | Gateway routes, authentication, request/response schemas |
 | [Background Jobs](docs/background-jobs.md) | Supported job operations, payload examples, retries, and staged roadmap |
 | [Paging Consistency](docs/paging-consistency.md) | Shared paging rules, service coverage, compatibility differences, and verification |
-| [Common Repositories](docs/common-repositories.md) | Research, shared EF Core CRUD, audit policies, transaction boundaries, and adoption |
+| [Common Repositories](docs/common-repositories.md) | Research, shared EF Core CRUD and queries, audit policies, transaction boundaries, and adoption |
 | [Deployment Guide](docs/deployment.md) | Docker, Kubernetes, CI/CD pipeline details |
 | [Azure Deployment Guide](deploy/azure/README.md) | Provision and deploy the Azure AKS environment |
 

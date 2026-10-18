@@ -22,6 +22,7 @@ and [disconnected entities](https://learn.microsoft.com/en-us/ef/core/saving/dis
 | Component | Responsibility |
 |---|---|
 | `IReadRepository<T>` | Existing read contract for ID lookup, existence, and paging |
+| `IQueryRepository<T>` | Optional aggregate query contract for predicates, counts, ID batches, and projected paging |
 | `IWriteRepository<T>`, `IRepository<T>`, `IBatchRepository<T>` | Write contracts constrained to `AggregateRoot` |
 | `EfRepository<TEntity, TContext>` | Reusable audited CRUD, batch operations, soft deletion, and default paging |
 | Service repository interface | The operations available to that service's handlers |
@@ -64,6 +65,84 @@ Normal handlers should load with `GetByIdForUpdateAsync`, call domain methods,
 and save through the unit of work. Do not submit HTTP DTOs or partially populated
 graphs directly to `UpdateAsync`. Preserve the original concurrency values and
 avoid attaching multiple object instances with the same key to one context.
+
+## Extended query operations
+
+The extensions follow Microsoft's guidance on
+[tracking and no-tracking queries](https://learn.microsoft.com/en-us/ef/core/querying/tracking),
+[projection and result limits](https://learn.microsoft.com/en-us/ef/core/performance/efficient-querying),
+and [global query filters](https://learn.microsoft.com/en-us/ef/core/querying/filters).
+Predicates and selectors are expression trees translated by EF Core; they are not
+compiled into in-memory filters. Keep authorization and business-specific
+selection in service methods.
+
+| Operation | Behavior |
+|---|---|
+| `FirstOrDefaultAsync(predicate, ct)` | No-tracking lookup; null when no row matches. Does not establish uniqueness or business ordering |
+| `FirstOrDefaultForUpdateAsync(predicate, ct)` | Tracked lookup even when the context defaults to no tracking; preserves existing tracked changes; does not lock rows |
+| `SingleOrDefaultAsync(predicate, ct)` | No-tracking lookup; null when absent, throws if multiple visible rows match |
+| `AnyAsync(predicate, ct)` | Database existence query without loading aggregates |
+| `CountAsync(ct)` / `CountAsync(predicate, ct)` | Database count of visible rows; unsaved inserts are not included |
+| `GetByIdsAsync(ids, ct)` | No-tracking batch lookup, distinct requested IDs, stable ID ordering; missing/invisible IDs are omitted |
+| `GetByIdsForUpdateAsync(ids, ct)` | Same selection with explicit tracking; suitable for loading several aggregates before domain changes |
+| `GetPagedAsync(predicate, page, pageSize, ct)` | Filters before counting and paging; common bounds, `CreatedAt` descending then ID |
+| `GetPagedAsync(predicate, selector, page, pageSize, ct)` | Projects in SQL before materialization; same filtered count, bounds, and ordering; no tracking even for projections containing entities |
+
+All these operations use the repository's protected `Query`, retaining service
+includes, visibility constraints, and EF global filters. Predicate/selector/ID
+arguments cannot be null. Cancellation reaches EF; ID batches check cancellation
+before enumerating inputs, materialize them once, and return immediately for empty
+inputs. ID batch results do not preserve input order. Callers must chunk very
+large ID collections; there is no unbounded `GetAllAsync` convenience method.
+
+`IQueryRepository<T>` is separate from the existing read/write contracts, so
+cached decorators, specialized adapters, and test doubles do not acquire new
+mandatory members. The base implements it; service interfaces can expose only
+the domain queries they need, or explicitly inherit `IQueryRepository<T>` to
+expose the full query contract through their existing scoped registration.
+Existing specialized paging methods retain their
+own sorting. The new predicate/projection overloads use the generic ordering
+above, not a service's custom sort map.
+Counts and page contents use separate SQL commands, executed sequentially on the
+same context. Workflows requiring a consistent snapshot must supply the
+appropriate transaction through their unit of work.
+
+For example, a service lookup can delegate directly:
+
+```csharp
+public Task<Brand?> GetBySlugAsync(string slug, CancellationToken ct = default) =>
+    FirstOrDefaultAsync(brand => brand.Slug == slug, ct);
+```
+
+A service that needs a small read model can define its own `BrandSummary` DTO and
+use the projected paging overload:
+
+```csharp
+public Task<PaginatedResult<BrandSummary>> GetSummariesAsync(
+    string name, int page, int pageSize, CancellationToken ct = default) =>
+    GetPagedAsync(brand => brand.Name.StartsWith(name),
+        brand => new BrandSummary(brand.Id, brand.Name), page, pageSize, ct);
+```
+
+Service adoption includes Auction ID batch reads/write lookups; Catalog slug
+lookups, child existence and category ID batches; Bidding counts and active
+auto-bid lookup; Job correlation lookup and filtered pages; Notification counts,
+filtered pages, template lookup and tracked preference lookup; and Storage's
+report-request lookup. Domain-specific ordering and aggregate includes remain
+in their repositories.
+
+Slug uniqueness checks deliberately retain their existing queries: their unique
+indexes also reserve soft-deleted slugs. A visible-row `AnyAsync` query is not a
+replacement for that constraint. Similarly, highest bids and priority queues
+need their domain ordering rather than an unordered first match.
+
+Direct bulk writes, hard deletion, restore, upsert, and reflection-based dynamic
+query APIs are not added to this base. EF's
+[`ExecuteUpdate`/`ExecuteDelete`](https://learn.microsoft.com/en-us/ef/core/saving/execute-insert-update-delete)
+run immediately outside normal tracking and require explicit concurrency and
+transaction handling. Restore through a blanket `IgnoreQueryFilters` can also
+remove tenant visibility; those workflows need their own authorized service
+policies. No changes are made to the existing specialized bulk operations.
 
 ## Usage
 
@@ -171,3 +250,11 @@ owner/requester audit policies, Payment's returned entities and concurrency,
 Notification's staged writes and immediate template commits, and Storage's
 domain deletion events and physical purge. The full backend suite exercises the
 existing outbox, bidding, payments, and workflow recovery paths after migration.
+Extended-query tests also verify global/custom visibility, unique versus first
+matches, filtered counts, cancellation, one-time ID enumeration, explicit batch
+tracking, page bounds, and the actual SQL projection columns.
+Catalog's provider check also covers nonempty media JSON round-tripping. Its
+existing POCO mapping requires [Npgsql dynamic JSON enablement](https://www.npgsql.org/doc/types/json.html),
+and the media value uses a private parameterized JSON constructor to preserve all
+fields during deserialization. This changes neither the stored schema nor the
+public factory contract.

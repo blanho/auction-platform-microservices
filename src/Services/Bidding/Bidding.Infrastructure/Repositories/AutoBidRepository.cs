@@ -35,23 +35,9 @@ public class AutoBidRepository : EfRepository<AutoBid, BidDbContext>, IAutoBidRe
     {
     }
 
-    public async Task<int> CountAsync(CancellationToken cancellationToken = default)
-    {
-        return await Context.AutoBids
-            .AsNoTracking()
-            .Where(x => !x.IsDeleted)
-            .CountAsync(cancellationToken);
-    }
-
-    public async Task<AutoBid?> GetActiveAutoBidAsync(Guid auctionId, Guid userId, CancellationToken cancellationToken = default)
-    {
-        return await Context.AutoBids
-            .AsNoTracking()
-            .Where(x => !x.IsDeleted)
-            .FirstOrDefaultAsync(ab => ab.AuctionId == auctionId
-                && ab.UserId == userId
-                && ab.IsActive, cancellationToken);
-    }
+    public Task<AutoBid?> GetActiveAutoBidAsync(Guid auctionId, Guid userId, CancellationToken cancellationToken = default) =>
+        FirstOrDefaultAsync(autoBid => autoBid.AuctionId == auctionId && autoBid.UserId == userId && autoBid.IsActive,
+            cancellationToken);
 
     public async Task<List<AutoBid>> GetActiveAutoBidsForAuctionAsync(Guid auctionId, CancellationToken cancellationToken = default)
     {
@@ -90,15 +76,8 @@ public class AutoBidRepository : EfRepository<AutoBid, BidDbContext>, IAutoBidRe
         return new PaginatedResult<AutoBid>(items, totalCount, queryParams.Page, queryParams.PageSize);
     }
 
-    public async Task<int> GetAutoBidsCountForUserAsync(Guid userId, bool? activeOnly, CancellationToken cancellationToken = default)
-    {
-        var query = Context.AutoBids
-            .AsNoTracking()
-            .Where(ab => !ab.IsDeleted && ab.UserId == userId);
+    public Task<int> GetAutoBidsCountForUserAsync(Guid userId, bool? activeOnly, CancellationToken cancellationToken = default) =>
+        CountAsync(autoBid => autoBid.UserId == userId && (!activeOnly.HasValue || autoBid.IsActive == activeOnly),
+            cancellationToken);
 
-        if (activeOnly.HasValue)
-            query = query.Where(ab => ab.IsActive == activeOnly.Value);
-
-        return await query.CountAsync(cancellationToken);
-    }
 }

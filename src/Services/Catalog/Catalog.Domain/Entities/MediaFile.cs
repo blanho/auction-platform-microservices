@@ -1,4 +1,6 @@
 #nullable enable
+using System.Text.Json.Serialization;
+
 namespace Catalog.Domain.Entities;
 
 public class MediaFile
@@ -8,16 +10,15 @@ public class MediaFile
     public int DisplayOrder { get; private set; }
     public bool IsPrimary { get; private set; }
 
-    private MediaFile() { }
-
-    public static MediaFile Create(Guid fileId, string fileType, int displayOrder, bool isPrimary)
+    [JsonConstructor]
+    private MediaFile(Guid fileId, string fileType, int displayOrder, bool isPrimary)
     {
-        return new MediaFile
-        {
-            FileId = fileId,
-            FileType = fileType,
-            DisplayOrder = displayOrder,
-            IsPrimary = isPrimary
-        };
+        FileId = fileId;
+        FileType = fileType;
+        DisplayOrder = displayOrder;
+        IsPrimary = isPrimary;
     }
+
+    public static MediaFile Create(Guid fileId, string fileType, int displayOrder, bool isPrimary) =>
+        new(fileId, fileType, displayOrder, isPrimary);
 }

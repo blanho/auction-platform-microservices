@@ -1,3 +1,4 @@
+using System.Linq.Expressions;
 using BuildingBlocks.Application.Abstractions;
 using BuildingBlocks.Application.Abstractions.Auditing;
 using BuildingBlocks.Application.Abstractions.Providers;
@@ -7,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BuildingBlocks.Infrastructure.Repository;
 
-public abstract class EfRepository<TEntity, TContext> : IRepository<TEntity>, IBatchRepository<TEntity>
+public abstract class EfRepository<TEntity, TContext> : IRepository<TEntity>, IBatchRepository<TEntity>, IQueryRepository<TEntity>
     where TEntity : AggregateRoot
     where TContext : DbContext
 {
@@ -27,20 +28,86 @@ public abstract class EfRepository<TEntity, TContext> : IRepository<TEntity>, IB
     protected virtual IQueryable<TEntity> Query => Entities.Where(entity => !entity.IsDeleted);
 
     public virtual Task<TEntity?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default) =>
-        Query.AsNoTracking().FirstOrDefaultAsync(entity => entity.Id == id, cancellationToken);
+        FirstOrDefaultAsync(entity => entity.Id == id, cancellationToken);
 
     public virtual Task<TEntity?> GetByIdForUpdateAsync(Guid id, CancellationToken cancellationToken = default) =>
-        Query.AsTracking().FirstOrDefaultAsync(entity => entity.Id == id, cancellationToken);
+        FirstOrDefaultForUpdateAsync(entity => entity.Id == id, cancellationToken);
 
     public virtual Task<bool> ExistsAsync(Guid id, CancellationToken cancellationToken = default) =>
-        Query.AnyAsync(entity => entity.Id == id, cancellationToken);
+        AnyAsync(entity => entity.Id == id, cancellationToken);
+
+    public virtual Task<TEntity?> FirstOrDefaultAsync(
+        Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(predicate);
+        return Query.AsNoTracking().FirstOrDefaultAsync(predicate, cancellationToken);
+    }
+
+    public virtual Task<TEntity?> FirstOrDefaultForUpdateAsync(
+        Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(predicate);
+        return Query.AsTracking().FirstOrDefaultAsync(predicate, cancellationToken);
+    }
+
+    public virtual Task<TEntity?> SingleOrDefaultAsync(
+        Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(predicate);
+        return Query.AsNoTracking().SingleOrDefaultAsync(predicate, cancellationToken);
+    }
+
+    public virtual Task<bool> AnyAsync(
+        Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(predicate);
+        return Query.AnyAsync(predicate, cancellationToken);
+    }
+
+    public virtual Task<int> CountAsync(CancellationToken cancellationToken = default) =>
+        Query.CountAsync(cancellationToken);
+
+    public virtual Task<int> CountAsync(
+        Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(predicate);
+        return Query.CountAsync(predicate, cancellationToken);
+    }
+
+    public virtual Task<List<TEntity>> GetByIdsAsync(
+        IEnumerable<Guid> ids, CancellationToken cancellationToken = default) =>
+        LoadByIdsAsync(Query.AsNoTracking(), ids, cancellationToken);
+
+    public virtual Task<List<TEntity>> GetByIdsForUpdateAsync(
+        IEnumerable<Guid> ids, CancellationToken cancellationToken = default) =>
+        LoadByIdsAsync(Query.AsTracking(), ids, cancellationToken);
 
     public virtual Task<PaginatedResult<TEntity>> GetPagedAsync(
         int page, int pageSize, CancellationToken cancellationToken = default) =>
-        Query.AsNoTracking()
-            .OrderByDescending(entity => entity.CreatedAt)
-            .ThenBy(entity => entity.Id)
+        GetPagedAsync(entity => true, page, pageSize, cancellationToken);
+
+    public virtual Task<PaginatedResult<TEntity>> GetPagedAsync(
+        Expression<Func<TEntity, bool>> predicate, int page, int pageSize, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(predicate);
+        return Query.AsNoTracking().Where(predicate)
+            .OrderByDescending(entity => entity.CreatedAt).ThenBy(entity => entity.Id)
             .ToPaginatedResultAsync(page, pageSize, cancellationToken);
+    }
+
+    public virtual Task<PaginatedResult<TResult>> GetPagedAsync<TResult>(
+        Expression<Func<TEntity, bool>> predicate,
+        Expression<Func<TEntity, TResult>> selector,
+        int page,
+        int pageSize,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(predicate);
+        ArgumentNullException.ThrowIfNull(selector);
+        return Query.AsNoTracking().Where(predicate)
+            .OrderByDescending(entity => entity.CreatedAt).ThenBy(entity => entity.Id)
+            .ToPaginatedResultAsync(page, pageSize, selector, cancellationToken);
+    }
 
     public Task<TEntity> AddAsync(TEntity entity, CancellationToken cancellationToken = default) =>
         CreateAsync(entity, cancellationToken);
@@ -140,5 +207,18 @@ public abstract class EfRepository<TEntity, TContext> : IRepository<TEntity>, IB
         var entry = Context.Entry(entity);
         if (entry.State == EntityState.Detached)
             entry.State = EntityState.Modified;
+    }
+
+    private static async Task<List<TEntity>> LoadByIdsAsync(
+        IQueryable<TEntity> query, IEnumerable<Guid> ids, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(ids);
+        cancellationToken.ThrowIfCancellationRequested();
+        var keys = ids.Distinct().ToArray();
+        if (keys.Length == 0)
+            return [];
+
+        return await query.Where(entity => keys.Contains(entity.Id))
+            .OrderBy(entity => entity.Id).ToListAsync(cancellationToken);
     }
 }

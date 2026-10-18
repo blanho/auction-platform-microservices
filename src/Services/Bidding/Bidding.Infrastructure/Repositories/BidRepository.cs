@@ -47,14 +47,6 @@ namespace Bidding.Infrastructure.Repositories
                 .ToPaginatedResultAsync(page, pageSize, cancellationToken);
         }
 
-        public async Task<int> CountAsync(CancellationToken cancellationToken = default)
-        {
-            return await Context.Bids
-                .AsNoTracking()
-                .Where(x => !x.IsDeleted)
-                .CountAsync(cancellationToken);
-        }
-
         public async Task<List<Bid>> GetBidsByAuctionIdAsync(Guid auctionId, CancellationToken cancellationToken = default)
         {
             return await Context.Bids

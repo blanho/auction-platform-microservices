@@ -19,7 +19,7 @@ public class CategoryRepository : EfRepository<Category, CatalogDbContext>, ICat
     }
 
     public Task<bool> HasChildrenAsync(Guid id, CancellationToken cancellationToken = default) =>
-        Context.Categories.AnyAsync(x => !x.IsDeleted && x.ParentCategoryId == id, cancellationToken);
+        AnyAsync(category => category.ParentCategoryId == id, cancellationToken);
 
     public override async Task<PaginatedResult<Category>> GetPagedAsync(int page, int pageSize, CancellationToken cancellationToken = default)
     {
@@ -34,14 +34,8 @@ public class CategoryRepository : EfRepository<Category, CatalogDbContext>, ICat
             .ToPaginatedResultAsync(page, pageSize, cancellationToken);
     }
 
-    public async Task<Category?> GetBySlugAsync(string slug, CancellationToken cancellationToken = default)
-    {
-        return await Context.Categories
-            .Where(x => !x.IsDeleted && x.Slug == slug)
-            .Include(x => x.SubCategories.Where(s => !s.IsDeleted))
-            .AsNoTracking()
-            .FirstOrDefaultAsync(cancellationToken);
-    }
+    public Task<Category?> GetBySlugAsync(string slug, CancellationToken cancellationToken = default) =>
+        FirstOrDefaultAsync(category => category.Slug == slug, cancellationToken);
 
     public Task<List<Category>> GetActiveCategoriesAsync(CancellationToken cancellationToken = default) =>
         GetAllAsync(cancellationToken: cancellationToken);
@@ -66,18 +60,6 @@ public class CategoryRepository : EfRepository<Category, CatalogDbContext>, ICat
             .AsNoTracking()
             .OrderBy(x => x.DisplayOrder)
             .ThenBy(x => x.Name)
-            .ToListAsync(cancellationToken);
-    }
-
-    public async Task<List<Category>> GetByIdsAsync(IEnumerable<Guid> ids, CancellationToken cancellationToken = default)
-    {
-        var idList = ids.Distinct().ToList();
-        if (idList.Count == 0)
-            return new List<Category>();
-
-        return await Context.Categories
-            .Where(x => !x.IsDeleted && idList.Contains(x.Id))
-            .AsNoTracking()
             .ToListAsync(cancellationToken);
     }
 

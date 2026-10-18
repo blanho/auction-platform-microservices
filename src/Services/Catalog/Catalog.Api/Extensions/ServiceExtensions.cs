@@ -25,6 +25,7 @@ public static class ServiceExtensions
 
         var connectionString = configuration.GetConnectionString("DefaultConnection");
         var dataSourceBuilder = new NpgsqlDataSourceBuilder(connectionString);
+        dataSourceBuilder.EnableDynamicJson();
         var dataSource = dataSourceBuilder.Build();
 
         services.AddDbContext<CatalogDbContext>(options =>

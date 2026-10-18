@@ -1,7 +1,6 @@
 using BuildingBlocks.Application.Abstractions.Auditing;
 using BuildingBlocks.Application.Abstractions.Providers;
 using BuildingBlocks.Infrastructure.Repository;
-using BuildingBlocks.Infrastructure.Extensions;
 using BuildingBlocks.Application.Abstractions;
 using Microsoft.EntityFrameworkCore;
 using Notification.Application.Interfaces;
@@ -45,12 +44,9 @@ public class NotificationRepository : EfRepository<NotificationEntity, Notificat
             .ToListAsync(cancellationToken);
     }
 
-    public async Task<int> GetUnreadCountByUserIdAsync(string userId, CancellationToken cancellationToken = default)
-    {
-        return await Query
-            .AsNoTracking()
-            .CountAsync(n => n.UserId == userId && n.Status == NotificationStatus.Unread, cancellationToken);
-    }
+    public Task<int> GetUnreadCountByUserIdAsync(string userId, CancellationToken cancellationToken = default) =>
+        CountAsync(notification => notification.UserId == userId && notification.Status == NotificationStatus.Unread,
+            cancellationToken);
 
     public async Task MarkAsReadAsync(Guid id, CancellationToken cancellationToken = default)
     {
@@ -89,40 +85,24 @@ public class NotificationRepository : EfRepository<NotificationEntity, Notificat
         await Task.CompletedTask;
     }
 
-    public async Task<PaginatedResult<NotificationEntity>> GetPaginatedAsync(
+    public Task<PaginatedResult<NotificationEntity>> GetPaginatedAsync(
         int page,
         int pageSize,
         string? userId = null,
         NotificationType? type = null,
         NotificationStatus? status = null,
-        CancellationToken cancellationToken = default)
-    {
-        var query = Query
-            .AsNoTracking()
-            .AsQueryable();
-
-        if (!string.IsNullOrEmpty(userId))
-            query = query.Where(n => n.UserId == userId);
-
-        if (type.HasValue)
-            query = query.Where(n => n.Type == type.Value);
-
-        if (status.HasValue)
-            query = query.Where(n => n.Status == status.Value);
-
-        return await query
-            .OrderByDescending(n => n.CreatedAt)
-            .ThenBy(entity => entity.Id)
-            .ToPaginatedResultAsync(page, pageSize, cancellationToken);
-    }
+        CancellationToken cancellationToken = default) =>
+        GetPagedAsync(notification => (string.IsNullOrEmpty(userId) || notification.UserId == userId)
+            && (!type.HasValue || notification.Type == type)
+            && (!status.HasValue || notification.Status == status), page, pageSize, cancellationToken);
 
     public async Task<NotificationStats> GetStatsAsync(CancellationToken cancellationToken = default)
     {
         var today = DateTimeOffset.UtcNow.Date;
 
-        var totalCount = await Query.AsNoTracking().CountAsync(cancellationToken);
-        var unreadCount = await Query.AsNoTracking().CountAsync(n => n.Status == NotificationStatus.Unread, cancellationToken);
-        var todayCount = await Query.AsNoTracking().CountAsync(n => n.CreatedAt.Date == today, cancellationToken);
+        var totalCount = await CountAsync(cancellationToken);
+        var unreadCount = await CountAsync(n => n.Status == NotificationStatus.Unread, cancellationToken);
+        var todayCount = await CountAsync(n => n.CreatedAt.Date == today, cancellationToken);
 
         var byType = await Query
             .AsNoTracking()

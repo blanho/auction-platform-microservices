@@ -18,12 +18,8 @@ public class TemplateRepository : EfRepository<NotificationTemplate, Notificatio
     {
     }
 
-    public async Task<NotificationTemplate?> GetByKeyAsync(string key, CancellationToken ct = default)
-    {
-        return await Query
-            .AsNoTracking()
-            .FirstOrDefaultAsync(t => t.Key == key.ToLowerInvariant(), ct);
-    }
+    public Task<NotificationTemplate?> GetByKeyAsync(string key, CancellationToken ct = default) =>
+        FirstOrDefaultAsync(template => template.Key == key.ToLowerInvariant(), ct);
 
     public async Task<List<NotificationTemplate>> GetAllActiveAsync(CancellationToken ct = default)
     {
