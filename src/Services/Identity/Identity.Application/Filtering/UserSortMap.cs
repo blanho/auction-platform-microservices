@@ -1,7 +1,7 @@
 using System.Linq.Expressions;
 using Identity.Domain.Entities;
 
-namespace Identity.Application.Filters;
+namespace Identity.Application.Filtering;
 
 public static class UserSortMap
 {

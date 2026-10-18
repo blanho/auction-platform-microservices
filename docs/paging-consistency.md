@@ -13,13 +13,20 @@ differences listed below.
 | Auction | Auctions, reviews, bookmarks | Shared parameters/EF helpers, sort maps, ID tie-breakers; complete filter and multi-sort cache keys | General default 10; featured default 8. Uses `orderBy`/`descending`. |
 | Bidding | Auction bids, bidder bids, history, winning bids, auto-bids | Shared bounds and whitelisted ordering; winning bids support the same ordering path | History/winning/auto-bid HTTP requests default to 20; other application queries default to 10. Paid filtering remains before count and paging. |
 | Catalog | Brands and the category repository's paged method | Shared parameters/helpers and unique ordering | Brands default 10. Category trees and lookup lists remain unpaged by design. Brand display-order sorting retains name as a secondary sort. |
-| Identity | Both user-list query paths | Shared parameters, user sort map, ID tie-breaker | Default 10, `sortBy`/`sortDescending`. Roles are fetched only for the selected users. |
+| Identity | User listing through CQRS and the user service | One user-service pipeline with `Filtering/UserFilter`, shared `IFilter<T>`/query parameters, user sort map, and ID tie-breaker | Default 10, `sortBy`/`sortDescending`. Role names resolve to IDs before filtering; unknown roles return an empty page. Roles are fetched only for selected users. |
 | Payment | Buyer/seller/admin orders, wallet transactions | Shared parameters, unique ordering, cancellation through count and page reads | Default 10. Existing HTTP responses remain arrays with `X-Total-Count`, `X-Page`, `X-Page-Size`; headers now reflect effective bounds. |
 | Notification | User/admin notifications, records, templates | Shared helpers; unread filtering before count/page; summaries fetch only the recent page | Existing endpoint defaults of 10/20 are retained. Omitted page values work for templates and per-user records. Legacy offset/take reads use the shared adapter. |
 | Analytics | Reports, audit logs, paged platform settings | Shared parameters/helpers and ID tie-breakers | Reports/audit logs default 10; dashboard feeds retain their own limit default. Summary/statistics responses are not pages. |
 | Jobs | Jobs, items, execution history | Shared EF helper, unique ordering, filtered counts | Jobs default 20, items/history 50. History retains `entries`/`totalLogEntries` and adds effective `page`, `pageSize`, `totalPages`, `hasPreviousPage`, `hasNextPage`. |
 | Search | Elasticsearch auction search | Shared numeric normalization, existing score/field plus ID ordering, explicit result-window guard | Default 20 or configured search default; maximum 100 or a lower configured cap. Retains `results`, long `totalCount`, facets, timing, and `hasMore`. |
 | Storage | No public paginated list endpoint | Not applicable | File operations and cleanup batches use their own bounded contracts. |
+
+Identity groups `UserFilter`, `UserQueryParams`, and `UserSortMap` under
+`Identity.Application.Filtering`. `UserFilter` implements the shared
+`IFilter<ApplicationUser>` contract. The user service resolves the public `Role`
+name into the filter's `RoleId`, then applies all filters before counting and
+paging. The CQRS handler delegates to that same service pipeline. HTTP query
+parameter names and the paged response shape are unchanged.
 
 Paged relational responses use `PaginatedResult<T>` internally. Most APIs expose
 that object directly. Payment, Search, and Job history retain their existing
