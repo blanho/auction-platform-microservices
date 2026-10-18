@@ -32,6 +32,37 @@ to derive public names from typed DTO members and map them to typed entity
 expressions. Its immutable lookup retains the existing names and null ordering;
 DTO JSON aliases can preserve those names across CLR property renames.
 
+## Typed sort registration coverage
+
+All request-selected sort registrations now use the common `SortMapBuilder`:
+13 immutable maps across eight services. Public keys come from typed DTO members
+or dedicated sort contracts where legacy aliases differ from response properties.
+
+| Service | Registrations | Preserved behavior |
+|---|---|---|
+| Identity | Users | Public user fields, explicit null policies, hidden fields excluded |
+| Auction | Auctions, bookmarks, reviews | `price`/`enddate` aliases, computed current price, nested bookmark values, review title fallback |
+| Bidding | Bids, auto-bids | Native enum status ordering and nullable last-bid ordering |
+| Payment | Orders, wallet transactions | Status/type keys, nullable payment dates, existing default sorts |
+| Notification | Notification records | Status/channel fields and nullable sent dates |
+| Analytics | Reports, audit logs | Native priority/status/type keys and existing audit fields |
+| Catalog | Brands | Display-order then name ordering; default remains ascending regardless of requested direction |
+| Search | Auction documents | `price`/`endtime`/`bids`/`created` aliases; relevance remains score descending, date descending, ID ascending |
+
+Catalog now honors application-level multi-sort descriptors through the shared
+sorting helper. Its legacy single-field ordering and unknown-field fallback are
+unchanged. Search resolves registered expressions with Elasticsearch field
+inference rather than maintaining a second string mapping of document properties.
+Jobs and Storage have no request-selected sort maps; their fixed typed ordering
+and bounded worker contracts remain appropriate.
+
+The allowlist stays explicit: new entity properties are not exposed automatically.
+DTO display types may differ from stored keys, so registration preserves native
+enum and nullable expressions. Property removal or rename is checked by the C#
+compiler; schema/index changes still require EF migrations or Elasticsearch
+mapping updates. Existing sort directions, ID tie-breakers, and public aliases
+remain compatible.
+
 Paged relational responses use `PaginatedResult<T>` internally. Most APIs expose
 that object directly. Payment, Search, and Job history retain their existing
 wrappers so clients can continue using their current adapters. A single HTTP

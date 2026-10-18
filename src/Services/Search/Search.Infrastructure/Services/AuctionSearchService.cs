@@ -1,3 +1,5 @@
+using Search.Application.Filtering;
+using System.Linq.Expressions;
 using Search.Infrastructure.Configuration;
 using System.Globalization;
 using BuildingBlocks.Application.Localization;
@@ -29,6 +31,14 @@ public class AuctionSearchService : IAuctionSearchService
         $"{ElasticsearchFields.BrandName}^{SearchDefaults.BrandBoost}",
         ElasticsearchFields.Tags
     ];
+
+    private static readonly IReadOnlyDictionary<string, Expression<Func<AuctionDocument, object>>> SortMap =
+        new SortMapBuilder<AuctionDocument, AuctionSearchSortFields>()
+            .Add(field => field.Price, document => document.CurrentPrice)
+            .Add(field => field.EndTime, document => document.EndTime)
+            .Add(field => field.Bids, document => document.BidCount)
+            .Add(field => field.Created, document => document.CreatedAt)
+            .Build();
 
     private readonly ElasticsearchClient _client;
     private readonly SearchOptions _options;
@@ -309,32 +319,20 @@ public class AuctionSearchService : IAuctionSearchService
         var direction = sortDirection?.ToLowerInvariant() == SortDirections.Ascending
             ? SortOrder.Asc
             : SortOrder.Desc;
-        var sortField = MapSortFieldName(sortBy);
-
-        if (sortField == ElasticsearchFields.ScoreField)
+        if (sortBy is null || !SortMap.TryGetValue(sortBy, out var selector))
         {
             return new List<SortOptions>
             {
                 SortOptions.Score(new ScoreSort { Order = SortOrder.Desc }),
-                SortOptions.Field(new Field(ElasticsearchFields.CreatedAt), new FieldSort { Order = SortOrder.Desc }),
-                SortOptions.Field(new Field(ElasticsearchFields.Id), new FieldSort { Order = SortOrder.Asc })
+                SortOptions.Field(Infer.Field<AuctionDocument>(document => document.CreatedAt), new FieldSort { Order = SortOrder.Desc }),
+                SortOptions.Field(Infer.Field<AuctionDocument>(document => document.Id), new FieldSort { Order = SortOrder.Asc })
             };
         }
 
         return new List<SortOptions>
         {
-            SortOptions.Field(new Field(sortField), new FieldSort { Order = direction }),
-            SortOptions.Field(new Field(ElasticsearchFields.Id), new FieldSort { Order = SortOrder.Asc })
+            SortOptions.Field(new Field(selector), new FieldSort { Order = direction }),
+            SortOptions.Field(Infer.Field<AuctionDocument>(document => document.Id), new FieldSort { Order = SortOrder.Asc })
         };
     }
-
-    private static string MapSortFieldName(string? sortBy) =>
-        sortBy?.ToLowerInvariant() switch
-        {
-            SortFields.Price => ElasticsearchFields.CurrentPrice,
-            SortFields.EndTime => ElasticsearchFields.EndTime,
-            SortFields.Bids => ElasticsearchFields.BidCount,
-            SortFields.Created => ElasticsearchFields.CreatedAt,
-            _ => ElasticsearchFields.ScoreField
-        };
 }

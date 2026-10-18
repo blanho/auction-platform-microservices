@@ -10,9 +10,9 @@ public sealed class SortMapBuilder<TEntity, TContract>
     private readonly Dictionary<string, Expression<Func<TEntity, object>>> _fields =
         new(StringComparer.OrdinalIgnoreCase);
 
-    public SortMapBuilder<TEntity, TContract> Add<TField>(
+    public SortMapBuilder<TEntity, TContract> Add<TField, TKey>(
         Expression<Func<TContract, TField>> field,
-        Expression<Func<TEntity, TField>> selector)
+        Expression<Func<TEntity, TKey>> selector)
     {
         ArgumentNullException.ThrowIfNull(field);
         ArgumentNullException.ThrowIfNull(selector);

@@ -1,3 +1,4 @@
+using Payment.Application.DTOs;
 
 using System.Linq.Expressions;
 using BuildingBlocks.Application.Abstractions;
@@ -14,14 +15,13 @@ public class WalletTransactionRepository : IWalletTransactionRepository
 {
     private readonly PaymentDbContext _context;
 
-    private static readonly Dictionary<string, Expression<Func<WalletTransaction, object>>> TransactionSortMap =
-        new(StringComparer.OrdinalIgnoreCase)
-        {
-            ["createdat"] = t => t.CreatedAt,
-            ["amount"] = t => t.Amount,
-            ["type"] = t => t.Type,
-            ["status"] = t => t.Status
-        };
+    private static readonly IReadOnlyDictionary<string, Expression<Func<WalletTransaction, object>>> TransactionSortMap =
+        new SortMapBuilder<WalletTransaction, WalletTransactionDto>()
+            .Add(field => field.CreatedAt, x => x.CreatedAt)
+            .Add(field => field.Amount, x => x.Amount)
+            .Add(field => field.Type, x => x.Type)
+            .Add(field => field.Status, x => x.Status)
+            .Build();
 
     public WalletTransactionRepository(PaymentDbContext context)
     {

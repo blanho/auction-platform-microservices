@@ -17,15 +17,14 @@ namespace Payment.Infrastructure.Repositories;
 
 public class OrderRepository : EfRepository<Order, PaymentDbContext>, IOrderRepository
 {
-    private static readonly Dictionary<string, Expression<Func<Order, object>>> OrderSortMap =
-        new(StringComparer.OrdinalIgnoreCase)
-        {
-            ["createdat"] = o => o.CreatedAt,
-            ["totalamount"] = o => o.TotalAmount,
-            ["status"] = o => o.Status,
-            ["paidat"] = o => o.PaidAt!,
-            ["itemtitle"] = o => o.ItemTitle
-        };
+    private static readonly IReadOnlyDictionary<string, Expression<Func<Order, object>>> OrderSortMap =
+        new SortMapBuilder<Order, OrderDto>()
+            .Add(field => field.CreatedAt, x => x.CreatedAt)
+            .Add(field => field.TotalAmount, x => x.TotalAmount)
+            .Add(field => field.Status, x => x.Status)
+            .Add(field => field.PaidAt, x => x.PaidAt)
+            .Add(field => field.ItemTitle, x => x.ItemTitle)
+            .Build();
 
     public OrderRepository(
         PaymentDbContext context, IDateTimeProvider clock, IAuditContext auditContext)

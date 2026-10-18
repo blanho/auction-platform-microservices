@@ -1,4 +1,5 @@
 #nullable enable
+using Auctions.Application.DTOs;
 using BuildingBlocks.Infrastructure.Repository;
 using BuildingBlocks.Application.Abstractions.Auditing;
 using System.Linq.Expressions;
@@ -23,13 +24,12 @@ public class BookmarkRepository : EfRepository<Bookmark, AuctionDbContext>, IBoo
 
     protected override Guid GetDeletedBy(Bookmark bookmark) => bookmark.UserId;
 
-    private static readonly Dictionary<string, Expression<Func<Bookmark, object>>> BookmarkSortMap =
-        new(StringComparer.OrdinalIgnoreCase)
-        {
-            ["addedat"] = x => x.AddedAt,
-            ["auctionend"] = x => x.Auction != null ? (object)x.Auction.AuctionEnd : DateTime.MinValue,
-            ["currentbid"] = x => x.Auction != null ? (object)(x.Auction.CurrentHighBid ?? 0m) : 0m
-        };
+    private static readonly IReadOnlyDictionary<string, Expression<Func<Bookmark, object>>> BookmarkSortMap =
+        new SortMapBuilder<Bookmark, BookmarkItemDto>()
+            .Add(field => field.AddedAt, x => x.AddedAt)
+            .Add(field => field.AuctionEnd, x => x.Auction != null ? x.Auction.AuctionEnd : DateTimeOffset.MinValue)
+            .Add(field => field.CurrentBid, x => x.Auction != null ? x.Auction.CurrentHighBid ?? 0m : 0m)
+            .Build();
 
     public BookmarkRepository(AuctionDbContext context, IDateTimeProvider dateTime, IAuditContext auditContext)
         : base(context, dateTime, auditContext)

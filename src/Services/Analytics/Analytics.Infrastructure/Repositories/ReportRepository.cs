@@ -26,14 +26,14 @@ public class ReportRepository : IReportRepository
     private static readonly Expression<Func<Report, bool>> IsPendingForEscalation =
         r => r.Status == ReportStatus.Pending;
 
-    private static readonly Dictionary<string, Expression<Func<Report, object>>> SortMap = new(StringComparer.OrdinalIgnoreCase)
-    {
-        ["priority"] = r => r.Priority,
-        ["createdat"] = r => r.CreatedAt,
-        ["status"] = r => r.Status,
-        ["type"] = r => r.Type,
-        ["reportedusername"] = r => r.ReportedUsername
-    };
+    private static readonly IReadOnlyDictionary<string, Expression<Func<Report, object>>> SortMap =
+        new SortMapBuilder<Report, ReportDto>()
+            .Add(field => field.Priority, x => x.Priority)
+            .Add(field => field.CreatedAt, x => x.CreatedAt)
+            .Add(field => field.Status, x => x.Status)
+            .Add(field => field.Type, x => x.Type)
+            .Add(field => field.ReportedUsername, x => x.ReportedUsername)
+            .Build();
 
     public ReportRepository(AnalyticsDbContext context)
     {

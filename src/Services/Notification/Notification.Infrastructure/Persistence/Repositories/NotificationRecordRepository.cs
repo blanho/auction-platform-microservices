@@ -15,15 +15,14 @@ public class NotificationRecordRepository : INotificationRecordRepository
 {
     private readonly NotificationDbContext _context;
 
-    private static readonly Dictionary<string, Expression<Func<NotificationRecord, object>>> SortMap =
-        new(StringComparer.OrdinalIgnoreCase)
-        {
-            ["createdat"] = r => r.CreatedAt,
-            ["sentat"] = r => r.SentAt!,
-            ["channel"] = r => r.Channel,
-            ["status"] = r => r.Status,
-            ["templatekey"] = r => r.TemplateKey
-        };
+    private static readonly IReadOnlyDictionary<string, Expression<Func<NotificationRecord, object>>> SortMap =
+        new SortMapBuilder<NotificationRecord, NotificationRecordDto>()
+            .Add(field => field.CreatedAt, x => x.CreatedAt)
+            .Add(field => field.SentAt, x => x.SentAt)
+            .Add(field => field.Channel, x => x.Channel)
+            .Add(field => field.Status, x => x.Status)
+            .Add(field => field.TemplateKey, x => x.TemplateKey)
+            .Build();
 
     public NotificationRecordRepository(NotificationDbContext context)
     {

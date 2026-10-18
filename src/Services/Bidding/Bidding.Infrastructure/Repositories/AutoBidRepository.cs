@@ -1,3 +1,4 @@
+using Bidding.Application.DTOs;
 using BuildingBlocks.Infrastructure.Repository;
 using BuildingBlocks.Infrastructure.Extensions;
 
@@ -21,14 +22,13 @@ public class AutoBidRepository : EfRepository<AutoBid, BidDbContext>, IAutoBidRe
 
     protected override Guid GetUpdatedBy(AutoBid autoBid) => autoBid.UserId;
 
-    private static readonly Dictionary<string, Expression<Func<AutoBid, object>>> AutoBidSortMap =
-        new(StringComparer.OrdinalIgnoreCase)
-        {
-            ["createdat"] = x => x.CreatedAt,
-            ["maxamount"] = x => x.MaxAmount,
-            ["currentbidamount"] = x => x.CurrentBidAmount,
-            ["lastbidat"] = x => x.LastBidAt!
-        };
+    private static readonly IReadOnlyDictionary<string, Expression<Func<AutoBid, object>>> AutoBidSortMap =
+        new SortMapBuilder<AutoBid, AutoBidDto>()
+            .Add(field => field.CreatedAt, x => x.CreatedAt)
+            .Add(field => field.MaxAmount, x => x.MaxAmount)
+            .Add(field => field.CurrentBidAmount, x => x.CurrentBidAmount)
+            .Add(field => field.LastBidAt, x => x.LastBidAt)
+            .Build();
 
     public AutoBidRepository(BidDbContext context, IDateTimeProvider dateTime, IAuditContext auditContext)
         : base(context, dateTime, auditContext)

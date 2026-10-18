@@ -53,11 +53,23 @@ stable when entity properties change; a retained `[JsonPropertyName]` can also
 preserve a public sort name when a DTO's CLR property is renamed. Database column
 changes still require the appropriate EF mappings and migrations.
 
+For existing API aliases that differ from response fields, define a small typed
+sort contract in the service's `Application/Filtering` folder. Auction's `Price`
+and `EndDate`, for example, map to `CurrentHighBid ?? ReservePrice` and
+`AuctionEnd`. Preserve the public contract when persistence names change.
+
 The registration is an explicit allowlist. Adding entity properties does not
 automatically expose them as sort fields. Computed selectors are supported, such
 as `.Add(field => field.FullName, user => user.FullName ?? string.Empty)` for an
 explicit null-ordering policy. Expressions stay in the query for EF translation;
 they are not compiled into per-row delegates.
+
+Contract field types and stored key types can differ. A string `Status` in a DTO
+can map directly to an entity enum; keep the enum selector to preserve database
+ordering rather than converting it to display text. Nullable selectors retain
+the provider's existing null ordering unless a deliberate coalesce is registered.
+Search uses the same registration builder with Elasticsearch's native typed
+field inference; relational query extensions are not applied to search requests.
 
 `Build()` returns an immutable, case-insensitive
 [`FrozenDictionary`](https://learn.microsoft.com/en-us/dotnet/api/system.collections.frozen.frozendictionary-2?view=net-9.0).

@@ -1,4 +1,5 @@
 #nullable enable
+using Auctions.Application.DTOs;
 using BuildingBlocks.Infrastructure.Repository;
 using BuildingBlocks.Infrastructure.Extensions;
 using System.Linq.Expressions;
@@ -17,13 +18,12 @@ public class ReviewRepository : EfRepository<Review, AuctionDbContext>, IReviewR
         .Include(review => review.Auction)
         .ThenInclude(auction => auction!.Item);
 
-    private static readonly Dictionary<string, Expression<Func<Review, object>>> ReviewSortMap =
-        new(StringComparer.OrdinalIgnoreCase)
-        {
-            ["createdat"] = x => x.CreatedAt,
-            ["rating"] = x => x.Rating,
-            ["title"] = x => (object)(x.Title ?? string.Empty)
-        };
+    private static readonly IReadOnlyDictionary<string, Expression<Func<Review, object>>> ReviewSortMap =
+        new SortMapBuilder<Review, ReviewDto>()
+            .Add(field => field.CreatedAt, x => x.CreatedAt)
+            .Add(field => field.Rating, x => x.Rating)
+            .Add(field => field.Title, x => x.Title ?? string.Empty)
+            .Build();
 
     public ReviewRepository(AuctionDbContext context, IDateTimeProvider dateTime, IAuditContext auditContext)
         : base(context, dateTime, auditContext)

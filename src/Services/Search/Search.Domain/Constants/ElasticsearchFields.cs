@@ -44,8 +44,6 @@ public static class ElasticsearchFields
     public const string Tags = "tags";
     public const string ThumbnailUrl = "thumbnailUrl";
     public const string ImageUrls = "imageUrls";
-
-    public const string ScoreField = "_score";
 }
 
 public static class AggregationNames
@@ -87,12 +85,4 @@ public static class SearchDefaults
 
     public const long ZeroDocCount = 0;
     public const long ZeroSizeBytes = 0;
-}
-
-public static class SortFields
-{
-    public const string Price = "price";
-    public const string EndTime = "endtime";
-    public const string Bids = "bids";
-    public const string Created = "created";
 }

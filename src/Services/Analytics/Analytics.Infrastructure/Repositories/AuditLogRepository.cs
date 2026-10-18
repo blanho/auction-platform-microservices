@@ -17,13 +17,13 @@ public class AuditLogRepository : IAuditLogRepository
 {
     private readonly AnalyticsDbContext _context;
 
-    private static readonly Dictionary<string, Expression<Func<AuditLog, object>>> SortMap = new(StringComparer.OrdinalIgnoreCase)
-    {
-        ["timestamp"] = x => x.Timestamp,
-        ["entitytype"] = x => x.EntityType,
-        ["action"] = x => x.Action,
-        ["servicename"] = x => x.ServiceName
-    };
+    private static readonly IReadOnlyDictionary<string, Expression<Func<AuditLog, object>>> SortMap =
+        new SortMapBuilder<AuditLog, AuditLogDto>()
+            .Add(field => field.Timestamp, x => x.Timestamp)
+            .Add(field => field.EntityType, x => x.EntityType)
+            .Add(field => field.Action, x => x.Action)
+            .Add(field => field.ServiceName, x => x.ServiceName)
+            .Build();
 
     public AuditLogRepository(AnalyticsDbContext context)
     {

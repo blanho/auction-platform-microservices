@@ -49,8 +49,8 @@ public sealed class SortMapBuilderTests
         Assert.Throws<ArgumentException>(() => builder.Add(field => field.DisplayName.ToLowerInvariant(), entity => entity.DatabaseName));
         var captured = new Contract();
         Assert.Throws<ArgumentException>(() => builder.Add(_ => captured.DisplayName, entity => entity.DatabaseName));
-        Assert.Throws<ArgumentNullException>(() => builder.Add<string>(null!, entity => entity.DatabaseName));
-        Assert.Throws<ArgumentNullException>(() => builder.Add(field => field.DisplayName, null!));
+        Assert.Throws<ArgumentNullException>(() => builder.Add<string, string>(null!, entity => entity.DatabaseName));
+        Assert.Throws<ArgumentNullException>(() => builder.Add<string, string>(field => field.DisplayName, null!));
     }
 
     [Fact]
@@ -68,6 +68,22 @@ public sealed class SortMapBuilderTests
             map, row => row.Id, tieBreaker: row => row.Id);
         Assert.Equal(new[] { 1, 2, 3 }, sorted.Select(row => row.Id));
     }
+
+    [Fact]
+    public void StringContractField_PreservesNativeEnumKeyOrdering()
+    {
+        var map = new SortMapBuilder<StatusEntity, StatusContract>()
+            .Add(field => field.Status, entity => entity.Status)
+            .Build();
+        var rows = new[] { new StatusEntity(State.Alpha), new StatusEntity(State.Zulu) }.AsQueryable();
+        var sorted = rows.ApplySorting(new QueryParameters { SortBy = nameof(StatusContract.Status), SortDescending = false }, map);
+
+        Assert.Equal(new[] { State.Zulu, State.Alpha }, sorted.Select(row => row.Status));
+    }
+
+    private enum State { Zulu, Alpha }
+    private sealed record StatusEntity(State Status);
+    private sealed record StatusContract(string Status);
 
     private sealed record Entity(int Id, string DatabaseName, DateTimeOffset? LastSeen = null)
     {
