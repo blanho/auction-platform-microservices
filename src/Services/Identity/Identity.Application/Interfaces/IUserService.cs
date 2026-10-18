@@ -1,3 +1,4 @@
+using Identity.Application.Filtering;
 using Identity.Application.DTOs;
 using Identity.Domain.Entities;
 using Microsoft.AspNetCore.Identity;
@@ -11,7 +12,7 @@ public interface IUserService
     Task<ApplicationUser?> FindByNameAsync(string username);
     Task<ApplicationUser?> FindByEmailAsync(string email);
 
-    Task<PaginatedResult<AdminUserDto>> GetUsersPagedAsync(GetUsersQuery query, CancellationToken cancellationToken = default);
+    Task<PaginatedResult<AdminUserDto>> GetUsersPagedAsync(UserQueryParams query, CancellationToken cancellationToken = default);
     Task<AdminUserDto?> GetUserByIdAsync(string id, CancellationToken cancellationToken = default);
 
     Task<IdentityResult> CreateAsync(ApplicationUser user, string password);

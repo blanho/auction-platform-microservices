@@ -1,4 +1,4 @@
-using Identity.Application.Filters;
+using Identity.Application.Filtering;
 
 using AutoMapper;
 using BuildingBlocks.Application.Abstractions.Auditing;
@@ -71,17 +71,27 @@ public class UserService : IUserService
     }
 
     public async Task<PaginatedResult<AdminUserDto>> GetUsersPagedAsync(
-        GetUsersQuery query,
+        UserQueryParams query,
         CancellationToken cancellationToken = default)
     {
-        var roleId = await GetRoleIdAsync(query.Filter.Role, cancellationToken);
+        var roleId = await GetRoleIdAsync(query.Role, cancellationToken);
+        if (!string.IsNullOrWhiteSpace(query.Role) && roleId is null)
+            return PaginatedResult<AdminUserDto>.Empty(query.Page, query.PageSize);
+
+        var requestedFilter = query.Filter ?? new UserFilter();
+        var filter = new UserFilter
+        {
+            Search = requestedFilter.Search,
+            RoleId = roleId ?? requestedFilter.RoleId,
+            IsActive = requestedFilter.IsActive,
+            IsSuspended = requestedFilter.IsSuspended
+        };
 
         var dbQuery = _userManager.Users
             .AsNoTracking()
-            .Include(u => u.UserRoles)
-            .ApplyUserFilters(query.Filter.Search, query.Filter.IsActive, query.Filter.IsSuspended)
-            .ApplyRoleFilter(roleId)
-            .ApplySorting(query, UserSortMap.Map, u => u.CreatedAt, tieBreaker: u => u.Id);
+            .Include(user => user.UserRoles)
+            .ApplyFilters(filter)
+            .ApplySorting(query, UserSortMap.Map, user => user.CreatedAt, tieBreaker: user => user.Id);
 
         var totalCount = await dbQuery.CountAsync(cancellationToken);
 

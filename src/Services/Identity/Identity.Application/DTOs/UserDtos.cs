@@ -1,16 +1,4 @@
-using BuildingBlocks.Application.Paging;
-
 namespace Identity.Application.DTOs;
-
-public class UserFilter
-{
-    public string? Search { get; init; }
-    public string? Role { get; init; }
-    public bool? IsActive { get; init; }
-    public bool? IsSuspended { get; init; }
-}
-
-public class GetUsersQuery : QueryParameters<UserFilter> { }
 
 public class UserDto
 {

@@ -148,6 +148,11 @@ graph TB
 | **Gateway** | 6001 | — | — | YARP reverse proxy, JWT validation, rate limiting |
 | **Orchestration Service** | 5012 | — | PostgreSQL | Durable sale workflows, deadlines, and Admin recovery API. [Workflow and recovery notes](src/Orchestration/README.md) |
 
+All 14 aggregate repositories across Auction, Bidding, Catalog, Job, Payment,
+Notification, and Storage reuse the shared EF Core repository. Service-specific
+queries, transactions, and deletion policies remain explicit. See the
+[reuse guide and service audit](docs/common-repositories.md).
+
 ---
 
 ## Tech Stack
@@ -792,8 +797,8 @@ retention, batch limits, and token security behavior.
 | [Getting Started Guide](docs/getting-started.md) | Step-by-step onboarding for new developers |
 | [API Reference](docs/api-reference.md) | Gateway routes, authentication, request/response schemas |
 | [Background Jobs](docs/background-jobs.md) | Supported job operations, payload examples, retries, and staged roadmap |
-| [Paging Consistency](docs/paging-consistency.md) | Shared paging rules, service coverage, compatibility differences, and verification |
-| [Common Repositories](docs/common-repositories.md) | Research, shared EF Core CRUD, audit policies, transaction boundaries, and adoption |
+| [Paging Consistency](docs/paging-consistency.md) | Shared paging rules, typed immutable sort maps across services, compatibility differences, and verification |
+| [Common Repositories](docs/common-repositories.md) | Research, shared EF Core CRUD and queries, audit policies, transaction boundaries, and adoption |
 | [Deployment Guide](docs/deployment.md) | Docker, Kubernetes, CI/CD pipeline details |
 | [Azure Deployment Guide](deploy/azure/README.md) | Provision and deploy the Azure AKS environment |
 

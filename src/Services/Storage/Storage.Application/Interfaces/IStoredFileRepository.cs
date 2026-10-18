@@ -10,7 +10,7 @@ public interface IStoredFileRepository
     Task<List<StoredFile>> GetByOwnerIdAsync(Guid ownerId, CancellationToken ct = default);
     Task AddAsync(StoredFile file, CancellationToken ct = default);
     Task AddRangeAsync(IEnumerable<StoredFile> files, CancellationToken ct = default);
-    void Update(StoredFile file);
+    Task UpdateAsync(StoredFile file, CancellationToken ct = default);
     Task<List<StoredFile>> GetSoftDeletedOlderThanAsync(DateTimeOffset threshold, int batchSize, CancellationToken ct = default);
     Task<List<StoredFile>> GetUnassociatedOlderThanAsync(DateTimeOffset threshold, int batchSize, CancellationToken ct = default);
     void RemoveRange(IEnumerable<StoredFile> files);

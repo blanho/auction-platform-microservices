@@ -1,3 +1,5 @@
+using BuildingBlocks.Application.Abstractions.Providers;
+using BuildingBlocks.Application.Abstractions.Auditing;
 using Payment.Application.Features.Orders.GetOrdersByBuyer;
 using Payment.Application.Features.Orders.GetOrdersBySeller;
 using Payment.Application.Filtering;
@@ -26,7 +28,8 @@ public sealed class OrderPagingTests
         db.Orders.AddRange(orders);
         await db.SaveChangesAsync();
         db.ChangeTracker.Clear();
-        var repository = new OrderRepository(db);
+        var repository = new OrderRepository(db, new DateTimeProvider(),
+            TestProxy.Create<IAuditContext>((method, _) => method.Name == "get_UserId" ? Guid.Empty : null));
         OrderQueryParams Parameters(int page) => new()
         {
             Page = page, PageSize = 1, Filter = new OrderFilter { BuyerUsername = "buyer" }

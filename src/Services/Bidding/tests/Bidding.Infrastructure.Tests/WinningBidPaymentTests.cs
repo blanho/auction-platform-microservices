@@ -84,6 +84,34 @@ public class WinningBidPaymentTests
         Assert.Equal(30m, Assert.Single(sorted.Items).Amount);
     }
 
+    [PostgresFact]
+    public async Task SharedAutoBidQueries_PreserveUserActiveAndDeletedFilters()
+    {
+        await using var database = await PostgresTestDatabase.CreateAsync();
+        await using var db = new BidDbContext(new DbContextOptionsBuilder<BidDbContext>()
+            .UseNpgsql(database.ConnectionString).Options);
+        await db.Database.MigrateAsync();
+        var user = Guid.NewGuid();
+        var active = AutoBid.Create(Guid.NewGuid(), user, "user", 100);
+        var inactive = AutoBid.Create(Guid.NewGuid(), user, "user", 100);
+        inactive.Deactivate();
+        var deleted = AutoBid.Create(Guid.NewGuid(), user, "user", 100);
+        deleted.MarkAsDeleted(Guid.Empty, DateTimeOffset.UtcNow);
+        db.AddRange(active, inactive, deleted, AutoBid.Create(Guid.NewGuid(), Guid.NewGuid(), "other", 100));
+        await db.SaveChangesAsync();
+        db.ChangeTracker.Clear();
+        var repository = new AutoBidRepository(db, null!, null!);
+        Assert.Equal(3, await repository.CountAsync());
+        Assert.Equal(2, await repository.GetAutoBidsCountForUserAsync(user, null));
+        Assert.Equal(1, await repository.GetAutoBidsCountForUserAsync(user, true));
+        Assert.Equal(1, await repository.GetAutoBidsCountForUserAsync(user, false));
+        Assert.Equal(active.Id, (await repository.GetActiveAutoBidAsync(active.AuctionId, user))!.Id);
+        Assert.Null(await repository.GetActiveAutoBidAsync(inactive.AuctionId, user));
+        Assert.Null(await repository.GetActiveAutoBidAsync(deleted.AuctionId, user));
+        Assert.Null(await repository.GetActiveAutoBidAsync(active.AuctionId, Guid.NewGuid()));
+        Assert.Empty(db.ChangeTracker.Entries());
+    }
+
     [Fact]
     public async Task AutoBidWrites_KeepOwnerAuditAndRequesterDeletionAudit()
     {

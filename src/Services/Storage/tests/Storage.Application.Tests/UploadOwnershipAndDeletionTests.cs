@@ -48,7 +48,7 @@ public class UploadOwnershipAndDeletionTests
         var repository = Stub<IStoredFileRepository>((method, _) => method.Name switch
         {
             nameof(IStoredFileRepository.GetByStoredFileNameAsync) => Task.FromResult<StoredFile?>(reservation),
-            nameof(IStoredFileRepository.Update) => null,
+            nameof(IStoredFileRepository.UpdateAsync) => Task.CompletedTask,
             _ => throw new NotSupportedException(method.Name)
         });
         var storage = Stub<IFileStorageService>((method, _) => method.Name switch
@@ -128,7 +128,7 @@ public class UploadOwnershipAndDeletionTests
     private static IStoredFileRepository Repository(StoredFile file) => Stub<IStoredFileRepository>((method, _) => method.Name switch
     {
         nameof(IStoredFileRepository.GetByIdAsync) => Task.FromResult<StoredFile?>(file),
-        nameof(IStoredFileRepository.Update) => null,
+        nameof(IStoredFileRepository.UpdateAsync) => Task.CompletedTask,
         _ => throw new NotSupportedException(method.Name)
     });
     private static T Stub<T>(Func<MethodInfo, object?[]?, object?> handler) where T : class

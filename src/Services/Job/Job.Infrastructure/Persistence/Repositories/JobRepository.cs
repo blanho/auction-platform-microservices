@@ -37,41 +37,19 @@ public class JobRepository : EfRepository<Job, JobDbContext>, IJobRepository
             .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
     }
 
-    public async Task<Job?> GetByCorrelationIdAsync(string correlationId, CancellationToken cancellationToken = default)
-    {
-        return await Context.Jobs
-            .Where(x => !x.IsDeleted)
-            .AsNoTracking()
-            .FirstOrDefaultAsync(x => x.CorrelationId == correlationId, cancellationToken);
-    }
+    public Task<Job?> GetByCorrelationIdAsync(string correlationId, CancellationToken cancellationToken = default) =>
+        FirstOrDefaultAsync(job => job.CorrelationId == correlationId, cancellationToken);
 
-    public async Task<PaginatedResult<Job>> GetFilteredAsync(
+    public Task<PaginatedResult<Job>> GetFilteredAsync(
         JobType? type,
         JobStatus? status,
         Guid? requestedBy,
         int page,
         int pageSize,
-        CancellationToken cancellationToken = default)
-    {
-        var query = Context.Jobs
-            .Where(x => !x.IsDeleted)
-            .AsNoTracking();
-
-        if (type.HasValue)
-            query = query.Where(x => x.Type == type.Value);
-
-        if (status.HasValue)
-            query = query.Where(x => x.Status == status.Value);
-
-        if (requestedBy.HasValue)
-            query = query.Where(x => x.RequestedBy == requestedBy.Value);
-
-        var orderedQuery = query.OrderByDescending(x => x.CreatedAt);
-
-        return await orderedQuery
-            .ThenBy(entity => entity.Id)
-            .ToPaginatedResultAsync(page, pageSize, cancellationToken);
-    }
+        CancellationToken cancellationToken = default) =>
+        GetPagedAsync(job => (!type.HasValue || job.Type == type)
+            && (!status.HasValue || job.Status == status)
+            && (!requestedBy.HasValue || job.RequestedBy == requestedBy), page, pageSize, cancellationToken);
 
     public async Task<List<Job>> GetPendingJobsByPriorityAsync(
         int batchSize, CancellationToken cancellationToken = default)

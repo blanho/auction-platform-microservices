@@ -18,14 +18,13 @@ namespace Bidding.Infrastructure.Repositories
 {
     public class BidRepository : EfRepository<Bid, BidDbContext>, IBidRepository
     {
-        private static readonly Dictionary<string, Expression<Func<Bid, object>>> BidSortMap =
-            new(StringComparer.OrdinalIgnoreCase)
-            {
-                ["bidtime"] = x => x.BidTime,
-                ["amount"] = x => x.Amount,
-                ["createdat"] = x => x.CreatedAt,
-                ["status"] = x => x.Status
-            };
+        private static readonly IReadOnlyDictionary<string, Expression<Func<Bid, object>>> BidSortMap =
+            new SortMapBuilder<Bid, BidDto>()
+                .Add(field => field.BidTime, x => x.BidTime)
+                .Add(field => field.Amount, x => x.Amount)
+                .Add(field => field.CreatedAt, x => x.CreatedAt)
+                .Add(field => field.Status, x => x.Status)
+                .Build();
 
         public BidRepository(BidDbContext context, IDateTimeProvider dateTime, IAuditContext auditContext)
             : base(context, dateTime, auditContext)
@@ -45,14 +44,6 @@ namespace Bidding.Infrastructure.Repositories
             return await query
                 .ThenBy(entity => entity.Id)
                 .ToPaginatedResultAsync(page, pageSize, cancellationToken);
-        }
-
-        public async Task<int> CountAsync(CancellationToken cancellationToken = default)
-        {
-            return await Context.Bids
-                .AsNoTracking()
-                .Where(x => !x.IsDeleted)
-                .CountAsync(cancellationToken);
         }
 
         public async Task<List<Bid>> GetBidsByAuctionIdAsync(Guid auctionId, CancellationToken cancellationToken = default)

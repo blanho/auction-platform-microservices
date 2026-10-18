@@ -1,3 +1,4 @@
+using TestSupport;
 using System.Reflection;
 using Auctions.Domain.Entities;
 using Auctions.Domain.Enums;
@@ -37,6 +38,32 @@ public class AuctionRepositoryTrackingTests
         Assert.Equal(EntityState.Modified, context.Entry(auction).State);
         Assert.True(context.Entry(auction).Property(a => a.Status).IsModified);
         Assert.Equal(EntityState.Unchanged, context.Entry(auction.Item).State);
+    }
+
+    [PostgresFact]
+    public async Task SharedIdBatches_RetainItemIncludesAndTrackOnlyWriteLookups()
+    {
+        await using var database = await PostgresTestDatabase.CreateAsync();
+        await using var db = new AuctionDbContext(new DbContextOptionsBuilder<AuctionDbContext>()
+            .UseNpgsql(database.ConnectionString).Options);
+        await db.Database.MigrateAsync();
+        var auction = AuctionEntity.CreateScheduled(Guid.NewGuid(), "seller", Item.Create("item", "description"),
+            1m, DateTimeOffset.UtcNow.AddDays(1));
+        var deleted = AuctionEntity.CreateScheduled(Guid.NewGuid(), "seller", Item.Create("deleted", "description"),
+            1m, DateTimeOffset.UtcNow.AddDays(1));
+        deleted.MarkAsDeleted(Guid.Empty, DateTimeOffset.UtcNow);
+        db.AddRange(auction, deleted);
+        await db.SaveChangesAsync();
+        db.ChangeTracker.Clear();
+        db.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
+        var repository = new AuctionRepository(db, null!, null!);
+        var read = Assert.Single(await repository.GetByIdsAsync([auction.Id, deleted.Id, auction.Id]));
+        Assert.Equal("item", read.Item.Title);
+        Assert.Empty(db.ChangeTracker.Entries());
+        var tracked = Assert.Single(await repository.GetByIdsForUpdateAsync([auction.Id, deleted.Id]));
+        Assert.Equal("item", tracked.Item.Title);
+        Assert.Equal(EntityState.Unchanged, db.Entry(tracked).State);
+        Assert.Equal(EntityState.Unchanged, db.Entry(tracked.Item).State);
     }
 
     private static T Stub<T>(Func<MethodInfo, object?[]?, object?> handler) where T : class

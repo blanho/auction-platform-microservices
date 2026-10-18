@@ -1,4 +1,5 @@
 using Auctions.Application.DTOs;
+using Auctions.Application.Filtering;
 using Auctions.Domain.Entities;
 using Auctions.Infrastructure.Persistence;
 using Auctions.Infrastructure.Persistence.Repositories;
@@ -62,6 +63,40 @@ public sealed class PagingPersistenceTests
             actual.Add(Assert.Single(result.Items).Id);
         }
         Assert.Equal(await db.Auctions.OrderBy(auction => auction.Id).Select(auction => auction.Id).ToListAsync(), actual);
+    }
+
+    [PostgresFact]
+    public async Task AuctionAndBookmarkSortAliases_KeepComputedPriceAndEndDateOrdering()
+    {
+        await using var database = await PostgresTestDatabase.CreateAsync();
+        await using var db = Open(database);
+        await db.Database.MigrateAsync();
+        var timestamp = DateTimeOffset.UtcNow;
+        var auctions = Enumerable.Range(1, 3).Select(index => AuctionEntity.CreateScheduled(Guid.NewGuid(), "seller",
+            Item.Create($"Item {index}", "description"), index * 10m, timestamp.AddDays(4 - index))).ToArray();
+        auctions[0].UpdateHighBid(100m);
+        auctions[2].UpdateHighBid(30m);
+        db.Auctions.AddRange(auctions);
+        var bookmarks = auctions.Select(auction => Bookmark.Create(Guid.NewGuid(), "user", auction.Id, BookmarkType.Watchlist)).ToArray();
+        db.Bookmarks.AddRange(bookmarks);
+        await db.SaveChangesAsync();
+        db.ChangeTracker.Clear();
+        var repository = Repository(db);
+        var byPrice = await repository.GetPagedAsync(new AuctionFilterDto { SortBy = "PRICE", SortDescending = false });
+        var byEndDate = await repository.GetPagedAsync(new AuctionFilterDto { SortBy = "enddate", SortDescending = false });
+
+        Assert.Equal(new[] { auctions[1].Id, auctions[2].Id, auctions[0].Id }, byPrice.Items.Select(auction => auction.Id));
+        Assert.Equal(auctions.Reverse().Select(auction => auction.Id), byEndDate.Items.Select(auction => auction.Id));
+
+        var bookmarkRepository = new BookmarkRepository(db, new DateTimeProvider(), null!);
+        var byAuctionEnd = await bookmarkRepository.GetByUsernameAsync("user", BookmarkType.Watchlist,
+            new BookmarkQueryParams { SortBy = "auctionEnd", SortDescending = false });
+        var byCurrentBid = await bookmarkRepository.GetByUsernameAsync("user", BookmarkType.Watchlist,
+            new BookmarkQueryParams { SortBy = "currentBid", SortDescending = false });
+
+        Assert.Equal(bookmarks.Reverse().Select(bookmark => bookmark.Id), byAuctionEnd.Items.Select(bookmark => bookmark.Id));
+        Assert.Equal(new[] { bookmarks[1].Id, bookmarks[2].Id, bookmarks[0].Id }, byCurrentBid.Items.Select(bookmark => bookmark.Id));
+        Assert.Empty(db.ChangeTracker.Entries());
     }
 
     [PostgresFact]

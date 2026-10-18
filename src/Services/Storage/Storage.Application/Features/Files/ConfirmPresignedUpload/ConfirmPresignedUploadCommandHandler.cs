@@ -53,7 +53,7 @@ public class ConfirmPresignedUploadCommandHandler(
 
         var url = await fileStorageService.GetUrlAsync(request.StoredFileName, cancellationToken);
         storedFile.ConfirmUpload(url ?? string.Empty);
-        repository.Update(storedFile);
+        await repository.UpdateAsync(storedFile, cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
         await auditPublisher.PublishAsync(

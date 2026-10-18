@@ -310,13 +310,20 @@ graph LR
 
 ## Shared Repository Implementation
 
-`EfRepository<TEntity, TContext>` shares audited aggregate CRUD and soft deletion
-across Auction, Bidding, Catalog, and Job repositories. Read/write/batch contracts
-stay in BuildingBlocks.Application; the EF implementation stays in Infrastructure.
-Service interfaces, domain queries, scoped contexts, and unit-of-work commits are
-preserved. Required includes, owner audit, and child graph behavior remain explicit
-service policies. See [Common Repositories](common-repositories.md) for the research,
-usage example, constraints, and services with different persistence contracts.
+`EfRepository<TEntity, TContext>` shares audited aggregate CRUD across all 14
+aggregate repositories in Auction, Bidding, Catalog, Job, Payment, Notification,
+and Storage. Read/write/batch contracts stay in BuildingBlocks.Application; the
+EF implementation stays in Infrastructure. Service interfaces, domain queries,
+scoped contexts, and existing commit boundaries are preserved, including legacy
+immediate template commits and physical cleanup.
+The optional `IQueryRepository<T>` contract supplies predicate lookups, counts,
+ID batches, and filtered/projected paging without expanding every existing service
+interface. Read queries preserve visibility filters and use no tracking; write
+lookups explicitly enable tracking.
+Required includes, audit actors, child graph behavior, and domain deletion remain
+explicit service policies. See [Common Repositories](common-repositories.md) for
+the research, usage example, constraints, and services with different persistence
+contracts.
 
 ## Auction Close Consistency
 

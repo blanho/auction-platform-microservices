@@ -17,6 +17,7 @@ public class SearchSortRequestTests
     [InlineData("price", "asc", "currentPrice", "asc")]
     [InlineData("PRICE", "ASC", "currentPrice", "asc")]
     [InlineData("endtime", "desc", "endTime", "desc")]
+    [InlineData("ENDTIME", "asc", "endTime", "asc")]
     [InlineData("bids", null, "bidCount", "desc")]
     [InlineData("created", "unknown", "createdAt", "desc")]
     public async Task FieldSort_PreservesDirectionAndIdTieBreaker(
@@ -34,6 +35,8 @@ public class SearchSortRequestTests
     [InlineData(null)]
     [InlineData("relevance")]
     [InlineData("unknown")]
+    [InlineData("currentPrice")]
+    [InlineData("id")]
     public async Task RelevanceSort_PreservesScoreDateAndIdOrdering(string? sortBy)
     {
         using var request = await CaptureSearchAsync(sortBy, "asc");

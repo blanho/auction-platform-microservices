@@ -1,3 +1,6 @@
+using BuildingBlocks.Application.Abstractions.Auditing;
+using BuildingBlocks.Application.Abstractions.Providers;
+using BuildingBlocks.Infrastructure.Repository;
 using Microsoft.EntityFrameworkCore;
 using Storage.Application.Interfaces;
 using Storage.Domain.Entities;
@@ -5,54 +8,44 @@ using Storage.Domain.Enums;
 
 namespace Storage.Infrastructure.Persistence.Repositories;
 
-public class StoredFileRepository : IStoredFileRepository
+public class StoredFileRepository : EfRepository<StoredFile, StorageDbContext>, IStoredFileRepository
 {
-    private readonly StorageDbContext _context;
-
-    public StoredFileRepository(StorageDbContext context)
+    public StoredFileRepository(
+        StorageDbContext context, IDateTimeProvider clock, IAuditContext auditContext)
+        : base(context, clock, auditContext)
     {
-        _context = context;
     }
 
-    public async Task<StoredFile?> GetByIdAsync(Guid id, CancellationToken ct = default)
-    {
-        return await _context.StoredFiles.FindAsync([id], ct);
-    }
+    public override Task<StoredFile?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default) =>
+        GetByIdForUpdateAsync(id, cancellationToken);
 
     public Task<StoredFile?> GetByReportRequestIdAsync(Guid ownerId, Guid requestId, CancellationToken ct = default) =>
-        _context.StoredFiles.AsNoTracking().SingleOrDefaultAsync(f => f.OwnerId == ownerId && f.ReportRequestId == requestId, ct);
+        SingleOrDefaultAsync(file => file.OwnerId == ownerId && file.ReportRequestId == requestId, ct);
 
     public Task<StoredFile?> GetByStoredFileNameAsync(string storedFileName, CancellationToken ct = default) =>
-        _context.StoredFiles.SingleOrDefaultAsync(f => f.StoredFileName == storedFileName, ct);
+        Context.StoredFiles.SingleOrDefaultAsync(f => f.StoredFileName == storedFileName, ct);
 
     public async Task<List<StoredFile>> GetByOwnerIdAsync(Guid ownerId, CancellationToken ct = default)
     {
-        return await _context.StoredFiles
+        return await Context.StoredFiles
             .AsNoTracking()
             .Where(f => f.OwnerId == ownerId && f.Status == FileStatus.Ready)
             .OrderByDescending(f => f.CreatedAt)
             .ToListAsync(ct);
     }
 
-    public async Task AddAsync(StoredFile file, CancellationToken ct = default)
-    {
-        await _context.StoredFiles.AddAsync(file, ct);
-    }
+    Task IStoredFileRepository.AddAsync(StoredFile file, CancellationToken ct) => AddAsync(file, ct);
 
-    public async Task AddRangeAsync(IEnumerable<StoredFile> files, CancellationToken ct = default)
+    protected override void ApplyDeletedAudit(StoredFile entity, DateTimeOffset timestamp)
     {
-        await _context.StoredFiles.AddRangeAsync(files, ct);
-    }
-
-    public void Update(StoredFile file)
-    {
-        _context.StoredFiles.Update(file);
+        entity.MarkAsDeleted(GetDeletedBy(entity));
+        base.ApplyDeletedAudit(entity, timestamp);
     }
 
     public async Task<List<StoredFile>> GetSoftDeletedOlderThanAsync(
         DateTimeOffset threshold, int batchSize, CancellationToken ct = default)
     {
-        return await _context.StoredFiles
+        return await Context.StoredFiles
             .IgnoreQueryFilters()
             .Where(f => f.IsDeleted && f.DeletedAt != null && f.DeletedAt < threshold)
             .OrderBy(f => f.DeletedAt)
@@ -63,7 +56,7 @@ public class StoredFileRepository : IStoredFileRepository
     public async Task<List<StoredFile>> GetUnassociatedOlderThanAsync(
         DateTimeOffset threshold, int batchSize, CancellationToken ct = default)
     {
-        return await _context.StoredFiles
+        return await Context.StoredFiles
             .Where(f => (f.OwnerId == null && f.Status == FileStatus.Ready && f.CreatedAt < threshold)
                 || (f.Status == FileStatus.Pending && f.UploadExpiresAt < threshold))
             .OrderBy(f => f.CreatedAt)
@@ -73,6 +66,6 @@ public class StoredFileRepository : IStoredFileRepository
 
     public void RemoveRange(IEnumerable<StoredFile> files)
     {
-        _context.StoredFiles.RemoveRange(files);
+        Context.StoredFiles.RemoveRange(files);
     }
 }

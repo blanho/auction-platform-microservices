@@ -1,3 +1,4 @@
+using Identity.Application.Filtering;
 using System.Security.Claims;
 using Carter;
 using MediatR;
@@ -117,16 +118,16 @@ public class UserEndpoints : ICarterModule
 
     private static async Task<IResult> GetUsers([AsParameters] GetUsersRequest request, ISender sender, CancellationToken cancellationToken)
     {
-        var query = new GetUsersQuery
+        var query = new UserQueryParams
         {
             Page = request.Page,
             PageSize = request.PageSize,
             SortBy = request.SortBy,
             SortDescending = request.SortDescending,
+            Role = request.Role,
             Filter = new UserFilter
             {
                 Search = request.Search,
-                Role = request.Role,
                 IsActive = request.IsActive,
                 IsSuspended = request.IsSuspended
             }

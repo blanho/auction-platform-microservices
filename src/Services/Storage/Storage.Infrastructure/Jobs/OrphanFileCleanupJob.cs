@@ -103,7 +103,7 @@ public class OrphanFileCleanupJob : BaseJob
             foreach (var file in batch)
             {
                 file.MarkAsDeleted(null);
-                repository.Update(file);
+                await repository.UpdateAsync(file, cancellationToken);
             }
             await unitOfWork.SaveChangesAsync(cancellationToken);
             dbContext.ChangeTracker.Clear();

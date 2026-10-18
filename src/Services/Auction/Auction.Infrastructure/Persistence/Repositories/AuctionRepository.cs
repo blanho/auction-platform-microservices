@@ -1,4 +1,5 @@
 #nullable enable
+using Auctions.Application.Filtering;
 using BuildingBlocks.Infrastructure.Repository;
 using BuildingBlocks.Infrastructure.Extensions;
 using System.Linq.Expressions;
@@ -13,14 +14,13 @@ namespace Auctions.Infrastructure.Persistence.Repositories
 {
     public class AuctionRepository : EfRepository<Auction, AuctionDbContext>, IAuctionReadRepository, IAuctionWriteRepository
     {
-        private static readonly Dictionary<string, Expression<Func<Auction, object>>> AuctionSortMap =
-            new(StringComparer.OrdinalIgnoreCase)
-            {
-                ["price"] = x => x.CurrentHighBid ?? x.ReservePrice,
-                ["enddate"] = x => x.AuctionEnd,
-                ["createdat"] = x => x.CreatedAt,
-                ["title"] = x => x.Item != null ? x.Item.Title : string.Empty
-            };
+        private static readonly IReadOnlyDictionary<string, Expression<Func<Auction, object>>> AuctionSortMap =
+            new SortMapBuilder<Auction, AuctionSortFields>()
+                .Add(field => field.Price, x => x.CurrentHighBid ?? x.ReservePrice)
+                .Add(field => field.EndDate, x => x.AuctionEnd)
+                .Add(field => field.CreatedAt, x => x.CreatedAt)
+                .Add(field => field.Title, x => x.Item != null ? x.Item.Title : string.Empty)
+                .Build();
 
         private IQueryable<Auction> ActiveAuctionsWithItemDetails =>
             Context.Auctions
@@ -115,19 +115,6 @@ namespace Auctions.Infrastructure.Persistence.Repositories
                 .ToListAsync(cancellationToken);
 
             return new PaginatedResult<Auction>(items, totalCount, filter.Page, filter.PageSize);
-        }
-
-        public async Task<List<Auction>> GetByIdsForUpdateAsync(
-            IEnumerable<Guid> ids,
-            CancellationToken cancellationToken = default)
-        {
-            var idList = ids.ToList();
-            if (idList.Count == 0)
-                return [];
-
-            return await ActiveAuctionsWithItemDetails
-                .Where(x => idList.Contains(x.Id))
-                .ToListAsync(cancellationToken);
         }
 
         public async Task<List<Auction>> GetFinishedAuctionsAsync(CancellationToken cancellationToken = default)
@@ -227,18 +214,6 @@ namespace Auctions.Infrastructure.Persistence.Repositories
                 .OrderByDescending(x => x.CurrentHighBid ?? 0)
                 .ThenByDescending(x => x.IsFeatured)
                 .Take(limit)
-                .ToListAsync(cancellationToken);
-        }
-
-        public async Task<List<Auction>> GetByIdsAsync(IEnumerable<Guid> ids, CancellationToken cancellationToken = default)
-        {
-            var idList = ids.ToList();
-            if (idList.Count == 0)
-                return new List<Auction>();
-
-            return await ActiveAuctionsWithItemDetails
-                .Where(x => idList.Contains(x.Id))
-                .AsNoTracking()
                 .ToListAsync(cancellationToken);
         }
 

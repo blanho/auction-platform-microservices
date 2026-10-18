@@ -1,3 +1,5 @@
+using BuildingBlocks.Application.Abstractions.Providers;
+using BuildingBlocks.Application.Abstractions.Auditing;
 using AutoMapper;
 using System.Data.Common;
 using Microsoft.EntityFrameworkCore;
@@ -43,7 +45,8 @@ public sealed class NotificationPagingTests
             var notification = Assert.IsType<NotificationEntity>(args![0]);
             return new NotificationDto { Id = notification.Id, UserId = notification.UserId, Status = notification.Status.ToString() };
         });
-        var repository = new NotificationRepository(db);
+        var repository = new NotificationRepository(db, new DateTimeProvider(),
+            TestProxy.Create<IAuditContext>((method, _) => method.Name == "get_UserId" ? Guid.Empty : null));
         var handler = new GetUserNotificationsQueryHandler(repository, mapper, NullLogger<GetUserNotificationsQueryHandler>.Instance);
         var first = await handler.Handle(new GetUserNotificationsQuery("user", 1, 1, NotificationStatus.Unread), default);
         var second = await handler.Handle(new GetUserNotificationsQuery("user", 2, 1, NotificationStatus.Unread), default);
@@ -95,7 +98,8 @@ public sealed class NotificationPagingTests
             var notification = Assert.IsType<NotificationEntity>(args![0]);
             return new NotificationDto { Id = notification.Id, UserId = notification.UserId };
         });
-        var repository = new NotificationRepository(db);
+        var repository = new NotificationRepository(db, new DateTimeProvider(),
+            TestProxy.Create<IAuditContext>((method, _) => method.Name == "get_UserId" ? Guid.Empty : null));
         var handler = new GetNotificationSummaryQueryHandler(repository, mapper, NullLogger<GetNotificationSummaryQueryHandler>.Instance);
         var result = await handler.Handle(new GetNotificationSummaryQuery("user"), default);
         Assert.NotNull(result.Value);

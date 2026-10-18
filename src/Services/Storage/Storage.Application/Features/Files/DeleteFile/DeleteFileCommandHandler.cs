@@ -33,7 +33,7 @@ public class DeleteFileCommandHandler(
         var storedFileName = file.StoredFileName;
 
         file.MarkAsDeleted(request.RequestedById);
-        repository.Update(file);
+        await repository.UpdateAsync(file, cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
         try
