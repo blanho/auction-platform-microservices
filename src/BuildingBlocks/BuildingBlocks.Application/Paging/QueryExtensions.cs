@@ -59,11 +59,20 @@ public static class QueryExtensions
         Expression<Func<T, object>>? defaultSort = null,
         Expression<Func<T, object>>? tieBreaker = null)
     {
-        IReadOnlyList<SortDescriptor>? sorts = parameters.Sorts is { Count: > 0 }
-            ? parameters.Sorts
-            : string.IsNullOrWhiteSpace(parameters.SortBy)
-                ? null
-                : [new SortDescriptor { Field = parameters.SortBy, Desc = parameters.SortDescending }];
+        var sorts = parameters.Sorts;
+
+        if (sorts is not { Count: > 0 } && !string.IsNullOrWhiteSpace(parameters.SortBy))
+        {
+            sorts =
+            [
+                new SortDescriptor
+                {
+                    Field = parameters.SortBy,
+                    Desc = parameters.SortDescending
+                }
+            ];
+        }
+
         return query.ApplySorting(sorts, sortMap, defaultSort, parameters.SortDescending, tieBreaker);
     }
 
