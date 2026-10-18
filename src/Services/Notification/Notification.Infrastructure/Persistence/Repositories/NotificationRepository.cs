@@ -1,3 +1,6 @@
+using BuildingBlocks.Application.Abstractions.Auditing;
+using BuildingBlocks.Application.Abstractions.Providers;
+using BuildingBlocks.Infrastructure.Repository;
 using BuildingBlocks.Infrastructure.Extensions;
 using BuildingBlocks.Application.Abstractions;
 using Microsoft.EntityFrameworkCore;
@@ -7,44 +10,26 @@ using Notification.Infrastructure.Persistence;
 
 namespace Notification.Infrastructure.Persistence.Repositories;
 
-public class NotificationRepository : INotificationRepository
+public class NotificationRepository : EfRepository<NotificationEntity, NotificationDbContext>, INotificationRepository
 {
-    private readonly NotificationDbContext _context;
-
-    public NotificationRepository(NotificationDbContext context)
+    public NotificationRepository(
+        NotificationDbContext context, IDateTimeProvider clock, IAuditContext auditContext)
+        : base(context, clock, auditContext)
     {
-        _context = context;
     }
 
-    public async Task<NotificationEntity?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
+    public override async Task DeleteAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        return await _context.Notifications.FindAsync([id], cancellationToken);
-    }
-
-    public async Task<NotificationEntity> CreateAsync(NotificationEntity notification, CancellationToken cancellationToken = default)
-    {
-        await _context.Notifications.AddAsync(notification, cancellationToken);
-        return notification;
-    }
-
-    public async Task UpdateAsync(NotificationEntity notification, CancellationToken cancellationToken = default)
-    {
-        _context.Notifications.Update(notification);
-        await Task.CompletedTask;
-    }
-
-    public async Task DeleteAsync(Guid id, CancellationToken cancellationToken = default)
-    {
-        var notification = await _context.Notifications.FindAsync([id], cancellationToken);
+        var notification = await GetByIdForUpdateAsync(id, cancellationToken);
         if (notification != null)
         {
-            _context.Notifications.Remove(notification);
+            Context.Notifications.Remove(notification);
         }
     }
 
     public async Task<List<NotificationEntity>> GetByUserIdAsync(string userId, CancellationToken cancellationToken = default)
     {
-        return await _context.Notifications
+        return await Query
             .AsNoTracking()
             .Where(n => n.UserId == userId)
             .OrderByDescending(n => n.CreatedAt)
@@ -53,7 +38,7 @@ public class NotificationRepository : INotificationRepository
 
     public async Task<List<NotificationEntity>> GetUnreadByUserIdAsync(string userId, CancellationToken cancellationToken = default)
     {
-        return await _context.Notifications
+        return await Query
             .AsNoTracking()
             .Where(n => n.UserId == userId && n.Status == NotificationStatus.Unread)
             .OrderByDescending(n => n.CreatedAt)
@@ -62,20 +47,20 @@ public class NotificationRepository : INotificationRepository
 
     public async Task<int> GetUnreadCountByUserIdAsync(string userId, CancellationToken cancellationToken = default)
     {
-        return await _context.Notifications
+        return await Query
             .AsNoTracking()
             .CountAsync(n => n.UserId == userId && n.Status == NotificationStatus.Unread, cancellationToken);
     }
 
     public async Task MarkAsReadAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        var notification = await _context.Notifications.FindAsync([id], cancellationToken);
+        var notification = await GetByIdForUpdateAsync(id, cancellationToken);
         notification?.MarkAsRead();
     }
 
     public async Task MarkAllAsReadAsync(string userId, CancellationToken cancellationToken = default)
     {
-        await _context.Notifications
+        await Query
             .Where(n => n.UserId == userId && n.Status == NotificationStatus.Unread)
             .ExecuteUpdateAsync(
                 s => s.SetProperty(n => n.Status, NotificationStatus.Read)
@@ -85,14 +70,14 @@ public class NotificationRepository : INotificationRepository
 
     public async Task ArchiveAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        var notification = await _context.Notifications.FindAsync([id], cancellationToken);
+        var notification = await GetByIdForUpdateAsync(id, cancellationToken);
         notification?.Archive();
     }
 
     public async Task<List<NotificationEntity>> GetOldReadNotificationsAsync(int retentionDays, CancellationToken cancellationToken = default)
     {
         var cutoffDate = DateTimeOffset.UtcNow.AddDays(-retentionDays);
-        return await _context.Notifications
+        return await Query
             .AsNoTracking()
             .Where(n => n.Status == NotificationStatus.Read && n.ReadAt < cutoffDate)
             .ToListAsync(cancellationToken);
@@ -100,7 +85,7 @@ public class NotificationRepository : INotificationRepository
 
     public async Task DeleteRangeAsync(List<NotificationEntity> notifications, CancellationToken cancellationToken = default)
     {
-        _context.Notifications.RemoveRange(notifications);
+        Context.Notifications.RemoveRange(notifications);
         await Task.CompletedTask;
     }
 
@@ -112,7 +97,7 @@ public class NotificationRepository : INotificationRepository
         NotificationStatus? status = null,
         CancellationToken cancellationToken = default)
     {
-        var query = _context.Notifications
+        var query = Query
             .AsNoTracking()
             .AsQueryable();
 
@@ -135,11 +120,11 @@ public class NotificationRepository : INotificationRepository
     {
         var today = DateTimeOffset.UtcNow.Date;
 
-        var totalCount = await _context.Notifications.AsNoTracking().CountAsync(cancellationToken);
-        var unreadCount = await _context.Notifications.AsNoTracking().CountAsync(n => n.Status == NotificationStatus.Unread, cancellationToken);
-        var todayCount = await _context.Notifications.AsNoTracking().CountAsync(n => n.CreatedAt.Date == today, cancellationToken);
+        var totalCount = await Query.AsNoTracking().CountAsync(cancellationToken);
+        var unreadCount = await Query.AsNoTracking().CountAsync(n => n.Status == NotificationStatus.Unread, cancellationToken);
+        var todayCount = await Query.AsNoTracking().CountAsync(n => n.CreatedAt.Date == today, cancellationToken);
 
-        var byType = await _context.Notifications
+        var byType = await Query
             .AsNoTracking()
             .GroupBy(n => n.Type)
             .Select(g => new { Type = g.Key.ToString(), Count = g.Count() })

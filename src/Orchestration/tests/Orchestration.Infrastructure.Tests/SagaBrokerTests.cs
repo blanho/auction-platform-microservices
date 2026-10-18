@@ -168,6 +168,8 @@ public class SagaBrokerTests
     private static ServiceProvider PaymentProvider(string connection)
     {
         var s = Services(); s.AddDbContext<PaymentDbContext>(x => x.UseNpgsql(connection));
+        s.AddSingleton<IDateTimeProvider, DateTimeProvider>();
+        s.AddSingleton(TestProxy.Create<IAuditContext>((m, _) => m.Name == "get_UserId" ? Guid.Empty : null));
         s.AddMediatR(x => x.RegisterServicesFromAssembly(typeof(Payment.Application.EventHandlers.OrderCreatedDomainEventHandler).Assembly));
         s.AddScoped<IOrderRepository, OrderRepository>();
         s.AddScoped<IUnitOfWork, Payment.Infrastructure.Persistence.UnitOfWork>();

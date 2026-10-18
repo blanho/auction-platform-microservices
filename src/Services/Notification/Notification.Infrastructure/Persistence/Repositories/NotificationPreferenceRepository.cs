@@ -1,3 +1,6 @@
+using BuildingBlocks.Application.Abstractions.Auditing;
+using BuildingBlocks.Application.Abstractions.Providers;
+using BuildingBlocks.Infrastructure.Repository;
 using Microsoft.EntityFrameworkCore;
 using Notification.Application.Interfaces;
 using Notification.Domain.Entities;
@@ -5,30 +8,17 @@ using Notification.Infrastructure.Persistence;
 
 namespace Notification.Infrastructure.Persistence.Repositories;
 
-public class NotificationPreferenceRepository : INotificationPreferenceRepository
+public class NotificationPreferenceRepository : EfRepository<NotificationPreference, NotificationDbContext>, INotificationPreferenceRepository
 {
-    private readonly NotificationDbContext _context;
-
-    public NotificationPreferenceRepository(NotificationDbContext context)
+    public NotificationPreferenceRepository(
+        NotificationDbContext context, IDateTimeProvider clock, IAuditContext auditContext)
+        : base(context, clock, auditContext)
     {
-        _context = context;
     }
 
     public async Task<NotificationPreference?> GetByUserIdAsync(string userId, CancellationToken cancellationToken = default)
     {
-        return await _context.NotificationPreferences
+        return await Query
             .FirstOrDefaultAsync(p => p.UserId == userId, cancellationToken);
-    }
-
-    public async Task<NotificationPreference> CreateAsync(NotificationPreference preference, CancellationToken cancellationToken = default)
-    {
-        await _context.NotificationPreferences.AddAsync(preference, cancellationToken);
-        return preference;
-    }
-
-    public async Task UpdateAsync(NotificationPreference preference, CancellationToken cancellationToken = default)
-    {
-        _context.NotificationPreferences.Update(preference);
-        await Task.CompletedTask;
     }
 }

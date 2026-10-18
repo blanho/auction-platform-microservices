@@ -148,6 +148,11 @@ graph TB
 | **Gateway** | 6001 | — | — | YARP reverse proxy, JWT validation, rate limiting |
 | **Orchestration Service** | 5012 | — | PostgreSQL | Durable sale workflows, deadlines, and Admin recovery API. [Workflow and recovery notes](src/Orchestration/README.md) |
 
+All 14 aggregate repositories across Auction, Bidding, Catalog, Job, Payment,
+Notification, and Storage reuse the shared EF Core repository. Service-specific
+queries, transactions, and deletion policies remain explicit. See the
+[reuse guide and service audit](docs/common-repositories.md).
+
 ---
 
 ## Tech Stack

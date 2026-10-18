@@ -1,41 +1,43 @@
+using BuildingBlocks.Application.Abstractions.Auditing;
+using BuildingBlocks.Application.Abstractions.Providers;
+using BuildingBlocks.Infrastructure.Repository;
 using Payment.Application.Interfaces;
 using Payment.Domain.Entities;
 using Payment.Infrastructure.Persistence;
 
 namespace Payment.Infrastructure.Repositories;
 
-public class WalletRepository : IWalletRepository
+public class WalletRepository : EfRepository<Wallet, PaymentDbContext>, IWalletRepository
 {
-    private readonly PaymentDbContext _context;
-
-    public WalletRepository(PaymentDbContext context)
+    public WalletRepository(
+        PaymentDbContext context, IDateTimeProvider clock, IAuditContext auditContext)
+        : base(context, clock, auditContext)
     {
-        _context = context;
     }
 
     public async Task<Wallet?> GetByUsernameAsync(string username)
     {
-        return await _context.Wallets
+        return await Context.Wallets
             .AsNoTracking()
             .FirstOrDefaultAsync(w => w.Username == username);
     }
 
-    public async Task<Wallet> AddAsync(Wallet wallet)
+    Task<Wallet> IWalletRepository.AddAsync(Wallet wallet) => AddAsync(wallet);
+
+    async Task<Wallet> IWalletRepository.UpdateAsync(Wallet wallet)
     {
-        await _context.Wallets.AddAsync(wallet);
+        await base.UpdateAsync(wallet);
         return wallet;
     }
 
-    public Task<Wallet> UpdateAsync(Wallet wallet)
-    {
-        wallet.SetUpdatedAudit(Guid.Empty, DateTimeOffset.UtcNow);
-        _context.Wallets.Update(wallet);
-        return Task.FromResult(wallet);
-    }
+    protected override void ApplyCreatedAudit(Wallet entity, DateTimeOffset timestamp) =>
+        entity.SetCreatedAudit(entity.CreatedBy, entity.CreatedAt);
+
+    protected override Guid GetUpdatedBy(Wallet entity) => Guid.Empty;
 
     public async Task<bool> ExistsAsync(string username)
     {
-        return await _context.Wallets
+        return await Context.Wallets
             .AsNoTracking()
             .AnyAsync(w => w.Username == username);
     }

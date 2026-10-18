@@ -1,4 +1,6 @@
-
+using BuildingBlocks.Application.Abstractions.Auditing;
+using BuildingBlocks.Application.Abstractions.Providers;
+using BuildingBlocks.Infrastructure.Repository;
 using System.Linq.Expressions;
 using BuildingBlocks.Application.Abstractions;
 using BuildingBlocks.Application.Filtering;
@@ -13,10 +15,8 @@ using Payment.Infrastructure.Persistence;
 
 namespace Payment.Infrastructure.Repositories;
 
-public class OrderRepository : IOrderRepository
+public class OrderRepository : EfRepository<Order, PaymentDbContext>, IOrderRepository
 {
-    private readonly PaymentDbContext _context;
-
     private static readonly Dictionary<string, Expression<Func<Order, object>>> OrderSortMap =
         new(StringComparer.OrdinalIgnoreCase)
         {
@@ -27,31 +27,38 @@ public class OrderRepository : IOrderRepository
             ["itemtitle"] = o => o.ItemTitle
         };
 
-    public OrderRepository(PaymentDbContext context)
+    public OrderRepository(
+        PaymentDbContext context, IDateTimeProvider clock, IAuditContext auditContext)
+        : base(context, clock, auditContext)
     {
-        _context = context;
     }
 
-    public async Task<Order?> GetByIdAsync(Guid id)
+    Task<Order?> IOrderRepository.GetByIdAsync(Guid id) => base.GetByIdAsync(id);
+
+    Task<Order> IOrderRepository.AddAsync(Order order) => AddAsync(order);
+
+    Task<Order> IOrderRepository.UpdateAsync(Order order) => UpdateOrderAsync(order, CancellationToken.None);
+
+    Task<Order> IOrderRepository.UpdateAsync(Order order, CancellationToken cancellationToken) =>
+        UpdateOrderAsync(order, cancellationToken);
+
+    private async Task<Order> UpdateOrderAsync(Order order, CancellationToken cancellationToken)
     {
-        return await _context.Orders
-            .AsNoTracking()
-            .FirstOrDefaultAsync(o => o.Id == id);
+        await base.UpdateAsync(order, cancellationToken);
+        return order;
     }
 
-    public async Task<Order?> GetByIdAsync(Guid id, CancellationToken cancellationToken)
-    {
-        return await _context.Orders
-            .AsNoTracking()
-            .FirstOrDefaultAsync(o => o.Id == id, cancellationToken);
-    }
+    protected override void ApplyCreatedAudit(Order entity, DateTimeOffset timestamp) =>
+        entity.SetCreatedAudit(entity.CreatedBy, entity.CreatedAt);
+
+    protected override Guid GetUpdatedBy(Order entity) => Guid.Empty;
 
     public Task<Order?> GetByAuctionIdAsync(Guid auctionId) =>
         GetByAuctionIdAsync(auctionId, CancellationToken.None);
 
     public async Task<Order?> GetByAuctionIdAsync(Guid auctionId, CancellationToken cancellationToken)
     {
-        return await _context.Orders
+        return await Context.Orders
             .AsNoTracking()
             .Where(o => o.AuctionId == auctionId)
             .OrderBy(o => o.Status == OrderStatus.Cancelled)
@@ -71,7 +78,7 @@ public class OrderRepository : IOrderRepository
 
     private async Task<PaginatedResult<Order>> GetOrdersByQueryParamsAsync(OrderQueryParams queryParams, CancellationToken cancellationToken)
     {
-        var query = _context.Orders.AsNoTracking();
+        var query = Context.Orders.AsNoTracking();
 
         if (queryParams.Filter != null)
         {
@@ -88,38 +95,16 @@ public class OrderRepository : IOrderRepository
         return new PaginatedResult<Order>(items, totalCount, queryParams.Page, queryParams.PageSize);
     }
 
-    public Task<Order> AddAsync(Order order) => AddAsync(order, CancellationToken.None);
-
-    public async Task<Order> AddAsync(Order order, CancellationToken cancellationToken)
-    {
-        await _context.Orders.AddAsync(order, cancellationToken);
-        return order;
-    }
-
-    public Task<Order> UpdateAsync(Order order)
-    {
-        order.SetUpdatedAudit(Guid.Empty, DateTimeOffset.UtcNow);
-        _context.Orders.Update(order);
-        return Task.FromResult(order);
-    }
-
-    public Task<Order> UpdateAsync(Order order, CancellationToken cancellationToken)
-    {
-        order.SetUpdatedAudit(Guid.Empty, DateTimeOffset.UtcNow);
-        _context.Orders.Update(order);
-        return Task.FromResult(order);
-    }
-
     public async Task<int> GetCountByBuyerUsernameAsync(string username)
     {
-        return await _context.Orders
+        return await Context.Orders
             .AsNoTracking()
             .CountAsync(o => o.BuyerUsername == username);
     }
 
     public async Task<int> GetCountBySellerUsernameAsync(string username)
     {
-        return await _context.Orders
+        return await Context.Orders
             .AsNoTracking()
             .CountAsync(o => o.SellerUsername == username);
     }
@@ -136,7 +121,7 @@ public class OrderRepository : IOrderRepository
         var weekStart = today.AddDays(-(int)today.DayOfWeek);
         var monthStart = new DateTimeOffset(today.Year, today.Month, 1, 0, 0, 0, TimeSpan.Zero);
 
-        var query = _context.Orders.AsNoTracking().AsQueryable();
+        var query = Context.Orders.AsNoTracking().AsQueryable();
 
         if (startDate.HasValue)
             query = query.Where(o => o.CreatedAt >= startDate.Value);
@@ -183,7 +168,7 @@ public class OrderRepository : IOrderRepository
     {
         var startDate = DateTimeOffset.UtcNow.AddDays(-days);
 
-        var dailyTotals = await _context.Orders
+        var dailyTotals = await Context.Orders
             .AsNoTracking()
             .Where(o => o.PaymentStatus == PaymentStatus.Completed && o.PaidAt >= startDate)
             .GroupBy(o => o.PaidAt!.Value.Date)
@@ -210,7 +195,7 @@ public class OrderRepository : IOrderRepository
     {
         var startDate = DateTimeHelper.GetPeriodStartDate(period);
 
-        var topSellers = await _context.Orders
+        var topSellers = await Context.Orders
             .AsNoTracking()
             .Where(o => o.PaymentStatus == PaymentStatus.Completed && o.PaidAt >= startDate)
             .GroupBy(o => new { o.SellerId, o.SellerUsername })
@@ -239,7 +224,7 @@ public class OrderRepository : IOrderRepository
     {
         var startDate = DateTimeHelper.GetPeriodStartDate(period);
 
-        var topBuyers = await _context.Orders
+        var topBuyers = await Context.Orders
             .AsNoTracking()
             .Where(o => o.PaymentStatus == PaymentStatus.Completed && o.PaidAt >= startDate)
             .GroupBy(o => new { o.BuyerId, o.BuyerUsername })
@@ -267,7 +252,7 @@ public class OrderRepository : IOrderRepository
         OrderQueryParams queryParams,
         CancellationToken cancellationToken = default)
     {
-        var query = _context.Orders.AsNoTracking();
+        var query = Context.Orders.AsNoTracking();
 
         if (queryParams.Filter != null)
         {
@@ -288,7 +273,7 @@ public class OrderRepository : IOrderRepository
         OrderReportParameters parameters,
         CancellationToken cancellationToken = default)
     {
-        var query = _context.Orders.AsNoTracking();
+        var query = Context.Orders.AsNoTracking();
 
         if (parameters.StatusFilter.HasValue)
             query = query.Where(order => order.Status == parameters.StatusFilter.Value);
@@ -308,7 +293,7 @@ public class OrderRepository : IOrderRepository
 
     public async Task<OrderStatsDto> GetOrderStatsAsync(CancellationToken cancellationToken = default)
     {
-        var totals = await _context.Orders
+        var totals = await Context.Orders
             .AsNoTracking()
             .GroupBy(_ => 1)
             .Select(orders => new

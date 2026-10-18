@@ -1,3 +1,4 @@
+using BuildingBlocks.Application.Abstractions.Providers;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using AutoMapper;
 using BuildingBlocks.Application.Abstractions.Auditing;
@@ -248,7 +249,8 @@ public class WalletPaymentIdempotencyTests
         var audit = auditPublisher ?? TestProxy.Create<IAuditPublisher>((_, _) => Task.CompletedTask);
         gate ??= new SemaphoreSlim(1);
         var distributedLock = TestProxy.Create<IDistributedLock>((_, _) => Acquire(gate));
-        return new ProcessWalletPaymentCommandHandler(new WalletRepository(db), new WalletTransactionRepository(db),
+        return new ProcessWalletPaymentCommandHandler(new WalletRepository(db, new DateTimeProvider(),
+            TestProxy.Create<IAuditContext>((method, _) => method.Name == "get_UserId" ? Guid.Empty : null)), new WalletTransactionRepository(db),
             new UnitOfWork(db, mediator), mapper, NullLogger<ProcessWalletPaymentCommandHandler>.Instance,
             distributedLock, audit, new WalletPaymentExecutor(db));
     }

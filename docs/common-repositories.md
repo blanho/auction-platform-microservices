@@ -57,7 +57,8 @@ Reads and ID-based single/batch deletion use it. Entity-based writes still requi
 the caller to supply an authorized aggregate; a repository is not an authorization
 boundary. `GetCreatedBy`, `GetUpdatedBy`, and `GetDeletedBy` customize audit actors.
 `ApplyCreatedAudit` handles aggregate-owned children when needed. `TrackUpdate`
-allows an explicit detached-graph policy.
+allows an explicit detached-graph policy. `ApplyDeletedAudit` runs the aggregate's
+deletion policy for both single and batch soft deletion, using the shared timestamp.
 
 Normal handlers should load with `GetByIdForUpdateAsync`, call domain methods,
 and save through the unit of work. Do not submit HTTP DTOs or partially populated
@@ -109,23 +110,51 @@ existing implementations.
 | Bidding | Bid, AutoBid | Bid-time paging, winning-bid queries, auto-bid owner creation/update audit, requester deletion audit |
 | Catalog | Category, Brand | Category child includes and display ordering; brand filters, slug checks, and shared paging |
 | Jobs | Job | Child-item creation audit, detached Job graph updates, priority/recovery queries |
+| Payment | Order, Wallet | Domain-owned creation timestamps, system update actor, legacy entity-returning write adapters, optimistic concurrency; payment execution/locking remain specialized |
+| Notification | Notification, NotificationPreference, Template | Notification physical deletion and read/archive operations; preference lookup; template name ordering, immediate commits, and physical deletion |
+| Storage | StoredFile | Tracked ID lookup, file deletion status/events, explicit physical purge; shared add/batch/update auditing |
+
+All 14 concrete repositories for the current services' `AggregateRoot` models now
+inherit `EfRepository<TEntity, TContext>`, across seven services. Existing scoped
+service-interface registrations resolve these implementations. Auction's cached
+decorator delegates persistence to its shared-base implementation.
 
 Auction and Job explicitly preserve their previous detached-graph update behavior.
 For an already tracked aggregate, normal EF change detection persists actual
 child edits without marking every loaded child modified. This avoids accidental
 updates to unchanged related records while retaining the unit-of-work boundary.
 
-Other services were reviewed but are not forced into this audited soft-delete
-contract:
+Compatibility adapters retain the existing Application contracts. Payment's
+`Task<Order>`/`Task<Wallet>` update methods return the same entity after staging
+the shared update; they do not save. Their factories still own creation audit
+values, and updates retain the system actor (`Guid.Empty`). Wallet locking,
+payment transactions, and PostgreSQL concurrency tokens remain unchanged.
+
+Notification templates deliberately retain their legacy immediate commits in
+`CreateAsync`, `UpdateAsync`, and ID deletion. The shared base itself never saves.
+Notification and template ID deletion still physically remove rows. Use their
+service interfaces: the base's additional entity/batch soft-delete methods are
+not substitutes for those specialized operations. A future change to template
+transaction ownership must migrate callers explicitly.
+
+Storage's Application contract now exposes `UpdateAsync` with cancellation, and
+all callers await it before saving through the unit of work. A file's domain
+deletion still sets `FileStatus.Deleted` and raises its deletion event. The
+`ApplyDeletedAudit` hook preserves that behavior when common single/batch deletion
+is used too. `RemoveRange` remains a separate physical purge operation for cleanup.
+
+The remaining repositories/adapters were reviewed and intentionally keep their
+specialized persistence:
 
 | Area | Reason |
 |---|---|
 | Identity | ASP.NET Identity's UserManager/RoleManager own account persistence and string keys |
-| Payment | Financial workflows have their own audit, return-value, locking, and transaction contracts |
-| Notification | Some legacy repositories save immediately or physically delete; changing them requires a separate unit-of-work migration |
-| Analytics | Fact/report/settings models use different keys and persistence policies rather than `AggregateRoot` |
-| Storage | Physical file removal and cleanup require explicit hard-delete behavior |
-| Job items, checkpoints, workflow receipts | Child/bulk/idempotency persistence has specialized behavior |
+| Payment: WalletTransactionRepository, wallet payment executor, order-attempt store | Financial ledger/receipt records are not aggregate roots; payment locking, idempotency, and transaction boundaries remain explicit |
+| Notification: NotificationRecordRepository | Delivery records and user-notification rows derive from `BaseEntity`, not `AggregateRoot`; one adapter coordinates both models |
+| Analytics: AuditLog, FactAuction, FactBid, FactPayment, DailyStats, Report, PlatformSetting repositories | Plain fact/report/settings models use different keys, upserts, retention, or immediate-save policies rather than `AggregateRoot` |
+| Jobs: JobItemRepository, JobExecutionLogRepository | Child-item audit/retry/streaming batches and append-only execution logs remain specialized |
+| Auction: AuctionBulkRepository, BuyNowPurchaseRepository, ImportCheckpointRepository | Provider-specific bulk SQL, purchase receipts, and Redis checkpoints have separate persistence contracts |
+| Bidding: CachedAuctionSnapshotRepository | Auction snapshots live in Redis rather than an EF aggregate store |
 | Search | Elasticsearch and Redis adapters are not EF Core aggregate repositories |
 
 These adapters may adopt a compatible shared policy later. Do not hide these
@@ -137,6 +166,8 @@ repository, and do not introduce a repository for every mapped table.
 Dedicated shared tests run against PostgreSQL for staged writes, caller-owned
 transaction rollback, audit values, soft-delete idempotency, tracked/no-tracking
 reads, query visibility, batch enumeration, paging, detached related entities,
-and optimistic concurrency. Service tests preserve Auction/Job child behavior
-and owner/requester audit policies. The full backend suite exercises the existing
-outbox, bidding, payments, and workflow recovery paths after migration.
+and optimistic concurrency. Service tests preserve Auction/Job child behavior,
+owner/requester audit policies, Payment's returned entities and concurrency,
+Notification's staged writes and immediate template commits, and Storage's
+domain deletion events and physical purge. The full backend suite exercises the
+existing outbox, bidding, payments, and workflow recovery paths after migration.

@@ -73,7 +73,7 @@ public abstract class EfRepository<TEntity, TContext> : IRepository<TEntity>, IB
     {
         cancellationToken.ThrowIfCancellationRequested();
         if (!entity.IsDeleted)
-            entity.MarkAsDeleted(GetDeletedBy(entity), Clock.UtcNowOffset);
+            ApplyDeletedAudit(entity, Clock.UtcNowOffset);
         TrackUpdate(entity);
         return Task.CompletedTask;
     }
@@ -119,7 +119,7 @@ public abstract class EfRepository<TEntity, TContext> : IRepository<TEntity>, IB
         {
             cancellationToken.ThrowIfCancellationRequested();
             if (!entity.IsDeleted)
-                entity.MarkAsDeleted(GetDeletedBy(entity), timestamp);
+                ApplyDeletedAudit(entity, timestamp);
         }
     }
 
@@ -131,6 +131,9 @@ public abstract class EfRepository<TEntity, TContext> : IRepository<TEntity>, IB
 
     protected virtual void ApplyCreatedAudit(TEntity entity, DateTimeOffset timestamp) =>
         entity.SetCreatedAudit(GetCreatedBy(entity), timestamp);
+
+    protected virtual void ApplyDeletedAudit(TEntity entity, DateTimeOffset timestamp) =>
+        entity.MarkAsDeleted(GetDeletedBy(entity), timestamp);
 
     protected virtual void TrackUpdate(TEntity entity)
     {
