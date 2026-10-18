@@ -47,7 +47,7 @@ public sealed class SortMapBuilderTests
     {
         var builder = new SortMapBuilder<Entity, Contract>();
         Assert.Throws<ArgumentException>(() => builder.Add(field => field.DisplayName.ToLowerInvariant(), entity => entity.DatabaseName));
-        var captured = new Contract();
+        var captured = new Contract { Id = 1 };
         Assert.Throws<ArgumentException>(() => builder.Add(_ => captured.DisplayName, entity => entity.DatabaseName));
         Assert.Throws<ArgumentNullException>(() => builder.Add<string, string>(null!, entity => entity.DatabaseName));
         Assert.Throws<ArgumentNullException>(() => builder.Add<string, string>(field => field.DisplayName, null!));

@@ -42,7 +42,7 @@ try
     }
 
     app.ConfigurePipeline();
-    app.Run();
+    await app.RunAsync();
 }
 catch (Exception ex) when (ex is not HostAbortedException)
 {
@@ -52,5 +52,5 @@ catch (Exception ex) when (ex is not HostAbortedException)
 finally
 {
     Log.Information("Shut down complete");
-    Log.CloseAndFlush();
+    await Log.CloseAndFlushAsync();
 }

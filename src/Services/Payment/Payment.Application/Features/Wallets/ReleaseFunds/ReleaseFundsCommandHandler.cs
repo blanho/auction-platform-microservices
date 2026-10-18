@@ -64,15 +64,17 @@ public class ReleaseFundsCommandHandler : ICommandHandler<ReleaseFundsCommand, W
         if (wallet.HeldAmount < request.Amount)
             return Result.Failure<WalletTransactionDto>(PaymentErrors.Wallet.InsufficientHeldAmount);
 
-        var transaction = WalletTransaction.Create(
-            userId: wallet.UserId,
-            username: request.Username,
-            type: TransactionType.Release,
-            amount: -request.Amount,
-            balanceAfter: wallet.Balance,
-            description: WalletTransactionDescriptions.FundsReleased,
-            referenceId: request.ReferenceId,
-            referenceType: WalletReferenceTypes.Release);
+        var transaction = WalletTransaction.Create(new CreateWalletTransactionParams
+        {
+            UserId = wallet.UserId,
+            Username = request.Username,
+            Type = TransactionType.Release,
+            Amount = -request.Amount,
+            BalanceAfter = wallet.Balance,
+            Description = WalletTransactionDescriptions.FundsReleased,
+            ReferenceId = request.ReferenceId,
+            ReferenceType = WalletReferenceTypes.Release
+        });
 
         transaction.Complete();
         wallet.ReleaseFunds(request.Amount);

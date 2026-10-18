@@ -101,7 +101,7 @@ public class WalletPaymentIdempotencyTests
         async Task CancelAfterFirstSave()
         {
             Assert.Single(await db.WalletTransactions.AsNoTracking().ToListAsync());
-            cancellation.Cancel();
+            await cancellation.CancelAsync();
             await Task.FromCanceled(cancellation.Token);
         }
 
@@ -185,11 +185,17 @@ public class WalletPaymentIdempotencyTests
         var request = Request();
         Assert.True((await Handler(db).Handle(request, default)).IsSuccess);
         var wallet = await db.Wallets.SingleAsync();
-        db.WalletTransactions.Add(WalletTransaction.Create(wallet.UserId, wallet.Username,
-            TransactionType.Refund, 25, 100, referenceId: request.ReferenceId));
+        db.WalletTransactions.Add(WalletTransaction.Create(new CreateWalletTransactionParams
+        {
+            UserId = wallet.UserId, Username = wallet.Username, Type = TransactionType.Refund,
+            Amount = 25, BalanceAfter = 100, ReferenceId = request.ReferenceId
+        }));
         await db.SaveChangesAsync();
-        db.WalletTransactions.Add(WalletTransaction.Create(wallet.UserId, wallet.Username,
-            TransactionType.Payment, 25, 50, referenceId: request.ReferenceId));
+        db.WalletTransactions.Add(WalletTransaction.Create(new CreateWalletTransactionParams
+        {
+            UserId = wallet.UserId, Username = wallet.Username, Type = TransactionType.Payment,
+            Amount = 25, BalanceAfter = 50, ReferenceId = request.ReferenceId
+        }));
         await Assert.ThrowsAsync<DbUpdateException>(() => db.SaveChangesAsync());
     }
 
@@ -202,8 +208,11 @@ public class WalletPaymentIdempotencyTests
         await migrator.MigrateAsync("20261004135529_BuyNowOrderCompensation");
         var reference = Guid.NewGuid();
         for (var i = 0; i < 2; i++)
-            db.WalletTransactions.Add(WalletTransaction.Create(Guid.NewGuid(), "buyer",
-                TransactionType.Payment, 25, 75, referenceId: reference));
+            db.WalletTransactions.Add(WalletTransaction.Create(new CreateWalletTransactionParams
+            {
+                UserId = Guid.NewGuid(), Username = "buyer", Type = TransactionType.Payment,
+                Amount = 25, BalanceAfter = 75, ReferenceId = reference
+            }));
         await db.SaveChangesAsync();
         var error = await Assert.ThrowsAsync<Npgsql.PostgresException>(() => migrator.MigrateAsync());
         Assert.Contains("reconcile historical payments", error.MessageText);

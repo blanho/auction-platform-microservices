@@ -28,11 +28,7 @@ public class CatalogGrpcClient : ICatalogGrpcClient
             _logger.LogWarning(ex, "Brand {BrandId} not found via gRPC", brandId);
             return null;
         }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error calling Catalog gRPC service for Brand {BrandId}", brandId);
-            throw;
-        }
+
     }
 
     public async Task<(string Name, string Slug)?> GetCategoryAsync(Guid categoryId, CancellationToken cancellationToken = default)
@@ -47,10 +43,6 @@ public class CatalogGrpcClient : ICatalogGrpcClient
             _logger.LogWarning(ex, "Category {CategoryId} not found via gRPC", categoryId);
             return null;
         }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error calling Catalog gRPC service for Category {CategoryId}", categoryId);
-            throw;
-        }
+
     }
 }

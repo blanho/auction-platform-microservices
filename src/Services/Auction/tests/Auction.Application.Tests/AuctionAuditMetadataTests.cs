@@ -19,7 +19,7 @@ public sealed class AuctionAuditMetadataTests
     [Fact]
     public void ForExtension_IncludesTimelineDetails()
     {
-        var previousEnd = DateTimeOffset.Parse("2026-08-22T10:00:00Z");
+        var previousEnd = DateTimeOffset.Parse("2026-08-22T10:00:00Z", System.Globalization.CultureInfo.InvariantCulture);
         var newEnd = previousEnd.AddMinutes(15);
 
         var metadata = AuctionAuditMetadata.ForExtension(15, previousEnd, newEnd);

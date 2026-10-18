@@ -142,7 +142,7 @@ public class StripePaymentGateway : IPaymentGateway
             return;
         }
 
-        await _orderRepository.UpdateAsync(order);
+        await _orderRepository.UpdateAsync(order, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         _logger.LogInformation("Order {OrderId} marked as paid", order.Id);
@@ -193,7 +193,7 @@ public class StripePaymentGateway : IPaymentGateway
             return;
         }
 
-        await _orderRepository.UpdateAsync(order);
+        await _orderRepository.UpdateAsync(order, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         _logger.LogInformation("Order {OrderId} marked as paid via checkout session", order.Id);
@@ -207,7 +207,7 @@ public class StripePaymentGateway : IPaymentGateway
             !Guid.TryParse(orderIdStr, out var orderId))
             return null;
 
-        return await _orderRepository.GetByIdAsync(orderId);
+        return await _orderRepository.GetByIdAsync(orderId, cancellationToken);
     }
 
     private static bool MatchesOrderAmount(Order order, long? amountInCents, string? currency)

@@ -66,6 +66,77 @@ public class BidPlacementServiceTests
         Assert.DoesNotContain("save", scenario.Calls);
     }
 
+    [Fact]
+    public async Task Validation_MissingSnapshotForwardsRequestAndCancellationToGrpc()
+    {
+        using var cancellation = new CancellationTokenSource();
+        var request = new PlaceBidDto { AuctionId = Guid.NewGuid(), Amount = 120m };
+        var expected = new AuctionValidationResult(true, ReservePrice: 150m);
+        var snapshots = Proxy<IAuctionSnapshotRepository>((_, args) =>
+        {
+            Assert.Equal(request.AuctionId, args[0]);
+            Assert.Equal(cancellation.Token, args[^1]);
+            return Task.FromResult<AuctionSnapshot?>(null);
+        });
+        var calls = 0;
+        var grpc = Proxy<IAuctionGrpcClient>((method, args) =>
+        {
+            Assert.Equal(nameof(IAuctionGrpcClient.ValidateAuctionForBidAsync), method.Name);
+            Assert.Equal(request.AuctionId, args[0]);
+            Assert.Equal("bidder", args[1]);
+            Assert.Equal(request.Amount, args[2]);
+            Assert.Equal(cancellation.Token, args[^1]);
+            calls++;
+            return Task.FromResult(expected);
+        });
+        var validator = new AuctionBidValidator(snapshots, grpc, null!, NullLogger<AuctionBidValidator>.Instance);
+
+        var result = await validator.ValidateAsync(request, Guid.NewGuid(), "bidder", cancellation.Token);
+
+        Assert.Same(expected, result);
+        Assert.Equal(1, calls);
+    }
+
+    [Theory]
+    [InlineData("inactive", "Auction is not active. Current status: Finished")]
+    [InlineData("expired", "Auction has ended")]
+    [InlineData("seller-id", "You cannot bid on your own auction")]
+    [InlineData("seller-name", "You cannot bid on your own auction")]
+    public async Task Validation_KnownSnapshotRejectsIneligibleBidsWithoutRemoteCall(string scenario, string expectedError)
+    {
+        var sellerId = Guid.NewGuid();
+        var request = new PlaceBidDto { AuctionId = Guid.NewGuid(), Amount = 120m };
+        var snapshot = new AuctionSnapshot(request.AuctionId, "Auction", "seller", sellerId,
+            BidScenario.Now.AddHours(scenario == "expired" ? -1 : 1), scenario == "inactive" ? "Finished" : "Active", 75m, null);
+        var snapshots = Proxy<IAuctionSnapshotRepository>((_, _) => Task.FromResult<AuctionSnapshot?>(snapshot));
+        var grpc = Proxy<IAuctionGrpcClient>((_, _) => throw new InvalidOperationException("No remote call expected"));
+        var clock = Proxy<IDateTimeProvider>((_, _) => BidScenario.Now);
+        var validator = new AuctionBidValidator(snapshots, grpc, clock, NullLogger<AuctionBidValidator>.Instance);
+
+        var result = await validator.ValidateAsync(request, scenario == "seller-id" ? sellerId : Guid.NewGuid(),
+            scenario == "seller-name" ? "SELLER" : "bidder");
+
+        Assert.False(result.IsValid);
+        Assert.Equal(expectedError, result.ErrorMessage);
+    }
+
+    [Fact]
+    public async Task Validation_ActiveSnapshotKeepsReservePriceWithoutRemoteCall()
+    {
+        var request = new PlaceBidDto { AuctionId = Guid.NewGuid(), Amount = 120m };
+        var snapshot = new AuctionSnapshot(request.AuctionId, "Auction", "seller", Guid.NewGuid(),
+            BidScenario.Now.AddHours(1), "Active", 75m, null);
+        var snapshots = Proxy<IAuctionSnapshotRepository>((_, _) => Task.FromResult<AuctionSnapshot?>(snapshot));
+        var grpc = Proxy<IAuctionGrpcClient>((_, _) => throw new InvalidOperationException("No remote call expected"));
+        var clock = Proxy<IDateTimeProvider>((_, _) => BidScenario.Now);
+        var validator = new AuctionBidValidator(snapshots, grpc, clock, NullLogger<AuctionBidValidator>.Instance);
+
+        var result = await validator.ValidateAsync(request, Guid.NewGuid(), "bidder");
+
+        Assert.True(result.IsValid);
+        Assert.Equal(75m, result.ReservePrice);
+    }
+
     private sealed class BidScenario
     {
         public static readonly DateTime Now = new(2026, 1, 1, 12, 0, 0, DateTimeKind.Utc);
@@ -126,9 +197,10 @@ public class BidPlacementServiceTests
                 return Now;
             });
             var grpcClient = Proxy<IAuctionGrpcClient>((method, _) => throw new InvalidOperationException(method.Name));
-            Service = new BidPlacementService(repository, snapshotRepository,
+            Service = new BidPlacementService(repository,
+                new AuctionBidValidator(snapshotRepository, grpcClient, clock, NullLogger<AuctionBidValidator>.Instance),
                 NullLogger<BidPlacementService>.Instance, clock, unitOfWork, distributedLock,
-                grpcClient, new AuctionLock(Calls));
+                new AuctionLock(Calls));
         }
     }
 

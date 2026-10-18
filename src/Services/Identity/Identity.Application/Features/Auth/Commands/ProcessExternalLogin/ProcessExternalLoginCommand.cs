@@ -53,16 +53,16 @@ public class ProcessExternalLoginCommandHandler(
             await mediator.Publish(new UserCreatedDomainEvent
             {
                 UserId = user.Id,
-                Username = user.UserName!,
-                Email = user.Email!,
+                Username = user.UserName,
+                Email = user.Email,
                 EmailConfirmed = true,
                 FullName = user.FullName,
                 Role = Roles.User
-            });
+            }, cancellationToken);
 
-            await authHelper.PublishEmailEventAsync(user.Id, user.Email!, user.UserName!, "welcome", "Welcome to Auction Platform", new Dictionary<string, string>
+            await authHelper.PublishEmailEventAsync(user.Id, user.Email, user.UserName, "welcome", "Welcome to Auction Platform", new Dictionary<string, string>
             {
-                [IdentityDefaults.EmailTemplate.UsernameKey] = user.UserName!
+                [IdentityDefaults.EmailTemplate.UsernameKey] = user.UserName
             });
         }
         else if (user.IsSuspended)

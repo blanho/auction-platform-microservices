@@ -8,7 +8,8 @@ public class PaymentDbContextFactory : IDesignTimeDbContextFactory<PaymentDbCont
     public PaymentDbContext CreateDbContext(string[] args)
     {
         var options = new DbContextOptionsBuilder<PaymentDbContext>()
-            .UseNpgsql("Host=localhost;Database=auction_payment;Username=postgres;Password=postgres")
+            .UseNpgsql(Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection")
+                ?? throw new InvalidOperationException("Set ConnectionStrings__DefaultConnection before running EF Core tools."))
             .Options;
 
         return new PaymentDbContext(options);

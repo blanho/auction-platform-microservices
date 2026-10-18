@@ -69,60 +69,53 @@ public class AuctionSearchService : IAuctionSearchService
                 "Search pagination cannot exceed {0} results.",
                 [_options.MaxResultWindow.ToString(CultureInfo.InvariantCulture)]));
 
-        try
+        var response = await _client.SearchAsync<AuctionDocument>(s => s
+            .Index(_indexName)
+            .From(paging.Skip)
+            .Size(paging.Take)
+            .Query(BuildQuery(request))
+            .Highlight(h => h
+                .PreTags(new[] { SearchDefaults.HighlightPreTag })
+                .PostTags(new[] { SearchDefaults.HighlightPostTag })
+                .Fields(f => f
+                    .Add(new Field(ElasticsearchFields.Title), hf => { })
+                    .Add(new Field(ElasticsearchFields.Description), hf => { })))
+            .Sort(BuildSortOptions(request.SortBy, request.SortDirection))
+            .TrackTotalHits(new TrackHits(true))
+            .Aggregations(agg => agg
+                .Add(AggregationNames.Categories, a => a
+                    .Terms(t => t.Field(ElasticsearchFields.CategoryName).Size(SearchDefaults.MaxCategoryAggregations)))
+                .Add(AggregationNames.Brands, a => a
+                    .Terms(t => t.Field(ElasticsearchFields.BrandName).Size(SearchDefaults.MaxBrandAggregations)))
+                .Add(AggregationNames.Conditions, a => a
+                    .Terms(t => t.Field(ElasticsearchFields.Condition).Size(SearchDefaults.MaxConditionAggregations)))
+                .Add(AggregationNames.Statuses, a => a
+                    .Terms(t => t.Field(ElasticsearchFields.Status).Size(SearchDefaults.MaxStatusAggregations)))
+                .Add(AggregationNames.PriceStats, a => a
+                    .Stats(s => s.Field(ElasticsearchFields.CurrentPrice)))),
+        ct);
+        ct.ThrowIfCancellationRequested();
+
+        if (!response.IsValidResponse)
         {
-            var response = await _client.SearchAsync<AuctionDocument>(s => s
-                .Index(_indexName)
-                .From(paging.Skip)
-                .Size(paging.Take)
-                .Query(q => BuildQuery(request))
-                .Highlight(h => h
-                    .PreTags(new[] { SearchDefaults.HighlightPreTag })
-                    .PostTags(new[] { SearchDefaults.HighlightPostTag })
-                    .Fields(f => f
-                        .Add(new Field(ElasticsearchFields.Title), hf => { })
-                        .Add(new Field(ElasticsearchFields.Description), hf => { })))
-                .Sort(BuildSortOptions(request.SortBy, request.SortDirection))
-                .TrackTotalHits(new TrackHits(true))
-                .Aggregations(agg => agg
-                    .Add(AggregationNames.Categories, a => a
-                        .Terms(t => t.Field(ElasticsearchFields.CategoryName).Size(SearchDefaults.MaxCategoryAggregations)))
-                    .Add(AggregationNames.Brands, a => a
-                        .Terms(t => t.Field(ElasticsearchFields.BrandName).Size(SearchDefaults.MaxBrandAggregations)))
-                    .Add(AggregationNames.Conditions, a => a
-                        .Terms(t => t.Field(ElasticsearchFields.Condition).Size(SearchDefaults.MaxConditionAggregations)))
-                    .Add(AggregationNames.Statuses, a => a
-                        .Terms(t => t.Field(ElasticsearchFields.Status).Size(SearchDefaults.MaxStatusAggregations)))
-                    .Add(AggregationNames.PriceStats, a => a
-                        .Stats(s => s.Field(ElasticsearchFields.CurrentPrice)))),
-            ct);
-            ct.ThrowIfCancellationRequested();
-
-            if (!response.IsValidResponse)
-            {
-                _logger.LogError("Search failed: {Error}", response.DebugInformation);
-                return AuctionSearchResponse.Empty(paging.Page, paging.PageSize);
-            }
-
-            var results = response.Documents.ToResultList(response.Hits);
-            var totalHits = response.Total;
-
-            return new AuctionSearchResponse
-            {
-                Results = results,
-                TotalCount = totalHits,
-                Page = paging.Page,
-                PageSize = paging.PageSize,
-                TotalPages = (int)Math.Ceiling((double)totalHits / paging.PageSize),
-                Facets = response.Aggregations.ToFacets(),
-                Took = response.Took
-            };
+            _logger.LogError("Search failed: {Error}", response.DebugInformation);
+            return AuctionSearchResponse.Empty(paging.Page, paging.PageSize);
         }
-        catch (Exception ex) when (ex is not OperationCanceledException)
+
+        var results = response.Documents.ToResultList(response.Hits);
+        var totalHits = response.Total;
+
+        return new AuctionSearchResponse
         {
-            _logger.LogError(ex, "Search error");
-            throw;
-        }
+            Results = results,
+            TotalCount = totalHits,
+            Page = paging.Page,
+            PageSize = paging.PageSize,
+            TotalPages = (int)Math.Ceiling((double)totalHits / paging.PageSize),
+            Facets = response.Aggregations.ToFacets(),
+            Took = response.Took
+        };
+
     }
 
     public async Task<AuctionSearchResult?> GetByIdAsync(

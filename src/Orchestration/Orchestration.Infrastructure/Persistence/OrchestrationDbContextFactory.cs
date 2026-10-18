@@ -6,5 +6,6 @@ namespace Orchestration.Infrastructure.Persistence;
 public class OrchestrationDbContextFactory : IDesignTimeDbContextFactory<OrchestrationDbContext>
 {
     public OrchestrationDbContext CreateDbContext(string[] args) => new(new DbContextOptionsBuilder<OrchestrationDbContext>()
-        .UseNpgsql("Host=localhost;Database=orchestration_db;Username=postgres;Password=postgres").Options);
+        .UseNpgsql(Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection")
+                ?? throw new InvalidOperationException("Set ConnectionStrings__DefaultConnection before running EF Core tools.")).Options);
 }

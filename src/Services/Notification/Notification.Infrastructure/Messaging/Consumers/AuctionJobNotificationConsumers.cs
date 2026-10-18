@@ -111,29 +111,25 @@ public class BulkAuctionUpdateCompletedConsumer : IdempotentNotificationConsumer
         {
             UserId = e.RequestedBy.ToString(),
             Type = NotificationType.BulkAuctionUpdateCompleted,
-            LocalizedText = e.Activated
-                ? hasFailures
-                    ? new(
-                        NotificationMessageKeys.BulkAuctionActivatedCompletedWithErrorsTitle,
-                        NotificationMessageKeys.BulkAuctionActivatedCompletedWithErrorsMessage,
-                        e.SucceededCount,
-                        e.FailedCount,
-                        e.TotalRequested)
-                    : new(
-                        NotificationMessageKeys.BulkAuctionActivatedCompletedTitle,
-                        NotificationMessageKeys.BulkAuctionActivatedCompletedMessage,
-                        e.SucceededCount)
-                : hasFailures
-                    ? new(
-                        NotificationMessageKeys.BulkAuctionUpdatedCompletedWithErrorsTitle,
-                        NotificationMessageKeys.BulkAuctionUpdatedCompletedWithErrorsMessage,
-                        e.SucceededCount,
-                        e.FailedCount,
-                        e.TotalRequested)
-                    : new(
-                        NotificationMessageKeys.BulkAuctionUpdatedCompletedTitle,
-                        NotificationMessageKeys.BulkAuctionUpdatedCompletedMessage,
-                        e.SucceededCount),
+            LocalizedText = (e.Activated, hasFailures) switch
+            {
+                (true, true) => new(
+                    NotificationMessageKeys.BulkAuctionActivatedCompletedWithErrorsTitle,
+                    NotificationMessageKeys.BulkAuctionActivatedCompletedWithErrorsMessage,
+                    e.SucceededCount, e.FailedCount, e.TotalRequested),
+                (true, false) => new(
+                    NotificationMessageKeys.BulkAuctionActivatedCompletedTitle,
+                    NotificationMessageKeys.BulkAuctionActivatedCompletedMessage,
+                    e.SucceededCount),
+                (false, true) => new(
+                    NotificationMessageKeys.BulkAuctionUpdatedCompletedWithErrorsTitle,
+                    NotificationMessageKeys.BulkAuctionUpdatedCompletedWithErrorsMessage,
+                    e.SucceededCount, e.FailedCount, e.TotalRequested),
+                (false, false) => new(
+                    NotificationMessageKeys.BulkAuctionUpdatedCompletedTitle,
+                    NotificationMessageKeys.BulkAuctionUpdatedCompletedMessage,
+                    e.SucceededCount)
+            },
             Data = NotificationDataBuilder.Create()
                 .Add("CorrelationId", e.CorrelationId.ToString())
                 .Add("TotalRequested", e.TotalRequested)

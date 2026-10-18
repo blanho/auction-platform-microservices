@@ -48,15 +48,17 @@ public class UploadFileCommandHandler(
 
         var provider = StorageDefaults.Providers.Resolve(storageSettings.Value.Provider);
 
-        var storedFile = StoredFile.Create(
-            uploadResult.FileName,
-            uploadResult.StoredFileName,
-            uploadResult.ContentType,
-            uploadResult.FileSize,
-            uploadResult.Url,
-            request.SubFolder,
-            request.OwnerId,
-            provider);
+        var storedFile = StoredFile.Create(new CreateStoredFileParams
+        {
+            FileName = uploadResult.FileName,
+            StoredFileName = uploadResult.StoredFileName,
+            ContentType = uploadResult.ContentType,
+            FileSize = uploadResult.FileSize,
+            Url = uploadResult.Url,
+            SubFolder = request.SubFolder,
+            OwnerId = request.OwnerId,
+            Provider = provider
+        });
 
         if (request.Metadata is not null)
         {

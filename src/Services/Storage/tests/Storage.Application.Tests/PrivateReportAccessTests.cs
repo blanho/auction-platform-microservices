@@ -21,9 +21,12 @@ public class PrivateReportAccessTests
     [Fact]
     public async Task GenericPresignedDownload_DoesNotExposePrivateReport()
     {
-        var report = StoredFile.Create("report.pdf", "private-reports/report.pdf", "application/pdf",
-            10, "/files/private-reports/report.pdf", ReportStorageContract.PrivateFolder,
-            Guid.NewGuid(), StorageProvider.Local);
+        var report = StoredFile.Create(new CreateStoredFileParams
+        {
+            FileName = "report.pdf", StoredFileName = "private-reports/report.pdf", ContentType = "application/pdf",
+            FileSize = 10, Url = "/files/private-reports/report.pdf", SubFolder = ReportStorageContract.PrivateFolder,
+            OwnerId = Guid.NewGuid(), Provider = StorageProvider.Local
+        });
         var repository = DispatchProxy.Create<IStoredFileRepository, TestProxy>();
         ((TestProxy)(object)repository).Handler = (method, _) =>
             method.Name == nameof(IStoredFileRepository.GetByIdAsync)
@@ -43,9 +46,12 @@ public class PrivateReportAccessTests
     [Fact]
     public async Task GenericFileReads_RejectMisclassifiedPrivateBlob()
     {
-        var report = StoredFile.Create("report.pdf", "private-reports/report.pdf", "application/pdf",
-            10, "/files/private-reports/report.pdf", "documents",
-            Guid.NewGuid(), StorageProvider.Local);
+        var report = StoredFile.Create(new CreateStoredFileParams
+        {
+            FileName = "report.pdf", StoredFileName = "private-reports/report.pdf", ContentType = "application/pdf",
+            FileSize = 10, Url = "/files/private-reports/report.pdf", SubFolder = "documents",
+            OwnerId = Guid.NewGuid(), Provider = StorageProvider.Local
+        });
         var repository = DispatchProxy.Create<IStoredFileRepository, TestProxy>();
         ((TestProxy)(object)repository).Handler = (method, _) =>
             method.Name == nameof(IStoredFileRepository.GetByIdAsync)
@@ -94,6 +100,6 @@ public class PrivateReportAccessTests
     {
         public Func<MethodInfo, object?[]?, object?> Handler { get; set; } = null!;
 
-        protected override object? Invoke(MethodInfo? method, object?[]? args) => Handler(method!, args);
+        protected override object? Invoke(MethodInfo? targetMethod, object?[]? args) => Handler(targetMethod!, args);
     }
 }

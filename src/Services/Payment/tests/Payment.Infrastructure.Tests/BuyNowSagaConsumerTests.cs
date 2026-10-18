@@ -116,11 +116,11 @@ public class BuyNowSagaConsumerTests
                 ? Task.FromResult(1) : throw new NotSupportedException(method.Name));
         }
         private Task<Order> Add(Order order) { Orders.Add(order); return Task.FromResult(order); }
-        public Task<BuyNowOrderAttempt> GetAsync(Guid id, Guid auction, Guid buyer, CancellationToken ct)
+        public Task<BuyNowOrderAttempt> GetAsync(Guid correlationId, Guid auctionId, Guid buyerId, CancellationToken ct)
         {
             if (StoreError is not null) throw StoreError;
-            if (!_attempts.TryGetValue(id, out var attempt))
-                _attempts[id] = attempt = new BuyNowOrderAttempt { CorrelationId = id, AuctionId = auction, BuyerId = buyer };
+            if (!_attempts.TryGetValue(correlationId, out var attempt))
+                _attempts[correlationId] = attempt = new BuyNowOrderAttempt { CorrelationId = correlationId, AuctionId = auctionId, BuyerId = buyerId };
             return Task.FromResult(attempt);
         }
         public CreateBuyNowOrder Command() => new()
@@ -154,6 +154,6 @@ public class BuyNowSagaConsumerTests
     public class Proxy : DispatchProxy
     {
         public Func<MethodInfo, object?[]?, object?> Handler { get; set; } = null!;
-        protected override object? Invoke(MethodInfo? method, object?[]? args) => Handler(method!, args);
+        protected override object? Invoke(MethodInfo? targetMethod, object?[]? args) => Handler(targetMethod!, args);
     }
 }

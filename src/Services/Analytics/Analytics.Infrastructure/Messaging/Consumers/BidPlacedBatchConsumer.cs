@@ -37,9 +37,8 @@ public class BidPlacedBatchConsumer : IConsumer<Batch<BidPlacedEvent>>
         var newFacts = new List<FactBid>();
         var duplicateCount = 0;
 
-        foreach (var message in batch)
+        foreach (var @event in batch.Select(message => message.Message))
         {
-            var @event = message.Message;
 
             if (existingIds.Contains(@event.Id))
             {

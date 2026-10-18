@@ -5,7 +5,7 @@ The system supports real-time bidding, authoritative auction closing, buy-now fl
 
 [![CI](https://github.com/blanho/auction-platform-microservices/actions/workflows/ci.yml/badge.svg)](https://github.com/blanho/auction-platform-microservices/actions/workflows/ci.yml)
 [![CD](https://github.com/blanho/auction-platform-microservices/actions/workflows/cd.yml/badge.svg)](https://github.com/blanho/auction-platform-microservices/actions/workflows/cd.yml)
-[![Quality Gate](https://sonarcloud.io/api/project_badges/measure?project=auction-platform-microservices&metric=alert_status)](https://sonarcloud.io/summary/overall?id=auction-platform-microservices)
+[![Sonar Analysis](https://github.com/blanho/auction-platform-microservices/actions/workflows/sonar.yml/badge.svg)](https://github.com/blanho/auction-platform-microservices/actions/workflows/sonar.yml)
 
 ---
 
@@ -608,7 +608,7 @@ GitHub Actions workflows in `.github/workflows/`:
 graph LR
     PR["Pull Request"] --> PRC["pr-checks.yml<br/>Build + Test + Lint"]
     Push["Push to main"] --> CI["ci.yml<br/>Build + Test + Coverage"]
-    CI --> SONAR["sonarcloud.yml<br/>Quality Gate"]
+    CI --> SONAR["sonar.yml<br/>Local Sonar Analysis"]
     CI --> CD["cd.yml<br/>Build images in ACR"]
     CD --> DEPLOY["Manual Azure AKS deployment"]
     CRON["Cron Schedule"] --> SCHED["scheduled.yml<br/>Vulnerability Scans"]
@@ -619,7 +619,7 @@ graph LR
 | `ci.yml` | Push / pull request | Validate frontend, build and test backend, compile Bicep |
 | `cd.yml` | Successful main CI / manual run | Build immutable ACR images; deploy to AKS only when manually enabled |
 | `pr-checks.yml` | Pull request | Validate build, tests, and lint before merge |
-| `sonarcloud.yml` | CI pipeline | Static analysis, enforce quality gate |
+| `sonar.yml` | Pushes and pull requests | Local Sonar C# analysis; warnings fail the build |
 | `scheduled.yml` | Cron | Dependency vulnerability scans |
 
 ### Deployment Topology
@@ -687,7 +687,7 @@ graph TB
 | Serilog | Structured logging with correlation IDs | Per-service config |
 | OpenTelemetry | Distributed tracing instrumentation | Configurable OTLP collector |
 | Azure Monitor / Log Analytics | AKS platform logs and metrics | Azure portal |
-| SonarCloud | Static code analysis and coverage | [Dashboard](https://sonarcloud.io/summary/overall?id=auction-platform-microservices) |
+| Sonar C# analyzer | Local static analysis during every backend build | [Quality guide](docs/code-quality.md) |
 
 **Health check endpoints** (every service):
 
@@ -752,7 +752,7 @@ not start or clean up the stack.
 
 ## Code Quality
 
-- **SonarCloud** — analysis and quality gate on `main`/`develop` pushes and pull requests targeting those branches
+- **Sonar C# analyzer** — pinned locally, checked during every backend build; `sonar.yml` enforces a full Release analysis on `main`/`develop` pushes and pull requests
 - **ESLint 9** + **Prettier 3** — frontend style enforcement
 - **Husky + lint-staged** — pre-commit hooks
 - **FluentValidation** — request validation
@@ -798,6 +798,7 @@ retention, batch limits, and token security behavior.
 | [API Reference](docs/api-reference.md) | Gateway routes, authentication, request/response schemas |
 | [Background Jobs](docs/background-jobs.md) | Supported job operations, payload examples, retries, and staged roadmap |
 | [Paging Consistency](docs/paging-consistency.md) | Shared paging rules, typed immutable sort maps across services, compatibility differences, and verification |
+| [Code Quality](docs/code-quality.md) | Local Sonar analysis, verification commands, security configuration, and reviewed exceptions |
 | [Common Repositories](docs/common-repositories.md) | Research, shared EF Core CRUD and queries, audit policies, transaction boundaries, and adoption |
 | [Deployment Guide](docs/deployment.md) | Docker, Kubernetes, CI/CD pipeline details |
 | [Azure Deployment Guide](deploy/azure/README.md) | Provision and deploy the Azure AKS environment |

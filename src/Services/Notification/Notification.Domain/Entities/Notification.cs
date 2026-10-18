@@ -26,31 +26,30 @@ public class Notification : AggregateRoot
         string username,
         NotificationType type,
         string title,
-        string message,
-        ChannelType channels = ChannelType.InApp,
-        string? data = null,
-        Guid? auctionId = null,
-        Guid? bidId = null,
-        Guid? orderId = null,
-        string? referenceId = null,
-        string? htmlContent = null)
+        string message) => Create(new CreateNotificationParams
+        {
+            UserId = userId, Username = username, Type = type, Title = title, Message = message
+        });
+
+    public static Notification Create(CreateNotificationParams parameters)
     {
+        ArgumentNullException.ThrowIfNull(parameters);
         return new Notification
         {
             Id = Guid.NewGuid(),
-            UserId = userId,
-            Username = username ?? string.Empty,
-            Type = type,
-            Title = title,
-            Message = message,
-            Channels = channels,
-            Data = data ?? string.Empty,
-            HtmlContent = htmlContent,
+            UserId = parameters.UserId,
+            Username = parameters.Username ?? string.Empty,
+            Type = parameters.Type,
+            Title = parameters.Title,
+            Message = parameters.Message,
+            Channels = parameters.Channels,
+            Data = parameters.Data ?? string.Empty,
+            HtmlContent = parameters.HtmlContent,
             Status = NotificationStatus.Pending,
-            AuctionId = auctionId,
-            BidId = bidId,
-            OrderId = orderId,
-            ReferenceId = referenceId,
+            AuctionId = parameters.AuctionId,
+            BidId = parameters.BidId,
+            OrderId = parameters.OrderId,
+            ReferenceId = parameters.ReferenceId,
             CreatedAt = DateTimeOffset.UtcNow
         };
     }

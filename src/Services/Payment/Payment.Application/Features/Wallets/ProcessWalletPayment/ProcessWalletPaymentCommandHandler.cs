@@ -85,15 +85,17 @@ public class ProcessWalletPaymentCommandHandler : ICommandHandler<ProcessWalletP
         if (wallet.AvailableBalance < request.Amount)
             return Result.Failure<WalletTransactionDto>(PaymentErrors.Wallet.InsufficientBalance);
 
-        var transaction = WalletTransaction.Create(
-            userId: wallet.UserId,
-            username: request.Username,
-            type: TransactionType.Payment,
-            amount: request.Amount,
-            balanceAfter: wallet.Balance - request.Amount,
-            description: request.Description,
-            referenceId: request.ReferenceId,
-            referenceType: WalletReferenceTypes.Order);
+        var transaction = WalletTransaction.Create(new CreateWalletTransactionParams
+        {
+            UserId = wallet.UserId,
+            Username = request.Username,
+            Type = TransactionType.Payment,
+            Amount = request.Amount,
+            BalanceAfter = wallet.Balance - request.Amount,
+            Description = request.Description,
+            ReferenceId = request.ReferenceId,
+            ReferenceType = WalletReferenceTypes.Order
+        });
 
         transaction.Complete();
         wallet.Withdraw(request.Amount);

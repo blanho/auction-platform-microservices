@@ -8,7 +8,8 @@ public class CatalogDbContextFactory : IDesignTimeDbContextFactory<CatalogDbCont
     public CatalogDbContext CreateDbContext(string[] args)
     {
         var options = new DbContextOptionsBuilder<CatalogDbContext>()
-            .UseNpgsql("Host=localhost;Database=auction_catalog;Username=postgres;Password=postgres")
+            .UseNpgsql(Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection")
+                ?? throw new InvalidOperationException("Set ConnectionStrings__DefaultConnection before running EF Core tools."))
             .Options;
 
         return new CatalogDbContext(options);

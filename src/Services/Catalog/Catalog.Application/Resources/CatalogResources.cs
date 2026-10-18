@@ -1,3 +1,6 @@
 namespace Catalog.Application.Resources;
 
-public sealed class CatalogResources;
+public abstract class CatalogResources
+{
+    protected CatalogResources() { }
+}

@@ -179,7 +179,7 @@ public class AuditPublisher : IAuditPublisher
             return [];
 
         var changedProperties = new List<string>();
-        var properties = typeof(T).GetProperties();
+        var properties = typeof(T).GetProperties().Where(property => property.CanRead && property.GetIndexParameters().Length == 0);
 
         foreach (var property in properties)
         {
@@ -191,8 +191,9 @@ public class AuditPublisher : IAuditPublisher
                 if (!Equals(oldValue, newValue))
                     changedProperties.Add(property.Name);
             }
-            catch
+            catch (System.Reflection.TargetInvocationException)
             {
+                continue;
             }
         }
 

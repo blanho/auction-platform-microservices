@@ -19,8 +19,11 @@ public sealed class SharedRepositoryTests
     private static IAuditContext Audit => TestProxy.Create<IAuditContext>((method, _) =>
         method.Name == "get_UserId" ? Actor : null);
     private static IDateTimeProvider Clock => TestProxy.Create<IDateTimeProvider>((_, _) => Now);
-    private static StoredFile File() => StoredFile.Create("image.png", Guid.NewGuid() + ".png", "image/png", 10,
-        "https://storage/image.png", "images", Actor, StorageProvider.Local);
+    private static StoredFile File() => StoredFile.Create(new CreateStoredFileParams
+    {
+        FileName = "image.png", StoredFileName = Guid.NewGuid() + ".png", ContentType = "image/png", FileSize = 10,
+        Url = "https://storage/image.png", SubFolder = "images", OwnerId = Actor, Provider = StorageProvider.Local
+    });
 
     [PostgresFact]
     public async Task SharedWritesPreserveTrackedLookupDomainDeletionAndPhysicalCleanup()

@@ -104,7 +104,7 @@ public class SettingsEndpoints : ICarterModule
     {
         var username = UserHelper.GetUsername(httpContext.User);
         var result = await sender.Send(new CreateSettingCommand(dto, username), cancellationToken);
-        return result.ToApiResult(value => Results.Created($"/api/v1/settings/{value!.Id}", value));
+        return result.ToApiResult(value => Results.Created($"/api/v1/settings/{value.Id}", value));
     }
 
     private static async Task<IResult> UpdateSetting(

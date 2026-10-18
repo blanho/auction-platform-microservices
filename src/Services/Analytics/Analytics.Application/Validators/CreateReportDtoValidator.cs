@@ -17,7 +17,7 @@ public class CreateReportDtoValidator : AbstractValidator<CreateReportDto>
 
         RuleFor(x => x.Reason)
             .NotEmpty().WithMessage(ValidationConstants.Messages.Required("Reason"))
-            .MinimumLength(ValidationConstants.MinLength.Name).WithMessage(ValidationConstants.Messages.MinLength("Reason", ValidationConstants.MinLength.Name))
+            .MinimumLength(ValidationConstants.MinLength.Name).WithMessage(ValidationConstants.Messages.MinimumLength("Reason", ValidationConstants.MinLength.Name))
             .MaximumLength(ValidationConstants.StringLength.Reason).WithMessage(ValidationConstants.Messages.MaxLength("Reason", ValidationConstants.StringLength.Reason));
 
         When(x => !string.IsNullOrEmpty(x.Description), () =>

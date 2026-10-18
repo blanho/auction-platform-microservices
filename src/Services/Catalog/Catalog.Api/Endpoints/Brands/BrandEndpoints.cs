@@ -53,17 +53,12 @@ public class BrandEndpoints : ICarterModule
     }
 
     private static async Task<IResult> GetBrands(
-        bool activeOnly = true,
-        bool featuredOnly = false,
-        int page = PaginationDefaults.DefaultPage,
-        int pageSize = PaginationDefaults.DefaultPageSize,
-        string? search = null,
-        string? sortBy = null,
-        string? sortOrder = null,
-        IMediator mediator = null!,
-        CancellationToken ct = default)
+        [AsParameters] GetBrandsRequest request,
+        IMediator mediator,
+        CancellationToken ct)
     {
-        var result = await mediator.Send(new GetBrandsQuery(activeOnly, featuredOnly, page, pageSize, search, sortBy, sortOrder), ct);
+        var result = await mediator.Send(new GetBrandsQuery(request.ActiveOnly, request.FeaturedOnly,
+            request.Page, request.PageSize, request.Search, request.SortBy, request.SortOrder), ct);
         return result.IsSuccess ? Results.Ok(result.Value) : Results.NotFound();
     }
 

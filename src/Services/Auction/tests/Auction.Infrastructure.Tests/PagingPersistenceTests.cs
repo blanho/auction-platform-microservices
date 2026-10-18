@@ -31,16 +31,16 @@ public sealed class PagingPersistenceTests
         Assert.Equal(10, all.PageSize);
         Assert.Equal(3, all.TotalCount);
         Assert.Equal(3, all.Items.Count);
-        var projected = await query.ToPaginatedResultAsync(2, 1, auction => auction.Item!.Title);
+        var projected = await query.ToPaginatedResultAsync(2, 1, auction => auction.Item.Title);
         Assert.Equal(3, projected.TotalCount);
         Assert.Single(projected.Items);
-        Assert.Equal((await query.Select(auction => auction.Item!.Title).ToListAsync())[1], projected.Items[0]);
+        Assert.Equal((await query.Select(auction => auction.Item.Title).ToListAsync())[1], projected.Items[0]);
         var extreme = await query.ToPaginatedResultAsync(int.MaxValue, 100);
         Assert.Empty(extreme.Items);
         Assert.Equal(21474837, extreme.Page);
         Assert.Empty(db.ChangeTracker.Entries());
         using var cancelled = new CancellationTokenSource();
-        cancelled.Cancel();
+        await cancelled.CancelAsync();
         await Assert.ThrowsAnyAsync<OperationCanceledException>(() => query.ToPaginatedResultAsync(1, 10, cancelled.Token));
     }
 
@@ -119,8 +119,8 @@ public sealed class PagingPersistenceTests
 
         var first = await repository.GetPagedAsync(Filter(false));
         var second = await repository.GetPagedAsync(Filter(true));
-        Assert.Equal("Alpha", Assert.Single(first.Items).Item!.Title);
-        Assert.Equal("Zulu", Assert.Single(second.Items).Item!.Title);
+        Assert.Equal("Alpha", Assert.Single(first.Items).Item.Title);
+        Assert.Equal("Zulu", Assert.Single(second.Items).Item.Title);
         Assert.Equal(first, await repository.GetPagedAsync(Filter(false)));
         Assert.Equal(2, cache.Values.Count);
 

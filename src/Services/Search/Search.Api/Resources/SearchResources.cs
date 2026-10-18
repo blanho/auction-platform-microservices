@@ -1,3 +1,6 @@
 namespace Search.Api.Resources;
 
-public sealed class SearchResources;
+public abstract class SearchResources
+{
+    protected SearchResources() { }
+}

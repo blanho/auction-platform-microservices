@@ -29,23 +29,25 @@ public class UserNotification : BaseEntity
         string userId,
         string title,
         string message,
-        string? link = null,
-        Guid? auctionId = null,
-        Guid? bidId = null,
-        Guid? orderId = null,
-        string? type = null)
+        string? link = null) => Create(new CreateUserNotificationParams
+        {
+            UserId = userId, Title = title, Message = message, Link = link
+        });
+
+    public static UserNotification Create(CreateUserNotificationParams parameters)
     {
+        ArgumentNullException.ThrowIfNull(parameters);
         return new UserNotification
         {
             Id = Guid.NewGuid(),
-            UserId = userId,
-            Title = title,
-            Message = message,
-            Link = link,
-            AuctionId = auctionId,
-            BidId = bidId,
-            OrderId = orderId,
-            Type = type,
+            UserId = parameters.UserId,
+            Title = parameters.Title,
+            Message = parameters.Message,
+            Link = parameters.Link,
+            AuctionId = parameters.AuctionId,
+            BidId = parameters.BidId,
+            OrderId = parameters.OrderId,
+            Type = parameters.Type,
             IsRead = false,
             CreatedAt = DateTimeOffset.UtcNow
         };

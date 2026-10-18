@@ -27,23 +27,25 @@ public class NotificationTemplate : AggregateRoot
         string key,
         string name,
         string subject,
-        string body,
-        string? description = null,
-        string? smsBody = null,
-        string? pushTitle = null,
-        string? pushBody = null)
+        string body) => Create(new CreateNotificationTemplateParams
+        {
+            Key = key, Name = name, Subject = subject, Body = body
+        });
+
+    public static NotificationTemplate Create(CreateNotificationTemplateParams parameters)
     {
+        ArgumentNullException.ThrowIfNull(parameters);
         return new NotificationTemplate
         {
             Id = Guid.NewGuid(),
-            Key = key.ToLowerInvariant(),
-            Name = name,
-            Subject = subject,
-            Body = body,
-            Description = description,
-            SmsBody = smsBody,
-            PushTitle = pushTitle ?? subject,
-            PushBody = pushBody,
+            Key = parameters.Key.ToLowerInvariant(),
+            Name = parameters.Name,
+            Subject = parameters.Subject,
+            Body = parameters.Body,
+            Description = parameters.Description,
+            SmsBody = parameters.SmsBody,
+            PushTitle = parameters.PushTitle ?? parameters.Subject,
+            PushBody = parameters.PushBody,
             IsActive = true,
             CreatedAt = DateTimeOffset.UtcNow
         };

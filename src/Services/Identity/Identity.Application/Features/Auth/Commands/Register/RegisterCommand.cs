@@ -61,18 +61,18 @@ public class RegisterCommandHandler(
         await mediator.Publish(new UserCreatedDomainEvent
         {
             UserId = user.Id,
-            Username = user.UserName!,
-            Email = user.Email!,
+            Username = user.UserName,
+            Email = user.Email,
             EmailConfirmed = false,
             FullName = user.FullName,
             Role = Roles.User,
             ConfirmationLink = confirmationLink
-        });
+        }, cancellationToken);
 
         await auditPublisher.PublishAsync(
             Guid.Parse(user.Id),
             UserAuditData.FromUser(user, [Roles.User]),
-            AuditAction.Created);
+            AuditAction.Created, cancellationToken: cancellationToken);
 
         logger.LogInformation("User {Username} registered successfully, awaiting email confirmation", request.Username);
 

@@ -12,13 +12,13 @@ public class CreateAuctionCommandValidator : AbstractValidator<CreateAuctionComm
             .MaximumLength(ValidationConstants.StringLength.Medium)
             .WithMessage(ValidationConstants.Messages.MaxLength("Title", ValidationConstants.StringLength.Medium))
             .MinimumLength(ValidationConstants.MinLength.Name)
-            .WithMessage(ValidationConstants.Messages.MinLength("Title", ValidationConstants.MinLength.Name));
+            .WithMessage(ValidationConstants.Messages.MinimumLength("Title", ValidationConstants.MinLength.Name));
 
         RuleFor(x => x.Description)
             .NotEmpty().WithMessage(ValidationConstants.Messages.Required("Description"))
             .MaximumLength(ValidationConstants.StringLength.Large)
             .WithMessage(ValidationConstants.Messages.MaxLength("Description", ValidationConstants.StringLength.Large))
-            .MinimumLength(10).WithMessage(ValidationConstants.Messages.MinLength("Description", 10));
+            .MinimumLength(10).WithMessage(ValidationConstants.Messages.MinimumLength("Description", 10));
 
         When(x => x.Condition != null, () =>
         {

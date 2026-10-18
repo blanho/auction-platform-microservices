@@ -11,9 +11,9 @@ public class OrchestrationDbContext(DbContextOptions<OrchestrationDbContext> opt
     public DbSet<AuctionCompletionSagaState> AuctionCompletionSagas => Set<AuctionCompletionSagaState>();
     public DbSet<SagaRecoveryCase> RecoveryCases => Set<SagaRecoveryCase>();
 
-    protected override void OnModelCreating(ModelBuilder model)
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        model.Entity<BuyNowSagaState>(s =>
+        modelBuilder.Entity<BuyNowSagaState>(s =>
         {
             s.ToTable("BuyNowSagas");
             s.HasKey(x => x.CorrelationId);
@@ -21,7 +21,7 @@ public class OrchestrationDbContext(DbContextOptions<OrchestrationDbContext> opt
             s.Property(x => x.RowVersion).HasColumnName("xmin").HasColumnType("xid").IsRowVersion();
             s.HasIndex(x => x.TimeoutAt);
         });
-        model.Entity<AuctionCompletionSagaState>(s =>
+        modelBuilder.Entity<AuctionCompletionSagaState>(s =>
         {
             s.ToTable("AuctionCompletionSagas");
             s.HasKey(x => x.CorrelationId);
@@ -29,10 +29,10 @@ public class OrchestrationDbContext(DbContextOptions<OrchestrationDbContext> opt
             s.Property(x => x.RowVersion).HasColumnName("xmin").HasColumnType("xid").IsRowVersion();
             s.HasIndex(x => x.TimeoutAt);
         });
-        model.Entity<SagaRecoveryCase>().HasKey(x => new { x.Workflow, x.CorrelationId, x.Step });
-        model.Entity<SagaRecoveryCase>().HasIndex(x => x.ResolvedAt);
-        model.AddInboxStateEntity();
-        model.AddOutboxStateEntity();
-        model.AddOutboxMessageEntity();
+        modelBuilder.Entity<SagaRecoveryCase>().HasKey(x => new { x.Workflow, x.CorrelationId, x.Step });
+        modelBuilder.Entity<SagaRecoveryCase>().HasIndex(x => x.ResolvedAt);
+        modelBuilder.AddInboxStateEntity();
+        modelBuilder.AddOutboxStateEntity();
+        modelBuilder.AddOutboxMessageEntity();
     }
 }

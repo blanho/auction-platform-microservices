@@ -102,7 +102,7 @@ public class ReportsEndpoints : ICarterModule
     {
         var username = UserHelper.GetUsername(httpContext.User);
         var result = await sender.Send(new CreateReportCommand(username, dto), cancellationToken);
-        return result.ToApiResult(value => Results.Created($"/api/v1/reports/{value!.Id}", value));
+        return result.ToApiResult(value => Results.Created($"/api/v1/reports/{value.Id}", value));
     }
 
     private static async Task<IResult> UpdateReportStatus(

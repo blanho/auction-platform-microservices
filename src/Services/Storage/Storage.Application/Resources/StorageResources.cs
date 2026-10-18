@@ -1,3 +1,6 @@
 namespace Storage.Application.Resources;
 
-public sealed class StorageResources;
+public abstract class StorageResources
+{
+    protected StorageResources() { }
+}

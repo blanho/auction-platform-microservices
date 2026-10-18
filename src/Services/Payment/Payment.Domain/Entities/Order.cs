@@ -59,45 +59,47 @@ public class Order : AggregateRoot
         Guid sellerId,
         string sellerUsername,
         string itemTitle,
-        decimal winningBid,
-        decimal? platformFeePercent = null,
-        decimal? shippingCost = null,
-        string? shippingAddress = null,
-        string? buyerNotes = null,
-        Guid? buyNowCorrelationId = null)
-    {
-        Guard.AgainstEmpty(auctionId, nameof(auctionId));
-        Guard.AgainstEmpty(buyerId, nameof(buyerId));
-        Guard.AgainstNullOrEmpty(buyerUsername, nameof(buyerUsername));
-        Guard.AgainstEmpty(sellerId, nameof(sellerId));
-        Guard.AgainstNullOrEmpty(sellerUsername, nameof(sellerUsername));
-        Guard.AgainstNullOrEmpty(itemTitle, nameof(itemTitle));
-        Guard.AgainstNegative(winningBid, nameof(winningBid));
+        decimal winningBid) => Create(new CreateOrderParams
+        {
+            AuctionId = auctionId, BuyerId = buyerId, BuyerUsername = buyerUsername,
+            SellerId = sellerId, SellerUsername = sellerUsername, ItemTitle = itemTitle, WinningBid = winningBid
+        });
 
-        decimal? platformFee = platformFeePercent.HasValue
-            ? winningBid * platformFeePercent.Value / 100
+    public static Order Create(CreateOrderParams parameters)
+    {
+        ArgumentNullException.ThrowIfNull(parameters);
+        Guard.AgainstEmpty(parameters.AuctionId, nameof(parameters.AuctionId));
+        Guard.AgainstEmpty(parameters.BuyerId, nameof(parameters.BuyerId));
+        Guard.AgainstNullOrEmpty(parameters.BuyerUsername, nameof(parameters.BuyerUsername));
+        Guard.AgainstEmpty(parameters.SellerId, nameof(parameters.SellerId));
+        Guard.AgainstNullOrEmpty(parameters.SellerUsername, nameof(parameters.SellerUsername));
+        Guard.AgainstNullOrEmpty(parameters.ItemTitle, nameof(parameters.ItemTitle));
+        Guard.AgainstNegative(parameters.WinningBid, nameof(parameters.WinningBid));
+
+        decimal? platformFee = parameters.PlatformFeePercent.HasValue
+            ? parameters.WinningBid * parameters.PlatformFeePercent.Value / 100
             : null;
 
-        var totalAmount = winningBid + (shippingCost ?? 0);
+        var totalAmount = parameters.WinningBid + (parameters.ShippingCost ?? 0);
 
         var createdAt = DateTimeOffset.UtcNow;
         var order = new Order
         {
             Id = Guid.NewGuid(),
-            AuctionId = auctionId,
-            BuyNowCorrelationId = buyNowCorrelationId,
-            AwaitingBuyNowCompletion = buyNowCorrelationId.HasValue,
-            BuyerId = buyerId,
-            BuyerUsername = buyerUsername,
-            SellerId = sellerId,
-            SellerUsername = sellerUsername,
-            ItemTitle = itemTitle,
-            WinningBid = winningBid,
+            AuctionId = parameters.AuctionId,
+            BuyNowCorrelationId = parameters.BuyNowCorrelationId,
+            AwaitingBuyNowCompletion = parameters.BuyNowCorrelationId.HasValue,
+            BuyerId = parameters.BuyerId,
+            BuyerUsername = parameters.BuyerUsername,
+            SellerId = parameters.SellerId,
+            SellerUsername = parameters.SellerUsername,
+            ItemTitle = parameters.ItemTitle,
+            WinningBid = parameters.WinningBid,
             TotalAmount = totalAmount,
             PlatformFee = platformFee,
-            ShippingCost = shippingCost,
-            ShippingAddress = shippingAddress,
-            BuyerNotes = buyerNotes,
+            ShippingCost = parameters.ShippingCost,
+            ShippingAddress = parameters.ShippingAddress,
+            BuyerNotes = parameters.BuyerNotes,
             Status = OrderStatus.PaymentPending,
             PaymentStatus = PaymentStatus.Pending,
             CreatedAt = createdAt,

@@ -28,34 +28,25 @@ public class Review : AggregateRoot
 
     private Review() { }
 
-    public static Review Create(
-        Guid auctionId,
-        Auction? auction,
-        Guid? orderId,
-        Guid reviewerId,
-        string reviewerUsername,
-        Guid reviewedUserId,
-        string reviewedUsername,
-        int rating,
-        string? title,
-        string? comment)
+    public static Review Create(CreateReviewParams parameters)
     {
-        if (rating is < MinRating or > MaxRating)
+        ArgumentNullException.ThrowIfNull(parameters);
+        if (parameters.Rating is < MinRating or > MaxRating)
             throw new DomainInvariantException($"Rating must be between {MinRating} and {MaxRating}");
 
         return new Review
         {
             Id = Guid.NewGuid(),
-            AuctionId = auctionId,
-            Auction = auction,
-            OrderId = orderId,
-            ReviewerId = reviewerId,
-            ReviewerUsername = reviewerUsername,
-            ReviewedUserId = reviewedUserId,
-            ReviewedUsername = reviewedUsername,
-            Rating = rating,
-            Title = title,
-            Comment = comment
+            AuctionId = parameters.AuctionId,
+            Auction = parameters.Auction,
+            OrderId = parameters.OrderId,
+            ReviewerId = parameters.ReviewerId,
+            ReviewerUsername = parameters.ReviewerUsername,
+            ReviewedUserId = parameters.ReviewedUserId,
+            ReviewedUsername = parameters.ReviewedUsername,
+            Rating = parameters.Rating,
+            Title = parameters.Title,
+            Comment = parameters.Comment
         };
     }
 

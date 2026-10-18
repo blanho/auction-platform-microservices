@@ -42,9 +42,18 @@ public class GeneratePresignedUploadCommandHandler(
             return Result.Failure<PresignedUploadDto>(StorageErrors.PresignedUrlNotSupported);
         }
 
-        var reservation = StoredFile.ReserveUpload(Guid.Parse(result.FileId), request.FileName,
-            result.StoredFileName, request.ContentType, request.FileSize, request.SubFolder,
-            request.OwnerId.Value, StorageDefaults.Providers.Resolve(settings.Value.Provider), result.ExpiresAt);
+        var reservation = StoredFile.ReserveUpload(new ReserveStoredFileUploadParams
+        {
+            Id = Guid.Parse(result.FileId),
+            FileName = request.FileName,
+            StoredFileName = result.StoredFileName,
+            ContentType = request.ContentType,
+            FileSize = request.FileSize,
+            SubFolder = request.SubFolder,
+            OwnerId = request.OwnerId.Value,
+            Provider = StorageDefaults.Providers.Resolve(settings.Value.Provider),
+            ExpiresAt = result.ExpiresAt
+        });
         await repository.AddAsync(reservation, cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);
 

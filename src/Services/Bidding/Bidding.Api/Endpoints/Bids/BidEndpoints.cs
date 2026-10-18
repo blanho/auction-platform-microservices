@@ -103,7 +103,7 @@ public class BidEndpoints : ICarterModule
     {
         return context.Request.Headers.TryGetValue("Idempotency-Key", out var values) &&
                !string.IsNullOrWhiteSpace(values.FirstOrDefault())
-            ? values.First()!
+            ? values[0]!
             : Guid.NewGuid().ToString();
     }
 

@@ -64,9 +64,15 @@ public class ConsumerFailureTests
     [Fact]
     public async Task RetractingNonHighestBid_DoesNotChangeIndexedPrice()
     {
-        var index = Stub<IAuctionIndexService>((_, _) => throw new InvalidOperationException("No index write expected"));
+        var calls = 0;
+        var index = Stub<IAuctionIndexService>((_, _) =>
+        {
+            calls++;
+            throw new InvalidOperationException("No index write expected");
+        });
         var consumer = new BidRetractedConsumer(index, NullLogger<BidRetractedConsumer>.Instance);
         await consumer.Consume(Context(new BidRetractedEvent { WasHighestBid = false }));
+        Assert.Equal(0, calls);
     }
 
     private static ConsumeContext<T> Context<T>(T message) where T : class =>

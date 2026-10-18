@@ -25,26 +25,28 @@ public class WalletTransaction : BaseEntity
         string username,
         TransactionType type,
         decimal amount,
-        decimal balanceAfter,
-        string? description = null,
-        Guid? referenceId = null,
-        string? referenceType = null,
-        string? paymentMethod = null)
+        decimal balanceAfter) => Create(new CreateWalletTransactionParams
+        {
+            UserId = userId, Username = username, Type = type, Amount = amount, BalanceAfter = balanceAfter
+        });
+
+    public static WalletTransaction Create(CreateWalletTransactionParams parameters)
     {
-        Guard.AgainstEmpty(userId, nameof(userId));
-        Guard.AgainstNullOrEmpty(username, nameof(username));
+        ArgumentNullException.ThrowIfNull(parameters);
+        Guard.AgainstEmpty(parameters.UserId, nameof(parameters.UserId));
+        Guard.AgainstNullOrEmpty(parameters.Username, nameof(parameters.Username));
 
         var transaction = new WalletTransaction
         {
-            UserId = userId,
-            Username = username,
-            Type = type,
-            Amount = amount,
-            Balance = balanceAfter,
-            Description = description,
-            ReferenceId = referenceId,
-            ReferenceType = referenceType,
-            PaymentMethod = paymentMethod,
+            UserId = parameters.UserId,
+            Username = parameters.Username,
+            Type = parameters.Type,
+            Amount = parameters.Amount,
+            Balance = parameters.BalanceAfter,
+            Description = parameters.Description,
+            ReferenceId = parameters.ReferenceId,
+            ReferenceType = parameters.ReferenceType,
+            PaymentMethod = parameters.PaymentMethod,
             Status = TransactionStatus.Pending,
             CreatedAt = DateTimeOffset.UtcNow
         };

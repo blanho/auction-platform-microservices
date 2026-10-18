@@ -3,7 +3,7 @@ using BuildingBlocks.Domain.Events;
 
 namespace BuildingBlocks.Domain.Entities;
 
-public abstract class BaseEntity : IAuditableEntity
+public abstract class BaseEntity : IAuditableEntity, IEquatable<BaseEntity>
 {
     public Guid Id { get; protected set; } = Guid.NewGuid();
     public DateTimeOffset CreatedAt { get; protected set; }
@@ -81,11 +81,12 @@ public abstract class BaseEntity : IAuditableEntity
         return Id != Guid.Empty && Id == other.Id;
     }
 
+    public virtual bool Equals(BaseEntity? other) => Equals((object?)other);
+
     public override int GetHashCode()
     {
         return Id.GetHashCode();
     }
-
     public static bool operator ==(BaseEntity? left, BaseEntity? right)
     {
         return Equals(left, right);

@@ -55,15 +55,17 @@ public class TemplateService : ITemplateService
         if (existing != null)
             return Result.Failure<TemplateDto>(NotificationErrors.Template.KeyExists(dto.Key));
 
-        var template = NotificationTemplate.Create(
-            dto.Key,
-            dto.Name,
-            dto.Subject,
-            dto.Body,
-            dto.Description,
-            dto.SmsBody,
-            dto.PushTitle,
-            dto.PushBody);
+        var template = NotificationTemplate.Create(new CreateNotificationTemplateParams
+        {
+            Key = dto.Key,
+            Name = dto.Name,
+            Subject = dto.Subject,
+            Body = dto.Body,
+            Description = dto.Description,
+            SmsBody = dto.SmsBody,
+            PushTitle = dto.PushTitle,
+            PushBody = dto.PushBody
+        });
 
         await _repository.AddAsync(template, ct);
         await _unitOfWork.SaveChangesAsync(ct);

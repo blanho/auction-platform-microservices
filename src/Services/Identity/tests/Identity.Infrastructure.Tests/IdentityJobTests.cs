@@ -152,7 +152,7 @@ public sealed class IdentityJobTests
         var user = User("inactive");
         await host.SeedAsync(Token(user, Now.AddDays(-60)));
         using var cancellation = new CancellationTokenSource();
-        cancellation.Cancel();
+        await cancellation.CancelAsync();
 
         await Assert.ThrowsAnyAsync<OperationCanceledException>(() => host.RunAsync<RefreshTokenCleanupJob>(cancellation.Token));
         await Assert.ThrowsAnyAsync<OperationCanceledException>(() => host.RunAsync<DisabledUserTokenRevocationJob>(cancellation.Token));
@@ -179,7 +179,7 @@ public sealed class IdentityJobTests
         suspended.IsSuspended = true;
         await using (var db = host.OpenDb())
         {
-            db.Users.AddRange([.. eligible, fresh, recentLogin, boundary, suspended]);
+            db.Users.AddRange(eligible.Concat(new[] { fresh, recentLogin, boundary, suspended }));
             await db.SaveChangesAsync();
         }
 

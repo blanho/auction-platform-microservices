@@ -74,7 +74,7 @@ public class ReportStorageClientTests
         var storage = DispatchProxy.Create<IReportStorageClient, TestProxy>();
         ((TestProxy)(object)storage).Handler = (_, _) =>
             Task.FromException<string>(new HttpRequestException("storage unavailable"));
-        var consumer = new GenerateOrderReportConsumer(generator, storage, null!,
+        var consumer = new GenerateOrderReportConsumer(generator, storage,
             NullLogger<GenerateOrderReportConsumer>.Instance);
 
         await Assert.ThrowsAsync<HttpRequestException>(() => consumer.Consume(context));
@@ -113,6 +113,6 @@ public class ReportStorageClientTests
     {
         public Func<MethodInfo, object?[]?, object?> Handler { get; set; } = null!;
 
-        protected override object? Invoke(MethodInfo? method, object?[]? args) => Handler(method!, args);
+        protected override object? Invoke(MethodInfo? targetMethod, object?[]? args) => Handler(targetMethod!, args);
     }
 }

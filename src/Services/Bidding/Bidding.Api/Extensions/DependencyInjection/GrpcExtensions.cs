@@ -32,10 +32,6 @@ public static class GrpcExtensions
                 EnableMultipleHttp2Connections = true,
                 ConnectTimeout = TimeSpan.FromSeconds(BidDefaults.Grpc.ConnectTimeoutSeconds)
             };
-            if (environment.IsDevelopment())
-            {
-                handler.SslOptions.RemoteCertificateValidationCallback = (_, _, _, _) => true;
-            }
             return handler;
         })
         .ConfigureChannel(options =>

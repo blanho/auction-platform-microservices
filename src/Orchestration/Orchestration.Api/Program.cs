@@ -29,4 +29,7 @@ app.UseAuthorization();
 app.MapCustomHealthChecks();
 app.MapSagaRecovery();
 await app.RunAsync();
-public partial class Program { }
+public partial class Program
+{
+    protected Program() { }
+}

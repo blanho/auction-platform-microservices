@@ -89,7 +89,7 @@ public sealed class UserFilteringTests
         Assert.Empty(huge.Items);
         Assert.Equal(7, huge.TotalCount);
         using var cancellation = new CancellationTokenSource();
-        cancellation.Cancel();
+        await cancellation.CancelAsync();
         await Assert.ThrowsAnyAsync<OperationCanceledException>(() => service.GetUsersPagedAsync(
             new UserQueryParams { Role = "Seller" }, cancellation.Token));
         await Assert.ThrowsAnyAsync<OperationCanceledException>(() => new GetUsersListQueryHandler(service).Handle(

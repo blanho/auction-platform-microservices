@@ -8,7 +8,8 @@ public class NotificationDbContextFactory : IDesignTimeDbContextFactory<Notifica
     public NotificationDbContext CreateDbContext(string[] args)
     {
         var options = new DbContextOptionsBuilder<NotificationDbContext>()
-            .UseNpgsql("Host=localhost;Database=auction_notification;Username=postgres;Password=postgres")
+            .UseNpgsql(Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection")
+                ?? throw new InvalidOperationException("Set ConnectionStrings__DefaultConnection before running EF Core tools."))
             .Options;
 
         return new NotificationDbContext(options);

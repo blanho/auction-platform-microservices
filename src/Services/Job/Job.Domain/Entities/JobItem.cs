@@ -6,6 +6,7 @@ namespace Jobs.Domain.Entities;
 
 public class JobItem : BaseEntity
 {
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "S1144", Justification = "EF Core refreshes this PostgreSQL xmin concurrency token after materialization and writes.")]
     public uint RowVersion { get; private set; }
     public Guid JobId { get; private set; }
     public Job Job { get; private set; } = null!;

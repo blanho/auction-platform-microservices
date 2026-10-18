@@ -63,15 +63,17 @@ public class CreateBuyNowOrderConsumer : IConsumer<CreateBuyNowOrder>
                 return;
             }
 
-            var order = Order.Create(
-                auctionId: message.AuctionId,
-                buyerId: message.BuyerId,
-                buyerUsername: message.BuyerUsername,
-                sellerId: message.SellerId,
-                sellerUsername: message.SellerUsername,
-                itemTitle: message.ItemTitle,
-                winningBid: message.BuyNowPrice,
-                buyNowCorrelationId: message.CorrelationId);
+            var order = Order.Create(new CreateOrderParams
+            {
+                AuctionId = message.AuctionId,
+                BuyerId = message.BuyerId,
+                BuyerUsername = message.BuyerUsername,
+                SellerId = message.SellerId,
+                SellerUsername = message.SellerUsername,
+                ItemTitle = message.ItemTitle,
+                WinningBid = message.BuyNowPrice,
+                BuyNowCorrelationId = message.CorrelationId
+            });
 
             await _orderRepository.AddAsync(order, context.CancellationToken);
             await _unitOfWork.SaveChangesAsync(context.CancellationToken);

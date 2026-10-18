@@ -35,7 +35,7 @@ public class DisableAuthenticatorCommandHandler(
             UserId = user.Id,
             Username = user.UserName!,
             Email = user.Email!
-        });
+        }, cancellationToken);
 
         await auditPublisher.PublishAsync(
             Guid.Parse(user.Id),
@@ -47,7 +47,7 @@ public class DisableAuthenticatorCommandHandler(
                 IsEnabled = false
             },
             AuditAction.Updated,
-            metadata: new Dictionary<string, object> { [AuditMetadataKeys.ActionLower] = IdentityDefaults.Audit.TwoFactorDisabled });
+            metadata: new Dictionary<string, object> { [AuditMetadataKeys.ActionLower] = IdentityDefaults.Audit.TwoFactorDisabled }, cancellationToken: cancellationToken);
 
         return Result.Success();
     }

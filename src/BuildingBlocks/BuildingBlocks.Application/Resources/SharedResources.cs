@@ -1,3 +1,6 @@
 namespace BuildingBlocks.Application.Localization;
 
-public sealed class SharedResources { }
+public abstract class SharedResources
+{
+    protected SharedResources() { }
+}

@@ -4,7 +4,7 @@ using Ganss.Xss;
 
 namespace BuildingBlocks.Application.Implementations;
 
-public class HtmlSanitizationService : ISanitizationService, IDisposable
+public sealed class HtmlSanitizationService : ISanitizationService, IDisposable
 {
 
     private readonly ThreadLocal<HtmlSanitizer> _sanitizer;

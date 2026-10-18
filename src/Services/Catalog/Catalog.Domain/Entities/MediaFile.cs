@@ -6,7 +6,7 @@ namespace Catalog.Domain.Entities;
 public class MediaFile
 {
     public Guid FileId { get; private set; }
-    public string FileType { get; private set; } = "image";
+    public string FileType { get; private set; }
     public int DisplayOrder { get; private set; }
     public bool IsPrimary { get; private set; }
 

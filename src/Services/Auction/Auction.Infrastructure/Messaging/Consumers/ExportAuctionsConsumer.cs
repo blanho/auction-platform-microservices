@@ -81,8 +81,7 @@ public class ExportAuctionsConsumer : IConsumer<ProcessAuctionExportCommand>
                     ErrorMessage = $"Unsupported export format: {message.Format}"
                 });
 
-            await PublishCompletionEvent(context, message, stopwatch.Elapsed, 0,
-                fileName: string.Empty, contentType: string.Empty, fileSizeBytes: 0, downloadUrl: string.Empty);
+            await PublishCompletionEvent(context, message, new ExportCompletion { Duration = stopwatch.Elapsed });
             return;
         }
 
@@ -114,9 +113,15 @@ public class ExportAuctionsConsumer : IConsumer<ProcessAuctionExportCommand>
             "Export {CorrelationId} completed: {RecordCount} auctions, {Size} bytes in {Duration}ms",
             correlationId, exportRows.Count, content.Length, stopwatch.ElapsedMilliseconds);
 
-        await PublishCompletionEvent(context, message, stopwatch.Elapsed,
-            storedReport.TotalRecords ?? exportRows.Count, storedReport.FileName ?? fileName,
-            storedReport.ContentType ?? exporter.ContentType, storedReport.FileSizeBytes ?? content.Length, storedReport.DownloadUrl);
+        await PublishCompletionEvent(context, message, new ExportCompletion
+        {
+            Duration = stopwatch.Elapsed,
+            TotalRecords = storedReport.TotalRecords ?? exportRows.Count,
+            FileName = storedReport.FileName ?? fileName,
+            ContentType = storedReport.ContentType ?? exporter.ContentType,
+            FileSizeBytes = storedReport.FileSizeBytes ?? content.Length,
+            DownloadUrl = storedReport.DownloadUrl
+        });
     }
 
     private static ExportFormat ParseExportFormat(string format)
@@ -163,37 +168,42 @@ public class ExportAuctionsConsumer : IConsumer<ProcessAuctionExportCommand>
     private async Task PublishCompletionEvent(
         ConsumeContext<ProcessAuctionExportCommand> context,
         ProcessAuctionExportCommand message,
-        TimeSpan duration,
-        int totalRecords,
-        string fileName,
-        string contentType,
-        long fileSizeBytes,
-        string downloadUrl)
+        ExportCompletion completion)
     {
         await _workflow.CompleteAsync($"ExportAuctionsConsumer:{message.CorrelationId}", message.CorrelationId,
-            totalRecords, 0, [], 1, context.CancellationToken);
+            completion.TotalRecords, 0, [], 1, context.CancellationToken);
         if (message.ParentJobId.HasValue && message.ParentJobItemId.HasValue)
             await context.Publish(new ReportJobItemResultCommand
             {
                 JobId = message.ParentJobId.Value,
                 JobItemId = message.ParentJobItemId.Value,
                 Attempt = message.Attempt,
-                IsSuccess = !string.IsNullOrEmpty(downloadUrl),
+                IsSuccess = !string.IsNullOrEmpty(completion.DownloadUrl),
                 IsFinalFailure = true,
-                ErrorMessage = !string.IsNullOrEmpty(downloadUrl) ? null : "Auction workflow completed with errors."
+                ErrorMessage = !string.IsNullOrEmpty(completion.DownloadUrl) ? null : "Auction workflow completed with errors."
             });
         await context.Publish(new AuctionExportCompletedEvent
         {
             CorrelationId = message.CorrelationId,
             RequestedBy = message.RequestedBy,
             Format = message.Format,
-            TotalRecords = totalRecords,
-            FileName = fileName,
-            ContentType = contentType,
-            FileSizeBytes = fileSizeBytes,
-            DownloadUrl = downloadUrl,
-            Duration = duration,
+            TotalRecords = completion.TotalRecords,
+            FileName = completion.FileName,
+            ContentType = completion.ContentType,
+            FileSizeBytes = completion.FileSizeBytes,
+            DownloadUrl = completion.DownloadUrl,
+            Duration = completion.Duration,
             CompletedAt = DateTimeOffset.UtcNow
         });
+    }
+
+    private sealed record ExportCompletion
+    {
+        public TimeSpan Duration { get; init; }
+        public int TotalRecords { get; init; }
+        public string FileName { get; init; } = string.Empty;
+        public string ContentType { get; init; } = string.Empty;
+        public long FileSizeBytes { get; init; }
+        public string DownloadUrl { get; init; } = string.Empty;
     }
 }

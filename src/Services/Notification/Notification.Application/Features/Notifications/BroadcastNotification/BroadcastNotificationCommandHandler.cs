@@ -35,14 +35,12 @@ public class BroadcastNotificationCommandHandler : ICommandHandler<BroadcastNoti
             notificationType = NotificationType.General;
         }
 
-        var notification = NotificationEntity.Create(
-            "broadcast",
-            "broadcast",
-            notificationType,
-            request.Title,
-            request.Message,
-            ChannelType.InApp,
-            request.TargetRole ?? "all");
+        var notification = NotificationEntity.Create(new CreateNotificationParams
+        {
+            UserId = "broadcast", Username = "broadcast", Type = notificationType,
+            Title = request.Title, Message = request.Message, Channels = ChannelType.InApp,
+            Data = request.TargetRole ?? "all"
+        });
 
         notification.MarkAsSent();
 

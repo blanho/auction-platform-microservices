@@ -470,6 +470,6 @@ public class SendBulkNotificationConsumer : IConsumer<SendBulkNotificationComman
         if (string.IsNullOrEmpty(html))
             return string.Empty;
 
-        return Regex.Replace(html, "<[^>]*>", string.Empty);
+        return Regex.Replace(html, "<[^>]*>", string.Empty, RegexOptions.NonBacktracking, TimeSpan.FromSeconds(1));
     }
 }

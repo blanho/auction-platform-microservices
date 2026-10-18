@@ -26,31 +26,33 @@ public class JobItemRoutingTests
         await using var db = new JobDbContext(options);
         await db.Database.MigrateAsync();
         foreach (var type in new[] { JobType.ReportGeneration, JobType.BulkNotification, JobType.ImageProcessing, JobType.BulkFileUpload, JobType.SearchReindex, JobType.AnalyticsAggregation })
-        foreach (var payload in new[] { "null", "[]", "{\"attempt\":\"invalid\"}" })
         {
-            var job = Job.Create(type, Guid.NewGuid().ToString(), "{}", Guid.NewGuid(), 1);
-            var item = job.AddItem(payload, 1);
-            job.Start();
-            item.MarkProcessing();
-            db.Jobs.Add(job);
-            await db.SaveChangesAsync();
-            var published = new List<object>();
-            var command = new ProcessJobItemCommand { JobId = job.Id, JobItemId = item.Id };
-            var context = TestProxy.Create<ConsumeContext<ProcessJobItemCommand>>((method, args) => method.Name switch
+            foreach (var payload in new[] { "null", "[]", "{\"attempt\":\"invalid\"}" })
             {
-                "get_Message" => command,
-                "get_CancellationToken" => CancellationToken.None,
-                "Publish" => Capture(args![0]!),
-                _ => throw new NotSupportedException(method.Name)
-            });
-            await new ProcessJobItemConsumer(db).Consume(context);
-            var failure = Assert.IsType<ReportJobItemResultCommand>(Assert.Single(published));
-            Assert.Equal(job.Id, failure.JobId);
-            Assert.Equal(item.Id, failure.JobItemId);
-            Assert.False(failure.IsSuccess);
-            Assert.True(failure.IsFinalFailure);
+                var job = Job.Create(type, Guid.NewGuid().ToString(), "{}", Guid.NewGuid(), 1);
+                var item = job.AddItem(payload, 1);
+                job.Start();
+                item.MarkProcessing();
+                db.Jobs.Add(job);
+                await db.SaveChangesAsync();
+                var published = new List<object>();
+                var command = new ProcessJobItemCommand { JobId = job.Id, JobItemId = item.Id };
+                var context = TestProxy.Create<ConsumeContext<ProcessJobItemCommand>>((method, args) => method.Name switch
+                {
+                    "get_Message" => command,
+                    "get_CancellationToken" => CancellationToken.None,
+                    "Publish" => Capture(args![0]!),
+                    _ => throw new NotSupportedException(method.Name)
+                });
+                await new ProcessJobItemConsumer(db).Consume(context);
+                var failure = Assert.IsType<ReportJobItemResultCommand>(Assert.Single(published));
+                Assert.Equal(job.Id, failure.JobId);
+                Assert.Equal(item.Id, failure.JobItemId);
+                Assert.False(failure.IsSuccess);
+                Assert.True(failure.IsFinalFailure);
 
-            Task Capture(object message) { published.Add(message); return Task.CompletedTask; }
+                Task Capture(object message) { published.Add(message); return Task.CompletedTask; }
+            }
         }
     }
 

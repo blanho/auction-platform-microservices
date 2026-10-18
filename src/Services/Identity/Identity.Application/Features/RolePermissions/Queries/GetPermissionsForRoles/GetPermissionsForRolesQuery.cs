@@ -20,7 +20,7 @@ public class GetPermissionsForRolesQueryHandler(
 
         var roleIds = await context.AppRoles
             .AsNoTracking()
-            .Where(r => roleNamesList.Contains(r.Name!))
+            .Where(r => roleNamesList.Contains(r.Name))
             .Select(r => r.Id)
             .ToListAsync(cancellationToken);
 

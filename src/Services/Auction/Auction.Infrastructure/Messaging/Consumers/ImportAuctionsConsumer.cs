@@ -49,7 +49,7 @@ public class ImportAuctionsConsumer : IConsumer<ProcessAuctionImportCommand>
 
         await PublishJobRequest(context, message, correlationId);
 
-        var validationResult = ValidateAllRows(message.Rows, message.Currency);
+        var validationResult = ValidateAllRows(message.Rows);
         var failedRowCount = message.Rows.Count - validationResult.ValidRows.Count;
 
         if (validationResult.ValidRows.Count == 0)
@@ -142,14 +142,14 @@ public class ImportAuctionsConsumer : IConsumer<ProcessAuctionImportCommand>
     }
 
     private static RowValidationResult ValidateAllRows(
-        List<ImportAuctionItemPayload> rows, string currency)
+        List<ImportAuctionItemPayload> rows)
     {
         var validRows = new List<ValidatedImportRow>();
         var errors = new List<ImportRowValidationError>();
 
         foreach (var row in rows)
         {
-            var rowErrors = ValidateSingleRow(row, currency);
+            var rowErrors = ValidateSingleRow(row);
 
             if (rowErrors.Count == 0)
             {
@@ -164,7 +164,7 @@ public class ImportAuctionsConsumer : IConsumer<ProcessAuctionImportCommand>
         return new RowValidationResult(validRows, errors);
     }
 
-    private static List<ImportRowValidationError> ValidateSingleRow(ImportAuctionItemPayload row, string currency)
+    private static List<ImportRowValidationError> ValidateSingleRow(ImportAuctionItemPayload row)
     {
         var errors = new List<ImportRowValidationError>();
 
@@ -201,17 +201,18 @@ public class ImportAuctionsConsumer : IConsumer<ProcessAuctionImportCommand>
     {
         var auctions = new List<Auction>(rows.Count);
 
-        foreach (var validatedRow in rows)
+        foreach (var row in rows.Select(validatedRow => validatedRow.Payload))
         {
-            var row = validatedRow.Payload;
 
-            var item = Item.Create(
-                title: _sanitizationService.SanitizeText(row.Title),
-                description: _sanitizationService.SanitizeHtml(row.Description),
-                condition: row.Condition,
-                yearManufactured: row.YearManufactured,
-                categoryId: row.CategoryId,
-                brandId: row.BrandId);
+            var item = Item.Create(new CreateItemParams
+            {
+                Title = _sanitizationService.SanitizeText(row.Title),
+                Description = _sanitizationService.SanitizeHtml(row.Description),
+                Condition = row.Condition,
+                YearManufactured = row.YearManufactured,
+                CategoryId = row.CategoryId,
+                BrandId = row.BrandId
+            });
 
             if (row.Attributes != null)
             {

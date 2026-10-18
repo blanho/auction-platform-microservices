@@ -22,9 +22,12 @@ public class UploadOwnershipAndDeletionTests
     public async Task ConfirmationRejectsUnissuedExpiredOrAlteredReservation(string change)
     {
         var owner = Guid.NewGuid();
-        var reservation = StoredFile.ReserveUpload(Guid.NewGuid(), "image.png", "images/key.png",
-            "image/png", 10, "images", owner, StorageProvider.AzureBlob,
-            DateTimeOffset.UtcNow.AddMinutes(change == "expired" ? -1 : 10));
+        var reservation = StoredFile.ReserveUpload(new ReserveStoredFileUploadParams
+        {
+            Id = Guid.NewGuid(), FileName = "image.png", StoredFileName = "images/key.png", ContentType = "image/png",
+            FileSize = 10, SubFolder = "images", OwnerId = owner, Provider = StorageProvider.AzureBlob,
+            ExpiresAt = DateTimeOffset.UtcNow.AddMinutes(change == "expired" ? -1 : 10)
+        });
         var repository = Stub<IStoredFileRepository>((method, _) => method.Name switch
         {
             nameof(IStoredFileRepository.GetByStoredFileNameAsync) => Task.FromResult(change == "unissued" ? null : reservation),
@@ -42,8 +45,12 @@ public class UploadOwnershipAndDeletionTests
     public async Task ConfirmationRetryReturnsSameFileAndOnlySavesOnce()
     {
         var owner = Guid.NewGuid();
-        var reservation = StoredFile.ReserveUpload(Guid.NewGuid(), "image.png", "images/key.png",
-            "image/png", 10, "images", owner, StorageProvider.AzureBlob, DateTimeOffset.UtcNow.AddMinutes(10));
+        var reservation = StoredFile.ReserveUpload(new ReserveStoredFileUploadParams
+        {
+            Id = Guid.NewGuid(), FileName = "image.png", StoredFileName = "images/key.png", ContentType = "image/png",
+            FileSize = 10, SubFolder = "images", OwnerId = owner, Provider = StorageProvider.AzureBlob,
+            ExpiresAt = DateTimeOffset.UtcNow.AddMinutes(10)
+        });
         var saves = 0;
         var repository = Stub<IStoredFileRepository>((method, _) => method.Name switch
         {
@@ -66,7 +73,7 @@ public class UploadOwnershipAndDeletionTests
         var retry = await handler.Handle(request, CancellationToken.None);
         Assert.True(first.IsSuccess);
         Assert.Equal(first.Value!.FileId, retry.Value!.FileId);
-        Assert.Equal(reservation.Id, first.Value!.FileId);
+        Assert.Equal(reservation.Id, first.Value.FileId);
         Assert.Equal(1, saves);
     }
 
@@ -123,8 +130,11 @@ public class UploadOwnershipAndDeletionTests
         Assert.Equal(file.Id, result.Value!.FileId);
     }
 
-    private static StoredFile File() => StoredFile.Create("image.png", "key.png", "image/png", 10,
-        "/files/key.png", null, Guid.NewGuid(), StorageProvider.Local);
+    private static StoredFile File() => StoredFile.Create(new CreateStoredFileParams
+    {
+        FileName = "image.png", StoredFileName = "key.png", ContentType = "image/png", FileSize = 10,
+        Url = "/files/key.png", OwnerId = Guid.NewGuid(), Provider = StorageProvider.Local
+    });
     private static IStoredFileRepository Repository(StoredFile file) => Stub<IStoredFileRepository>((method, _) => method.Name switch
     {
         nameof(IStoredFileRepository.GetByIdAsync) => Task.FromResult<StoredFile?>(file),

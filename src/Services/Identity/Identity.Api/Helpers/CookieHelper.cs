@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Http;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Identity.Api.Helpers;
 
@@ -17,7 +18,7 @@ public static class CookieHelper
         var cookieOptions = new CookieOptions
         {
             HttpOnly = true,
-            Secure = isProduction,
+            Secure = true,
             SameSite = isProduction ? SameSiteMode.Strict : SameSiteMode.Lax,
             Expires = DateTimeOffset.UtcNow.AddDays(expirationDays),
             Path = path,
@@ -27,6 +28,7 @@ public static class CookieHelper
         response.Cookies.Append(RefreshTokenCookieName, refreshToken, cookieOptions);
     }
 
+    [SuppressMessage("Security", "S3330", Justification = "The double-submit CSRF cookie must be readable by JavaScript to send X-XSRF-TOKEN; it contains no authentication credential.")]
     public static void SetCsrfTokenCookie(
         HttpResponse response,
         string csrfToken,
@@ -35,7 +37,7 @@ public static class CookieHelper
         var cookieOptions = new CookieOptions
         {
             HttpOnly = false,
-            Secure = isProduction,
+            Secure = true,
             SameSite = isProduction ? SameSiteMode.Strict : SameSiteMode.Lax,
             Path = "/",
             IsEssential = true
@@ -52,7 +54,7 @@ public static class CookieHelper
         var cookieOptions = new CookieOptions
         {
             HttpOnly = true,
-            Secure = isProduction,
+            Secure = true,
             SameSite = isProduction ? SameSiteMode.Strict : SameSiteMode.Lax,
             Expires = DateTimeOffset.UtcNow.AddDays(-1),
             Path = path,
@@ -62,12 +64,13 @@ public static class CookieHelper
         response.Cookies.Append(RefreshTokenCookieName, string.Empty, cookieOptions);
     }
 
+    [SuppressMessage("Security", "S3330", Justification = "Deletion must match the JavaScript-readable double-submit CSRF cookie; it contains no authentication credential.")]
     public static void ClearCsrfTokenCookie(HttpResponse response, bool isProduction)
     {
         var cookieOptions = new CookieOptions
         {
             HttpOnly = false,
-            Secure = isProduction,
+            Secure = true,
             SameSite = isProduction ? SameSiteMode.Strict : SameSiteMode.Lax,
             Expires = DateTimeOffset.UtcNow.AddDays(-1),
             Path = "/",

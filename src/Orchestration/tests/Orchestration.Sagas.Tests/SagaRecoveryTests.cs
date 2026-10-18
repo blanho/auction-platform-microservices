@@ -45,8 +45,8 @@ public class SagaRecoveryTests
             message.Context.Message.AuctionId == first.AuctionId &&
             message.Context.Message.OrderId == orderId && message.Context.Message.Success));
         Assert.NotNull(await saga.Exists(second.CorrelationId, state => state.ReservingAuction));
-        Assert.Equal(second.AuctionId, saga.Created.Contains(second.CorrelationId)!.AuctionId);
-        Assert.Null(saga.Created.Contains(second.CorrelationId)!.OrderId);
+        Assert.Equal(second.AuctionId, saga.Created.Contains(second.CorrelationId).AuctionId);
+        Assert.Null(saga.Created.Contains(second.CorrelationId).OrderId);
         Assert.DoesNotContain(harness.Published.Select<BuyNowSagaCompleted>(), message =>
             message.Context.Message.CorrelationId == second.CorrelationId);
     }
@@ -80,7 +80,7 @@ public class SagaRecoveryTests
                 var timeout = new BuyNowSagaTimedOut
                 {
                     CorrelationId = id,
-                    TimeoutTokenId = saga.Created.Contains(id)!.TimeoutTokenId
+                    TimeoutTokenId = saga.Created.Contains(id).TimeoutTokenId
                 };
                 await harness.Bus.Publish(timeout);
                 Assert.True(await saga.Consumed.Any<BuyNowSagaTimedOut>(message =>
@@ -92,7 +92,7 @@ public class SagaRecoveryTests
             await harness.Bus.Publish(new BuyNowSagaTimedOut
             {
                 CorrelationId = id,
-                TimeoutTokenId = saga.Created.Contains(id)!.TimeoutTokenId
+                TimeoutTokenId = saga.Created.Contains(id).TimeoutTokenId
             });
             Assert.NotNull(await saga.Exists(id, state => state.Compensating));
             if (recoveryStep == "CancelOrder")
@@ -119,7 +119,7 @@ public class SagaRecoveryTests
             harness.Published.Select<CancelBuyNowOrder>().Count());
         Assert.Equal(confirmations + (recoveryStep == "ConfirmOrder" ? 1 : 0),
             harness.Published.Select<ConfirmBuyNowOrder>().Count());
-        var recovered = saga.Created.Contains(id)!;
+        var recovered = saga.Created.Contains(id);
         Assert.Equal(0, recovered.RetryCount);
         Assert.NotNull(recovered.TimeoutTokenId);
         Assert.Equal(auctionId, recovered.AuctionId);
@@ -135,7 +135,7 @@ public class SagaRecoveryTests
         var id = Guid.NewGuid();
         await harness.Bus.Publish(new BuyNowSagaStarted { CorrelationId = id, AuctionId = Guid.NewGuid() });
         Assert.NotNull(await saga.Exists(id, x => x.ReservingAuction));
-        var oldToken = saga.Created.Contains(id)!.TimeoutTokenId;
+        var oldToken = saga.Created.Contains(id).TimeoutTokenId;
         await harness.Bus.Publish(new AuctionReservedForBuyNow { CorrelationId = id });
         Assert.NotNull(await saga.Exists(id, x => x.CreatingOrder));
         await harness.Bus.Publish(new BuyNowOrderCreated { CorrelationId = id, OrderId = Guid.NewGuid() });
@@ -145,8 +145,8 @@ public class SagaRecoveryTests
         var timeout = new BuyNowSagaTimedOut { CorrelationId = id, TimeoutTokenId = oldToken };
         await harness.Bus.Publish(timeout);
         Assert.True(await saga.Consumed.Any<BuyNowSagaTimedOut>(x => x.Context.Message.Timestamp == timeout.Timestamp));
-        Assert.Equal("ConfirmingOrder", saga.Created.Contains(id)!.CurrentState);
-        Assert.NotEqual(oldToken, saga.Created.Contains(id)!.TimeoutTokenId);
+        Assert.Equal("ConfirmingOrder", saga.Created.Contains(id).CurrentState);
+        Assert.NotEqual(oldToken, saga.Created.Contains(id).TimeoutTokenId);
         Assert.False(harness.Published.Select<ReleaseAuctionReservation>().Any());
     }
 
@@ -192,11 +192,11 @@ public class SagaRecoveryTests
         var id = Guid.NewGuid();
         await harness.Bus.Publish(new BuyNowSagaStarted { CorrelationId = id, AuctionId = Guid.NewGuid() });
         Assert.NotNull(await saga.Exists(id, x => x.ReservingAuction));
-        await harness.Bus.Publish(new BuyNowSagaTimedOut { TimeoutTokenId = saga.Created.Contains(id)!.TimeoutTokenId, CorrelationId = id });
+        await harness.Bus.Publish(new BuyNowSagaTimedOut { TimeoutTokenId = saga.Created.Contains(id).TimeoutTokenId, CorrelationId = id });
         Assert.NotNull(await saga.Exists(id, x => x.Compensating));
         for (var i = 0; i < SagaConstants.MaxCompensationRetries; i++)
         {
-            var timeout = new BuyNowSagaTimedOut { TimeoutTokenId = saga.Created.Contains(id)!.TimeoutTokenId, CorrelationId = id };
+            var timeout = new BuyNowSagaTimedOut { TimeoutTokenId = saga.Created.Contains(id).TimeoutTokenId, CorrelationId = id };
             await harness.Bus.Publish(timeout);
             Assert.True(await saga.Consumed.Any<BuyNowSagaTimedOut>(x => x.Context.Message.Timestamp == timeout.Timestamp));
         }
@@ -217,7 +217,7 @@ public class SagaRecoveryTests
         var id = Guid.NewGuid(); var auction = Guid.NewGuid();
         await harness.Bus.Publish(new BuyNowSagaStarted { CorrelationId = id, AuctionId = auction, BuyerId = Guid.NewGuid() });
         Assert.NotNull(await saga.Exists(id, x => x.ReservingAuction));
-        await harness.Bus.Publish(new BuyNowSagaTimedOut { TimeoutTokenId = saga.Created.Contains(id)!.TimeoutTokenId, CorrelationId = id, AuctionId = auction });
+        await harness.Bus.Publish(new BuyNowSagaTimedOut { TimeoutTokenId = saga.Created.Contains(id).TimeoutTokenId, CorrelationId = id, AuctionId = auction });
         Assert.NotNull(await saga.Exists(id, x => x.Compensating));
         Assert.True(await harness.Published.Any<ReleaseAuctionReservation>());
         await harness.Bus.Publish(new AuctionReservedForBuyNow { CorrelationId = id, AuctionId = auction });
@@ -239,7 +239,7 @@ public class SagaRecoveryTests
         var id = Guid.NewGuid(); var order = Guid.NewGuid();
         await harness.Bus.Publish(new BuyNowSagaStarted { CorrelationId = id, AuctionId = Guid.NewGuid() });
         Assert.NotNull(await saga.Exists(id, x => x.ReservingAuction));
-        await harness.Bus.Publish(new BuyNowSagaTimedOut { TimeoutTokenId = saga.Created.Contains(id)!.TimeoutTokenId, CorrelationId = id });
+        await harness.Bus.Publish(new BuyNowSagaTimedOut { TimeoutTokenId = saga.Created.Contains(id).TimeoutTokenId, CorrelationId = id });
         Assert.NotNull(await saga.Exists(id, x => x.Compensating));
         await harness.Bus.Publish(new BuyNowAuctionCompleted { CorrelationId = id, OrderId = order });
         Assert.NotNull(await saga.Exists(id, x => x.ConfirmingOrder));
@@ -259,7 +259,7 @@ public class SagaRecoveryTests
         Assert.NotNull(await saga.Exists(id, x => x.CreatingOrder));
         await harness.Bus.Publish(new AuctionWinnerOrderCreated { CorrelationId = id, OrderId = order });
         Assert.NotNull(await saga.Exists(id, x => x.SendingNotifications));
-        await harness.Bus.Publish(new AuctionCompletionSagaTimedOut { TimeoutTokenId = saga.Created.Contains(id)!.TimeoutTokenId, CorrelationId = id });
+        await harness.Bus.Publish(new AuctionCompletionSagaTimedOut { TimeoutTokenId = saga.Created.Contains(id).TimeoutTokenId, CorrelationId = id });
         Assert.True(await harness.Published.Any<AuctionCompletionSagaCompleted>(x => x.Context.Message.Success && x.Context.Message.OrderId == order));
         Assert.Empty(harness.Published.Select<RevertAuctionCompletion>());
     }
@@ -273,7 +273,7 @@ public class SagaRecoveryTests
         var id = Guid.NewGuid();
         await harness.Bus.Publish(new AuctionCompletionSagaStarted { CorrelationId = id, AuctionId = Guid.NewGuid() });
         Assert.NotNull(await saga.Exists(id, x => x.CreatingOrder));
-        await harness.Bus.Publish(new AuctionCompletionSagaTimedOut { TimeoutTokenId = saga.Created.Contains(id)!.TimeoutTokenId, CorrelationId = id });
+        await harness.Bus.Publish(new AuctionCompletionSagaTimedOut { TimeoutTokenId = saga.Created.Contains(id).TimeoutTokenId, CorrelationId = id });
         Assert.NotNull(await saga.Exists(id, x => x.ManualInterventionRequired));
         Assert.True(await harness.Published.Any<SagaRecoveryRequired>());
         await harness.Bus.Publish(new AuctionWinnerOrderCreated { CorrelationId = id, OrderId = Guid.NewGuid() });

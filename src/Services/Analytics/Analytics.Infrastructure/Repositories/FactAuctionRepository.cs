@@ -47,7 +47,7 @@ public class FactAuctionRepository : IFactAuctionRepository
         var successRate = auctions.Count > 0 ? (decimal)soldAuctions.Count / auctions.Count * 100 : 0;
 
         var endingToday = auctions.Count(a =>
-            a.EndedAt.HasValue == false &&
+            !a.EndedAt.HasValue &&
             IsLive(a.Status));
 
         return new AuctionMetrics

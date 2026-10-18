@@ -58,11 +58,7 @@ public class RequestJobConsumer : IConsumer<RequestJobCommand>
 
         var isBulkJob = message.TotalItems > 0 && message.Items.Count == 0;
 
-        var totalItems = isBulkJob
-            ? message.TotalItems
-            : message.Items.Count > 0
-                ? message.Items.Count
-                : 1;
+        var totalItems = isBulkJob ? message.TotalItems : Math.Max(message.Items.Count, 1);
 
         var job = Job.Create(
             jobType,

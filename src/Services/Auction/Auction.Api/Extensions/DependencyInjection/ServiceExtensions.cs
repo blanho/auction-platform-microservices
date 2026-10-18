@@ -67,7 +67,8 @@ namespace Auctions.Api.Extensions.DependencyInjection
             services.AddGrpcClient<CatalogGrpc.CatalogGrpcClient>((sp, o) =>
             {
                 var cfg = sp.GetRequiredService<IConfiguration>();
-                o.Address = new Uri(cfg["CatalogService:GrpcUrl"] ?? "http://localhost:5013");
+                o.Address = new Uri(cfg["CatalogService:GrpcUrl"]
+                    ?? throw new InvalidOperationException("CatalogService:GrpcUrl configuration is required."));
             });
             services.AddScoped<ICatalogGrpcClient, CatalogGrpcClient>();
 

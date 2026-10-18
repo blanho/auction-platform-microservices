@@ -9,14 +9,10 @@ namespace Notification.Application.Services;
 
 public class NotificationSender : INotificationSender
 {
-    private const int SmsSubjectPreviewLength = 50;
-
     private readonly ITemplateRepository _templateRepo;
     private readonly INotificationRecordRepository _notificationRepo;
     private readonly IUnitOfWork _unitOfWork;
-    private readonly IEmailSender _emailSender;
-    private readonly ISmsSender _smsSender;
-    private readonly IPushSender _pushSender;
+    private readonly INotificationDelivery _delivery;
     private readonly INotificationHubService _hubService;
     private readonly ILogger<NotificationSender> _logger;
 
@@ -24,18 +20,14 @@ public class NotificationSender : INotificationSender
         ITemplateRepository templateRepo,
         INotificationRecordRepository notificationRepo,
         IUnitOfWork unitOfWork,
-        IEmailSender emailSender,
-        ISmsSender smsSender,
-        IPushSender pushSender,
+        INotificationDelivery delivery,
         INotificationHubService hubService,
         ILogger<NotificationSender> logger)
     {
         _templateRepo = templateRepo;
         _notificationRepo = notificationRepo;
         _unitOfWork = unitOfWork;
-        _emailSender = emailSender;
-        _smsSender = smsSender;
-        _pushSender = pushSender;
+        _delivery = delivery;
         _hubService = hubService;
         _logger = logger;
     }
@@ -60,20 +52,20 @@ public class NotificationSender : INotificationSender
 
         if (request.SendEmail && !string.IsNullOrEmpty(request.RecipientEmail))
         {
-            await SendEmailInternalAsync(request.UserId, request.TemplateKey, request.RecipientEmail, subject, body, ct);
+            await _delivery.SendEmailAsync(request.UserId, request.TemplateKey, request.RecipientEmail, subject, body, ct);
         }
 
         if (request.SendSms && !string.IsNullOrEmpty(request.RecipientPhone) && !string.IsNullOrEmpty(template.SmsBody))
         {
             var smsBody = TemplateHelper.RenderTemplate(template.SmsBody, request.Data);
-            await SendSmsInternalAsync(request.UserId, request.TemplateKey, request.RecipientPhone, smsBody, ct);
+            await _delivery.SendSmsAsync(request.UserId, request.TemplateKey, request.RecipientPhone, smsBody, ct);
         }
 
         if (request.SendPush && !string.IsNullOrEmpty(template.PushBody))
         {
             var pushTitle = TemplateHelper.RenderTemplate(template.PushTitle ?? subject, request.Data);
             var pushBody = TemplateHelper.RenderTemplate(template.PushBody, request.Data);
-            await SendPushInternalAsync(request.UserId, request.TemplateKey, pushTitle, pushBody, request.Data, ct);
+            await _delivery.SendPushAsync(request.UserId, request.TemplateKey, pushTitle, pushBody, request.Data, ct);
         }
 
         if (request.SendInApp)
@@ -98,7 +90,7 @@ public class NotificationSender : INotificationSender
 
         var subject = TemplateHelper.RenderTemplate(template.Subject, data);
         var body = TemplateHelper.RenderTemplate(template.Body, data);
-        await SendEmailInternalAsync(userId, templateKey, recipientEmail, subject, body, ct);
+        await _delivery.SendEmailAsync(userId, templateKey, recipientEmail, subject, body, ct);
     }
 
     public async Task SendSmsAsync(string userId, string templateKey, Dictionary<string, string> data, string phoneNumber, CancellationToken ct = default)
@@ -111,7 +103,7 @@ public class NotificationSender : INotificationSender
         }
 
         var smsBody = TemplateHelper.RenderTemplate(template.SmsBody, data);
-        await SendSmsInternalAsync(userId, templateKey, phoneNumber, smsBody, ct);
+        await _delivery.SendSmsAsync(userId, templateKey, phoneNumber, smsBody, ct);
     }
 
     public async Task SendPushAsync(string userId, string templateKey, Dictionary<string, string> data, CancellationToken ct = default)
@@ -125,7 +117,7 @@ public class NotificationSender : INotificationSender
 
         var pushTitle = TemplateHelper.RenderTemplate(template.PushTitle ?? template.Subject, data);
         var pushBody = TemplateHelper.RenderTemplate(template.PushBody, data);
-        await SendPushInternalAsync(userId, templateKey, pushTitle, pushBody, data, ct);
+        await _delivery.SendPushAsync(userId, templateKey, pushTitle, pushBody, data, ct);
     }
 
     public async Task SendInAppAsync(string userId, string title, string message, string? link = null, CancellationToken ct = default)
@@ -175,105 +167,4 @@ public class NotificationSender : INotificationSender
         await _unitOfWork.SaveChangesAsync(ct);
     }
 
-    private async Task SendEmailInternalAsync(string userId, string templateKey, string recipientEmail, string subject, string body, CancellationToken ct)
-    {
-        var record = NotificationRecord.Create(
-            Guid.TryParse(userId, out var parsedUserId) ? parsedUserId : Guid.Empty,
-            templateKey,
-            NotificationChannelNames.Email,
-            subject,
-            recipientEmail);
-
-        try
-        {
-            var result = await _emailSender.SendAsync(recipientEmail, subject, body, TemplateHelper.StripHtml(body), ct);
-            if (result.Success)
-            {
-                record.MarkAsSent(result.MessageId);
-                _logger.LogInformation("Email sent to {Email} for template {Template}", recipientEmail, templateKey);
-            }
-            else
-            {
-                record.MarkAsFailed(result.Error ?? NotificationDefaults.Fallback.UnknownError);
-                _logger.LogWarning("Failed to send email to {Email}: {Error}", recipientEmail, result.Error);
-            }
-        }
-        catch (Exception ex) when (ex is not OperationCanceledException)
-        {
-            record.MarkAsFailed(ex.Message);
-            _logger.LogError(ex, "Exception sending email to {Email}", recipientEmail);
-        }
-
-        await PersistRecordAsync(record, ct);
-    }
-
-    private async Task SendSmsInternalAsync(string userId, string templateKey, string phoneNumber, string message, CancellationToken ct)
-    {
-        var record = NotificationRecord.Create(
-            Guid.TryParse(userId, out var parsedUserId) ? parsedUserId : Guid.Empty,
-            templateKey,
-            NotificationChannelNames.Sms,
-            message.Length > SmsSubjectPreviewLength ? message[..SmsSubjectPreviewLength] + "..." : message,
-            phoneNumber);
-
-        try
-        {
-            var result = await _smsSender.SendAsync(phoneNumber, message, ct);
-            if (result.Success)
-            {
-                record.MarkAsSent(result.MessageId);
-                _logger.LogInformation("SMS sent to {Phone} for template {Template}", TemplateHelper.MaskPhone(phoneNumber), templateKey);
-            }
-            else
-            {
-                record.MarkAsFailed(result.Error ?? NotificationDefaults.Fallback.UnknownError);
-                _logger.LogWarning("Failed to send SMS to {Phone}: {Error}", TemplateHelper.MaskPhone(phoneNumber), result.Error);
-            }
-        }
-        catch (Exception ex) when (ex is not OperationCanceledException)
-        {
-            record.MarkAsFailed(ex.Message);
-            _logger.LogError(ex, "Exception sending SMS to {Phone}", TemplateHelper.MaskPhone(phoneNumber));
-        }
-
-        await PersistRecordAsync(record, ct);
-    }
-
-    private async Task SendPushInternalAsync(string userId, string templateKey, string title, string body, Dictionary<string, string> data, CancellationToken ct)
-    {
-        var record = NotificationRecord.Create(
-            Guid.TryParse(userId, out var parsedUserId) ? parsedUserId : Guid.Empty,
-            templateKey,
-            NotificationChannelNames.Push,
-            title,
-            userId);
-
-        try
-        {
-            var result = await _pushSender.SendAsync(userId, title, body, data, ct);
-            if (result.Success)
-            {
-                record.MarkAsSent(result.MessageId);
-                _logger.LogInformation("Push notification sent to user {UserId} for template {Template}", userId, templateKey);
-            }
-            else
-            {
-                record.MarkAsFailed(result.Error ?? NotificationDefaults.Fallback.UnknownError);
-                _logger.LogWarning("Failed to send push to user {UserId}: {Error}", userId, result.Error);
-            }
-        }
-        catch (Exception ex) when (ex is not OperationCanceledException)
-        {
-            record.MarkAsFailed(ex.Message);
-            _logger.LogError(ex, "Exception sending push to user {UserId}", userId);
-        }
-
-        await PersistRecordAsync(record, ct);
-    }
-
-    private async Task PersistRecordAsync(NotificationRecord record, CancellationToken ct)
-    {
-        await _notificationRepo.AddRecordAsync(record, ct);
-        await _unitOfWork.SaveChangesAsync(ct);
-    }
 }

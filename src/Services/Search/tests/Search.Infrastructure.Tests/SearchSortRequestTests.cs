@@ -48,7 +48,32 @@ public class SearchSortRequestTests
         Assert.Equal("asc", sorts[2].GetProperty("id").GetProperty("order").GetString());
     }
 
-    private static async Task<JsonDocument> CaptureSearchAsync(string? sortBy, string? direction)
+    [Fact]
+    public async Task SearchQuery_SendsTextAndEveryRequestedFilterToElasticsearch()
+    {
+        var categoryId = Guid.NewGuid();
+        using var request = await CaptureSearchAsync(null, null, new AuctionSearchRequest
+        {
+            Query = "camera", CategoryId = categoryId, MinPrice = 10m, MaxPrice = 100m, FeaturedOnly = true
+        });
+        var query = request.RootElement.GetProperty("query").GetProperty("bool");
+
+        var must = query.GetProperty("must");
+        var textQuery = must.ValueKind == JsonValueKind.Array ? Assert.Single(must.EnumerateArray()) : must;
+        Assert.Equal("camera", textQuery.GetProperty("multi_match").GetProperty("query").GetString());
+        var filters = query.GetProperty("filter").EnumerateArray().ToArray();
+        Assert.Equal(3, filters.Length);
+        Assert.Contains(filters, filter => filter.TryGetProperty("term", out var term) &&
+            term.TryGetProperty("categoryId", out var category) && category.GetProperty("value").GetString() == categoryId.ToString());
+        Assert.Contains(filters, filter => filter.TryGetProperty("term", out var term) &&
+            term.TryGetProperty("isFeatured", out var featured) && featured.GetProperty("value").GetBoolean());
+        var price = Assert.Single(filters, filter => filter.TryGetProperty("range", out _))
+            .GetProperty("range").GetProperty("currentPrice");
+        Assert.Equal(10m, price.GetProperty("gte").GetDecimal());
+        Assert.Equal(100m, price.GetProperty("lte").GetDecimal());
+    }
+
+    private static async Task<JsonDocument> CaptureSearchAsync(string? sortBy, string? direction, AuctionSearchRequest? search = null)
     {
         ApiCallDetails? call = null;
         var headers = new Dictionary<string, IEnumerable<string>>(StringComparer.OrdinalIgnoreCase)
@@ -62,7 +87,7 @@ public class SearchSortRequestTests
         var service = new AuctionSearchService(client, Options.Create(new SearchOptions()),
             Options.Create(new ElasticsearchOptions()), NullLogger<AuctionSearchService>.Instance);
 
-        await service.SearchAsync(new AuctionSearchRequest { SortBy = sortBy, SortDirection = direction });
+        await service.SearchAsync(search ?? new AuctionSearchRequest { SortBy = sortBy, SortDirection = direction });
 
         Assert.NotNull(call?.RequestBodyInBytes);
         return JsonDocument.Parse(call.RequestBodyInBytes);

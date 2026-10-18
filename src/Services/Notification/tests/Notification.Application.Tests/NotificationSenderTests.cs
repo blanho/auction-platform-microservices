@@ -23,7 +23,10 @@ public class NotificationSenderTests
         var calls = new List<string>();
         using var cancellation = new CancellationTokenSource();
         var token = cancellation.Token;
-        var template = NotificationTemplate.Create("test", "Test", "Subject", "Body", smsBody: message);
+        var template = NotificationTemplate.Create(new CreateNotificationTemplateParams
+        {
+            Key = "test", Name = "Test", Subject = "Subject", Body = "Body", SmsBody = message
+        });
         var templates = Stub<ITemplateRepository>((_, args) =>
         {
             Assert.Equal(token, args[^1]);
@@ -51,7 +54,8 @@ public class NotificationSenderTests
             calls.Add("save");
             return Task.FromResult(1);
         });
-        var sender = new NotificationSender(templates, records, unit, null!, smsSender, null!, null!,
+        var sender = new NotificationSender(templates, records, unit,
+            new NotificationDelivery(records, unit, null!, smsSender, null!, NullLogger<NotificationDelivery>.Instance), null!,
             NullLogger<NotificationSender>.Instance);
 
         await sender.SendSmsAsync("invalid-user-id", "test", [], "+1234567890", token);
@@ -87,7 +91,8 @@ public class NotificationSenderTests
             calls.Add("save");
             return Task.FromException<int>(failure);
         });
-        var sender = new NotificationSender(templates, records, unit, emailSender, null!, null!, null!,
+        var sender = new NotificationSender(templates, records, unit,
+            new NotificationDelivery(records, unit, emailSender, null!, null!, NullLogger<NotificationDelivery>.Instance), null!,
             NullLogger<NotificationSender>.Instance);
 
         var exception = await Assert.ThrowsAsync<InvalidOperationException>(() =>
@@ -106,7 +111,8 @@ public class NotificationSenderTests
         var templates = Stub<ITemplateRepository>((_, _) => Task.FromResult<NotificationTemplate?>(template));
         var emailSender = Stub<IEmailSender>((_, _) =>
             Task.FromCanceled<EmailSendResult>(cancellation.Token));
-        var sender = new NotificationSender(templates, null!, null!, emailSender, null!, null!, null!,
+        var sender = new NotificationSender(templates, null!, null!,
+            new NotificationDelivery(null!, null!, emailSender, null!, null!, NullLogger<NotificationDelivery>.Instance), null!,
             NullLogger<NotificationSender>.Instance);
 
         await Assert.ThrowsAnyAsync<OperationCanceledException>(() =>
@@ -123,6 +129,6 @@ public class NotificationSenderTests
     public class TestProxy : DispatchProxy
     {
         public Func<MethodInfo, object?[], object?> Handler { get; set; } = null!;
-        protected override object? Invoke(MethodInfo? method, object?[]? args) => Handler(method!, args!);
+        protected override object? Invoke(MethodInfo? targetMethod, object?[]? args) => Handler(targetMethod!, args!);
     }
 }

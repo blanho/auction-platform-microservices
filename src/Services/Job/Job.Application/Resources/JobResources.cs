@@ -1,3 +1,6 @@
 namespace Jobs.Application.Resources;
 
-public sealed class JobResources;
+public abstract class JobResources
+{
+    protected JobResources() { }
+}

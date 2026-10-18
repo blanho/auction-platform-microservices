@@ -16,18 +16,15 @@ public class GenerateOrderReportConsumer : IConsumer<GenerateOrderReportCommand>
 {
     private readonly IOrderReportGenerator _reportGenerator;
     private readonly IReportStorageClient _reportStorageClient;
-    private readonly IPublishEndpoint _publishEndpoint;
     private readonly ILogger<GenerateOrderReportConsumer> _logger;
 
     public GenerateOrderReportConsumer(
         IOrderReportGenerator reportGenerator,
         IReportStorageClient reportStorageClient,
-        IPublishEndpoint publishEndpoint,
         ILogger<GenerateOrderReportConsumer> logger)
     {
         _reportGenerator = reportGenerator;
         _reportStorageClient = reportStorageClient;
-        _publishEndpoint = publishEndpoint;
         _logger = logger;
     }
 
@@ -189,7 +186,8 @@ public class GenerateOrderReportConsumer : IConsumer<GenerateOrderReportCommand>
 
     private static OrderStatus? ParseStatusFilter(string? value)
     {
-        return string.IsNullOrWhiteSpace(value) ? null :
-            Enum.TryParse<OrderStatus>(value, ignoreCase: true, out var result) && Enum.IsDefined(result) ? result : null;
+        if (string.IsNullOrWhiteSpace(value))
+            return null;
+        return Enum.TryParse<OrderStatus>(value, ignoreCase: true, out var result) && Enum.IsDefined(result) ? result : null;
     }
 }
