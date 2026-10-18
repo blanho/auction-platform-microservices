@@ -35,6 +35,7 @@ public static class NotificationServiceExtensions
     {
         services.AddScoped<INotificationService, NotificationServiceImpl>();
         services.AddScoped<INotificationSender, NotificationSender>();
+        services.AddScoped<INotificationDelivery, NotificationDelivery>();
         services.AddScoped<ITemplateService, TemplateService>();
         services.AddScoped<INotificationRecordService, NotificationRecordService>();
 

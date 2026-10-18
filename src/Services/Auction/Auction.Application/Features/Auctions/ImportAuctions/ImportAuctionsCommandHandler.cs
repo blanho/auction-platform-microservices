@@ -79,12 +79,8 @@ public class ImportAuctionsCommandHandler : ICommandHandler<ImportAuctionsComman
 
         var batchSucceeded = await ProcessBatchesAsync(
             rowsToProcess,
-            request.SellerId,
-            request.SellerUsername,
-            request.Currency,
-            request.CorrelationId,
-            priorSucceeded,
-            failedRowCount,
+            new ImportBatchContext(request.SellerId, request.SellerUsername, request.Currency,
+                request.CorrelationId, priorSucceeded, failedRowCount),
             cancellationToken);
 
         var totalSucceeded = priorSucceeded + batchSucceeded;
@@ -124,12 +120,7 @@ public class ImportAuctionsCommandHandler : ICommandHandler<ImportAuctionsComman
 
     private async Task<int> ProcessBatchesAsync(
         IReadOnlyList<ValidatedRow> validRows,
-        Guid sellerId,
-        string sellerUsername,
-        string currency,
-        string correlationId,
-        int priorSucceeded,
-        int failedCount,
+        ImportBatchContext batchContext,
         CancellationToken cancellationToken)
     {
         var totalInserted = 0;
@@ -139,7 +130,7 @@ public class ImportAuctionsCommandHandler : ICommandHandler<ImportAuctionsComman
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            var auctions = MapToEntities(batch, sellerId, sellerUsername, currency);
+            var auctions = MapToEntities(batch, batchContext.SellerId, batchContext.SellerUsername, batchContext.Currency);
             await _bulkRepository.BulkInsertAsync(auctions, cancellationToken);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
@@ -149,10 +140,10 @@ public class ImportAuctionsCommandHandler : ICommandHandler<ImportAuctionsComman
 
             await _checkpointRepository.SaveCheckpointAsync(
                 new ImportCheckpoint(
-                    correlationId,
+                    batchContext.CorrelationId,
                     lastRowNumber,
-                    priorSucceeded + totalInserted,
-                    failedCount,
+                    batchContext.PriorSucceeded + totalInserted,
+                    batchContext.FailedCount,
                     _dateTime.UtcNowOffset),
                 cancellationToken);
 
@@ -236,13 +227,15 @@ public class ImportAuctionsCommandHandler : ICommandHandler<ImportAuctionsComman
         foreach (var row in rows.Select(validatedRow => validatedRow.Row))
         {
 
-            var item = Item.Create(
-                title: _sanitizationService.SanitizeText(row.Title),
-                description: _sanitizationService.SanitizeHtml(row.Description),
-                condition: row.Condition,
-                yearManufactured: row.YearManufactured,
-                categoryId: row.CategoryId,
-                brandId: row.BrandId);
+            var item = Item.Create(new CreateItemParams
+            {
+                Title = _sanitizationService.SanitizeText(row.Title),
+                Description = _sanitizationService.SanitizeHtml(row.Description),
+                Condition = row.Condition,
+                YearManufactured = row.YearManufactured,
+                CategoryId = row.CategoryId,
+                BrandId = row.BrandId
+            });
 
             if (row.Attributes != null)
             {
@@ -268,6 +261,8 @@ public class ImportAuctionsCommandHandler : ICommandHandler<ImportAuctionsComman
         return auctions;
     }
 
+    private sealed record ImportBatchContext(Guid SellerId, string SellerUsername, string Currency,
+        string CorrelationId, int PriorSucceeded, int FailedCount);
     private sealed record ValidatedRow(int RowNumber, ImportAuctionRow Row);
     private sealed record RowValidationResult(
         IReadOnlyList<ValidatedRow> ValidRows,

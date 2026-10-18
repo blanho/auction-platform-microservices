@@ -168,10 +168,17 @@ public class StorageJobExecutionTests
         }
         public StorageDbContext Open() => new(new DbContextOptionsBuilder<StorageDbContext>()
             .UseNpgsql(database.ConnectionString).Options);
-        public StoredFile ReadyImage() => StoredFile.Create("test.png", "test.png", "image/png", Bytes.Length,
-            "/files/test.png", "images", Owner, StorageProvider.Local);
-        public StoredFile Reservation() => StoredFile.ReserveUpload(Guid.NewGuid(), "test.png", "test.png", "image/png",
-            Bytes.Length, "images", Owner, StorageProvider.Local, DateTimeOffset.UtcNow.AddMinutes(10));
+        public StoredFile ReadyImage() => StoredFile.Create(new CreateStoredFileParams
+        {
+            FileName = "test.png", StoredFileName = "test.png", ContentType = "image/png", FileSize = Bytes.Length,
+            Url = "/files/test.png", SubFolder = "images", OwnerId = Owner, Provider = StorageProvider.Local
+        });
+        public StoredFile Reservation() => StoredFile.ReserveUpload(new ReserveStoredFileUploadParams
+        {
+            Id = Guid.NewGuid(), FileName = "test.png", StoredFileName = "test.png", ContentType = "image/png",
+            FileSize = Bytes.Length, SubFolder = "images", OwnerId = Owner, Provider = StorageProvider.Local,
+            ExpiresAt = DateTimeOffset.UtcNow.AddMinutes(10)
+        });
         public async Task SeedAsync(StoredFile file)
         {
             FileId = file.Id;

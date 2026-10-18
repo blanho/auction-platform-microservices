@@ -64,15 +64,17 @@ public class HoldFundsCommandHandler : ICommandHandler<HoldFundsCommand, WalletT
         if (wallet.AvailableBalance < request.Amount)
             return Result.Failure<WalletTransactionDto>(PaymentErrors.Wallet.InsufficientBalance);
 
-        var transaction = WalletTransaction.Create(
-            userId: wallet.UserId,
-            username: request.Username,
-            type: TransactionType.Hold,
-            amount: request.Amount,
-            balanceAfter: wallet.Balance,
-            description: string.Format(WalletTransactionDescriptions.FundsHeldForReferenceFormat, request.ReferenceType),
-            referenceId: request.ReferenceId,
-            referenceType: request.ReferenceType);
+        var transaction = WalletTransaction.Create(new CreateWalletTransactionParams
+        {
+            UserId = wallet.UserId,
+            Username = request.Username,
+            Type = TransactionType.Hold,
+            Amount = request.Amount,
+            BalanceAfter = wallet.Balance,
+            Description = string.Format(WalletTransactionDescriptions.FundsHeldForReferenceFormat, request.ReferenceType),
+            ReferenceId = request.ReferenceId,
+            ReferenceType = request.ReferenceType
+        });
 
         transaction.Complete();
         wallet.HoldFunds(request.Amount);

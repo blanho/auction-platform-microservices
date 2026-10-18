@@ -47,17 +47,19 @@ public class CreateReviewCommandHandler : ICommandHandler<CreateReviewCommand, R
         if (request.Rating < 1 || request.Rating > 5)
             return Result.Failure<ReviewDto>(AuctionErrors.Review.InvalidRating);
 
-        var review = Review.Create(
-            request.AuctionId,
-            auction,
-            request.OrderId,
-            request.ReviewerId,
-            request.ReviewerUsername,
-            request.ReviewedUserId,
-            request.ReviewedUsername,
-            request.Rating,
-            _sanitizationService.SanitizeText(request.Title),
-            _sanitizationService.SanitizeHtml(request.Comment));
+        var review = Review.Create(new CreateReviewParams
+        {
+            AuctionId = request.AuctionId,
+            Auction = auction,
+            OrderId = request.OrderId,
+            ReviewerId = request.ReviewerId,
+            ReviewerUsername = request.ReviewerUsername,
+            ReviewedUserId = request.ReviewedUserId,
+            ReviewedUsername = request.ReviewedUsername,
+            Rating = request.Rating,
+            Title = _sanitizationService.SanitizeText(request.Title),
+            Comment = _sanitizationService.SanitizeHtml(request.Comment)
+        });
 
         await _reviewRepository.CreateAsync(review, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);

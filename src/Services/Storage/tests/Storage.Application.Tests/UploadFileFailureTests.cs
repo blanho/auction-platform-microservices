@@ -44,9 +44,11 @@ public class UploadFileFailureTests
             {
                 "unknown" => Task.FromException<StoredFile?>(new IOException("database unavailable")),
                 "missing" => Task.FromResult<StoredFile?>(null),
-                _ => Task.FromResult<StoredFile?>(StoredFile.Create(
-                    "report.csv", persistenceOutcome == "committed" ? "stored.csv" : "other.csv",
-                    "text/csv", 1, "/files/report.csv", null, ownerId, StorageProvider.Local))
+                _ => Task.FromResult<StoredFile?>(StoredFile.Create(new CreateStoredFileParams
+                {
+                    FileName = "report.csv", StoredFileName = persistenceOutcome == "committed" ? "stored.csv" : "other.csv",
+                    ContentType = "text/csv", FileSize = 1, Url = "/files/report.csv", OwnerId = ownerId, Provider = StorageProvider.Local
+                }))
             };
         }
         var storage = TestProxy.Create<IFileStorageService>((method, args) => method.Name switch

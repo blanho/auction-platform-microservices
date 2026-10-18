@@ -17,8 +17,12 @@ public class UploadReservationPersistenceTests
         await using (var seed = new StorageDbContext(options))
         {
             await seed.Database.MigrateAsync();
-            seed.StoredFiles.Add(StoredFile.ReserveUpload(Guid.NewGuid(), "image.png", "key.png", "image/png",
-                10, "images", Guid.NewGuid(), StorageProvider.AzureBlob, DateTimeOffset.UtcNow.AddMinutes(10)));
+            seed.StoredFiles.Add(StoredFile.ReserveUpload(new ReserveStoredFileUploadParams
+            {
+                Id = Guid.NewGuid(), FileName = "image.png", StoredFileName = "key.png", ContentType = "image/png",
+                FileSize = 10, SubFolder = "images", OwnerId = Guid.NewGuid(), Provider = StorageProvider.AzureBlob,
+                ExpiresAt = DateTimeOffset.UtcNow.AddMinutes(10)
+            }));
             await seed.SaveChangesAsync();
         }
         await using var first = new StorageDbContext(options);

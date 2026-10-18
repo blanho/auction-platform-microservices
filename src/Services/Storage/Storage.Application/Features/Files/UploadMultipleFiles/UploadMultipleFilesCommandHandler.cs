@@ -34,9 +34,10 @@ public class UploadMultipleFilesCommandHandler(
         var storedFiles = new StoredFile?[request.Files.Count];
         var errors = new List<string>();
         using var semaphore = new SemaphoreSlim(MaxConcurrentUploads);
+        var batch = new UploadBatchContext(semaphore, storedFiles, errors, provider);
 
         var uploadTasks = request.Files.Select((file, index) =>
-            UploadSingleFileAsync(semaphore, file, request, index, storedFiles, errors, provider, cancellationToken));
+            UploadSingleFileAsync(file, request, index, batch, cancellationToken));
 
         await Task.WhenAll(uploadTasks);
 
@@ -88,16 +89,13 @@ public class UploadMultipleFilesCommandHandler(
     }
 
     private async Task UploadSingleFileAsync(
-        SemaphoreSlim semaphore,
         UploadFileItem file,
         UploadMultipleFilesCommand request,
         int index,
-        StoredFile?[] results,
-        List<string> errors,
-        StorageProvider provider,
+        UploadBatchContext batch,
         CancellationToken cancellationToken)
     {
-        await semaphore.WaitAsync(cancellationToken);
+        await batch.Semaphore.WaitAsync(cancellationToken);
         try
         {
             var uploadRequest = new FileUploadRequest(
@@ -111,15 +109,17 @@ public class UploadMultipleFilesCommandHandler(
 
             var uploadResult = await fileStorageService.UploadAsync(uploadRequest, cancellationToken);
 
-            results[index] = StoredFile.Create(
-                uploadResult.FileName,
-                uploadResult.StoredFileName,
-                uploadResult.ContentType,
-                uploadResult.FileSize,
-                uploadResult.Url,
-                request.SubFolder,
-                request.OwnerId,
-                provider);
+            batch.Results[index] = StoredFile.Create(new CreateStoredFileParams
+            {
+                FileName = uploadResult.FileName,
+                StoredFileName = uploadResult.StoredFileName,
+                ContentType = uploadResult.ContentType,
+                FileSize = uploadResult.FileSize,
+                Url = uploadResult.Url,
+                SubFolder = request.SubFolder,
+                OwnerId = request.OwnerId,
+                Provider = batch.Provider
+            });
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
@@ -128,14 +128,14 @@ public class UploadMultipleFilesCommandHandler(
         catch (Exception ex)
         {
             logger.LogError(ex, "Failed to upload file {FileName} at index {Index}", file.FileName, index);
-            lock (errors)
+            lock (batch.Errors)
             {
-                errors.Add($"{file.FileName}: {ex.Message}");
+                batch.Errors.Add($"{file.FileName}: {ex.Message}");
             }
         }
         finally
         {
-            semaphore.Release();
+            batch.Semaphore.Release();
         }
     }
 
@@ -161,6 +161,9 @@ public class UploadMultipleFilesCommandHandler(
             }
         }
     }
+
+    private sealed record UploadBatchContext(SemaphoreSlim Semaphore, StoredFile?[] Results,
+        List<string> Errors, StorageProvider Provider);
 
     private static StoredFileDto MapToDto(StoredFile file) =>
         new(file.Id, file.FileName, file.ContentType, file.FileSize,

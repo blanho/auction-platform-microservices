@@ -10,8 +10,12 @@ public class BuyNowPaymentHoldTests
     public void SagaOrderCannotBePaidUntilItsOwnPurchaseCompletes()
     {
         var correlation = Guid.NewGuid();
-        var order = Order.Create(Guid.NewGuid(), Guid.NewGuid(), "buyer", Guid.NewGuid(), "seller", "item", 100,
-            buyNowCorrelationId: correlation);
+        var order = Order.Create(new CreateOrderParams
+        {
+            AuctionId = Guid.NewGuid(), BuyerId = Guid.NewGuid(), BuyerUsername = "buyer",
+            SellerId = Guid.NewGuid(), SellerUsername = "seller", ItemTitle = "item", WinningBid = 100,
+            BuyNowCorrelationId = correlation
+        });
         Assert.Throws<DomainInvariantException>(() => order.CompletePayment("payment"));
         Assert.Throws<DomainInvariantException>(() => order.ConfirmBuyNow(Guid.NewGuid()));
         order.ConfirmBuyNow(correlation);
@@ -22,8 +26,12 @@ public class BuyNowPaymentHoldTests
     public void CancelledOrderCannotBeActivatedByALateSuccess()
     {
         var correlation = Guid.NewGuid();
-        var order = Order.Create(Guid.NewGuid(), Guid.NewGuid(), "buyer", Guid.NewGuid(), "seller", "item", 100,
-            buyNowCorrelationId: correlation);
+        var order = Order.Create(new CreateOrderParams
+        {
+            AuctionId = Guid.NewGuid(), BuyerId = Guid.NewGuid(), BuyerUsername = "buyer",
+            SellerId = Guid.NewGuid(), SellerUsername = "seller", ItemTitle = "item", WinningBid = 100,
+            BuyNowCorrelationId = correlation
+        });
         order.Cancel();
         Assert.Throws<DomainInvariantException>(() => order.ConfirmBuyNow(correlation));
     }

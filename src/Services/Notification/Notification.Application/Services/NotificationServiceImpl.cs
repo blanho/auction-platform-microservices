@@ -38,17 +38,19 @@ namespace Notification.Application.Services
         public async Task<NotificationDto> CreateNotificationAsync(CreateNotificationDto dto, CancellationToken cancellationToken = default)
         {
             var localizedContent = NotificationLocalizationMetadata.ResolveForStorage(dto, _localization);
-            var notification = NotificationEntity.Create(
-                userId: dto.UserId,
-                username: dto.UserId,
-                type: dto.Type,
-                title: localizedContent.Title,
-                message: localizedContent.Message,
-                channels: ChannelType.InApp,
-                data: localizedContent.Data,
-                auctionId: dto.AuctionId,
-                bidId: dto.BidId,
-                referenceId: dto.ReferenceId);
+            var notification = NotificationEntity.Create(new CreateNotificationParams
+            {
+                UserId = dto.UserId,
+                Username = dto.UserId,
+                Type = dto.Type,
+                Title = localizedContent.Title,
+                Message = localizedContent.Message,
+                Channels = ChannelType.InApp,
+                Data = localizedContent.Data,
+                AuctionId = dto.AuctionId,
+                BidId = dto.BidId,
+                ReferenceId = dto.ReferenceId
+            });
 
             notification.MarkAsSent();
 
@@ -143,14 +145,12 @@ namespace Notification.Application.Services
 
         public async Task BroadcastNotificationAsync(BroadcastNotificationDto dto, CancellationToken cancellationToken = default)
         {
-            var notification = NotificationEntity.Create(
-                "broadcast",
-                "broadcast",
-                dto.Type,
-                dto.Title,
-                dto.Message,
-                ChannelType.InApp,
-                dto.TargetRole ?? "all");
+            var notification = NotificationEntity.Create(new CreateNotificationParams
+            {
+                UserId = "broadcast", Username = "broadcast", Type = dto.Type,
+                Title = dto.Title, Message = dto.Message, Channels = ChannelType.InApp,
+                Data = dto.TargetRole ?? "all"
+            });
 
             notification.MarkAsSent();
 

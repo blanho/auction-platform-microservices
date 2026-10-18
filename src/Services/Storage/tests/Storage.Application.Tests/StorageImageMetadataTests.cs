@@ -19,7 +19,11 @@ public class StorageImageMetadataTests
     [Fact]
     public async Task GetFile_ReturnsProcessedImageAndChecksum()
     {
-        var file = StoredFile.Create("image.png", "image.png", "image/png", 12, "/image.png", null, Guid.NewGuid(), StorageProvider.Local);
+        var file = StoredFile.Create(new CreateStoredFileParams
+        {
+            FileName = "image.png", StoredFileName = "image.png", ContentType = "image/png", FileSize = 12,
+            Url = "/image.png", OwnerId = Guid.NewGuid(), Provider = StorageProvider.Local
+        });
         file.RecordProcessedImage("checksum", 640, 320, "data:image/jpeg;base64,dGVzdA==");
         var repository = TestProxy.Create<IStoredFileRepository>((_, _) => Task.FromResult<StoredFile?>(file));
         var handler = new GetFileByIdQueryHandler(repository, NullLogger<GetFileByIdQueryHandler>.Instance);

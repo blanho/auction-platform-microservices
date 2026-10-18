@@ -83,15 +83,17 @@ public class CreateAuctionCommandHandler : ICommandHandler<CreateAuctionCommand,
 
     private Auction CreateAuctionEntity(CreateAuctionCommand request, string? brandName, string? categoryName)
     {
-        var item = Item.Create(
-            title: _sanitizationService.SanitizeText(request.Title),
-            description: _sanitizationService.SanitizeHtml(request.Description),
-            condition: request.Condition,
-            yearManufactured: request.YearManufactured,
-            categoryId: request.CategoryId,
-            categoryName: categoryName,
-            brandId: request.BrandId,
-            brandName: brandName);
+        var item = Item.Create(new CreateItemParams
+        {
+            Title = _sanitizationService.SanitizeText(request.Title),
+            Description = _sanitizationService.SanitizeHtml(request.Description),
+            Condition = request.Condition,
+            YearManufactured = request.YearManufactured,
+            CategoryId = request.CategoryId,
+            CategoryName = categoryName,
+            BrandId = request.BrandId,
+            BrandName = brandName
+        });
 
         if (request.Attributes != null)
         {

@@ -204,13 +204,15 @@ public class ImportAuctionsConsumer : IConsumer<ProcessAuctionImportCommand>
         foreach (var row in rows.Select(validatedRow => validatedRow.Payload))
         {
 
-            var item = Item.Create(
-                title: _sanitizationService.SanitizeText(row.Title),
-                description: _sanitizationService.SanitizeHtml(row.Description),
-                condition: row.Condition,
-                yearManufactured: row.YearManufactured,
-                categoryId: row.CategoryId,
-                brandId: row.BrandId);
+            var item = Item.Create(new CreateItemParams
+            {
+                Title = _sanitizationService.SanitizeText(row.Title),
+                Description = _sanitizationService.SanitizeHtml(row.Description),
+                Condition = row.Condition,
+                YearManufactured = row.YearManufactured,
+                CategoryId = row.CategoryId,
+                BrandId = row.BrandId
+            });
 
             if (row.Attributes != null)
             {

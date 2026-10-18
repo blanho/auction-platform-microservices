@@ -43,8 +43,12 @@ public class BuyNowOrderPersistenceTests
         await using var db = new PaymentDbContext(options);
         await db.Database.MigrateAsync();
         var auction = Guid.NewGuid();
-        Order NewOrder() => Order.Create(auction, Guid.NewGuid(), "buyer", Guid.NewGuid(), "seller", "item", 100,
-            buyNowCorrelationId: Guid.NewGuid());
+        Order NewOrder() => Order.Create(new CreateOrderParams
+        {
+            AuctionId = auction, BuyerId = Guid.NewGuid(), BuyerUsername = "buyer",
+            SellerId = Guid.NewGuid(), SellerUsername = "seller", ItemTitle = "item", WinningBid = 100,
+            BuyNowCorrelationId = Guid.NewGuid()
+        });
         var cancelled = NewOrder(); cancelled.Cancel(); db.Add(cancelled); await db.SaveChangesAsync();
         var active = NewOrder(); db.Add(active); await db.SaveChangesAsync();
         db.Add(NewOrder());

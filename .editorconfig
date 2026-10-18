@@ -1,2 +1,3 @@
 [*.cs]
 dotnet_diagnostic.IDE0001.severity = warning
+dotnet_diagnostic.S107.severity = warning

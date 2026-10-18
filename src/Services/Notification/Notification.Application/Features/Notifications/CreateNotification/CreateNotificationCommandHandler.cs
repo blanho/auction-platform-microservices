@@ -40,19 +40,18 @@ public class CreateNotificationCommandHandler : ICommandHandler<CreateNotificati
             notificationType = NotificationType.General;
         }
 
-        var notification = NotificationEntity.Create(
-            request.UserId,
-            request.UserId,
-            notificationType,
-            request.Title,
-            request.Message,
-            ChannelType.InApp,
-            request.Data,
-            null,
-            request.AuctionId,
-            request.BidId,
-            null,
-            null);
+        var notification = NotificationEntity.Create(new CreateNotificationParams
+        {
+            UserId = request.UserId,
+            Username = request.UserId,
+            Type = notificationType,
+            Title = request.Title,
+            Message = request.Message,
+            Channels = ChannelType.InApp,
+            Data = request.Data,
+            AuctionId = request.AuctionId,
+            BidId = request.BidId
+        });
 
         notification.MarkAsSent();
 

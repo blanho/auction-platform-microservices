@@ -41,6 +41,47 @@ Regression coverage verifies Search request text/filters, cookie flags, encoded
 authenticator URIs, and entity/value-object equality. The existing PostgreSQL,
 RabbitMQ, localization, and workflow tests cover persistence and business behavior.
 
+## Parameter objects and constructor dependencies
+
+`S107` is explicitly enabled in `.editorconfig` with Sonar's default limit of
+seven parameters. The parameter-count audit found and corrected 15 violations
+across Auction, Bidding, Catalog, Notification, Payment, and Storage.
+
+Use a service-owned record with `required` and `init` properties for creation data
+that has many fields. For example:
+
+```csharp
+var order = Order.Create(new CreateOrderParams
+{
+    AuctionId = message.AuctionId,
+    BuyerId = message.BuyerId,
+    BuyerUsername = message.BuyerUsername,
+    SellerId = message.SellerId,
+    SellerUsername = message.SellerUsername,
+    ItemTitle = message.ItemTitle,
+    WinningBid = message.BuyNowPrice,
+    BuyNowCorrelationId = message.CorrelationId
+});
+```
+
+Factories retain runtime validation, defaults, and domain events. Existing basic
+convenience overloads delegate to the record-based factory. Optional domain fields
+remain optional, and parameter records do not change persisted entity schemas or
+message contracts. Keep cancellation tokens separate from data records.
+
+Import, export, and upload helpers use focused batch/completion objects. Catalog's
+brand listing binds a request record through `[AsParameters]`, preserving its query
+names, omitted-value defaults, and numeric binding errors. Named notification
+creation fields also correct a former positional mix-up between auction, bid,
+and order references.
+
+Constructor dependencies are grouped through collaborators with explicit behavior:
+`AuctionBidValidator` owns snapshot and remote auction eligibility checks;
+`NotificationDelivery` owns outbound delivery and outcome persistence. Their
+interfaces are registered with the existing scoped DI lifetimes. Tests cover bid
+eligibility/fallback/cancellation, notification reference mapping, delivery outcomes,
+and real ASP.NET query binding.
+
 ## Runtime and tooling configuration
 
 Design-time EF factories now read `ConnectionStrings__DefaultConnection`. Set it

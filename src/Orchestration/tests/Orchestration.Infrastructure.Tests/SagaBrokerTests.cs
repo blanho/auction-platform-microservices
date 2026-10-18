@@ -197,8 +197,11 @@ public class SagaBrokerTests
     }
     private static async Task<NotificationDto> PersistNotification(NotificationDbContext db, CreateNotificationDto dto)
     {
-        db.Notifications.Add(Notification.Domain.Entities.Notification.Create(dto.UserId, dto.UserId, dto.Type,
-            "auction completed", "order ready", auctionId: dto.AuctionId, referenceId: dto.ReferenceId));
+        db.Notifications.Add(Notification.Domain.Entities.Notification.Create(new Notification.Domain.Entities.CreateNotificationParams
+        {
+            UserId = dto.UserId, Username = dto.UserId, Type = dto.Type,
+            Title = "auction completed", Message = "order ready", AuctionId = dto.AuctionId, ReferenceId = dto.ReferenceId
+        }));
         await db.SaveChangesAsync(); return new NotificationDto();
     }
     private static async Task Migrate<T>(ServiceProvider provider) where T : DbContext

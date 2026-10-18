@@ -2,6 +2,7 @@ using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Notification.Application.DTOs;
 using Notification.Application.Interfaces;
+using Notification.Domain.Entities;
 using Notification.Infrastructure.Messaging.Consumers;
 using Notification.Infrastructure.Persistence;
 using OrchestrationService.Contracts.Events;
@@ -37,8 +38,11 @@ public class AuctionCompletionNotificationTests
                 ? Create((CreateNotificationDto)args![0]!, (CancellationToken)args[1]!) : throw new NotSupportedException(method.Name));
             async Task<NotificationDto> Create(CreateNotificationDto dto, CancellationToken ct)
             {
-                db.Notifications.Add(NotificationEntity.Create(dto.UserId, dto.UserId, dto.Type, "title", "message",
-                    auctionId: dto.AuctionId, referenceId: dto.ReferenceId));
+                db.Notifications.Add(NotificationEntity.Create(new CreateNotificationParams
+                {
+                    UserId = dto.UserId, Username = dto.UserId, Type = dto.Type, Title = "title", Message = "message",
+                    AuctionId = dto.AuctionId, ReferenceId = dto.ReferenceId
+                }));
                 await db.SaveChangesAsync(ct);
                 return new NotificationDto();
             }

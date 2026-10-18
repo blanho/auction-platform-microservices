@@ -9,31 +9,28 @@ namespace Bidding.Application.Services
     public class BidPlacementService : IBidService
     {
         private readonly IBidRepository _repository;
-        private readonly IAuctionSnapshotRepository _snapshotRepository;
+        private readonly IAuctionBidValidator _auctionValidator;
         private readonly ILogger<BidPlacementService> _logger;
         private readonly IDateTimeProvider _dateTime;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IDistributedLock _distributedLock;
-        private readonly IAuctionGrpcClient _auctionGrpcClient;
         private readonly IAuctionBidLock _auctionBidLock;
 
         public BidPlacementService(
             IBidRepository repository,
-            IAuctionSnapshotRepository snapshotRepository,
+            IAuctionBidValidator auctionValidator,
             ILogger<BidPlacementService> logger,
             IDateTimeProvider dateTime,
             IUnitOfWork unitOfWork,
             IDistributedLock distributedLock,
-            IAuctionGrpcClient auctionGrpcClient,
             IAuctionBidLock auctionBidLock)
         {
             _repository = repository;
-            _snapshotRepository = snapshotRepository;
+            _auctionValidator = auctionValidator;
             _logger = logger;
             _dateTime = dateTime;
             _unitOfWork = unitOfWork;
             _distributedLock = distributedLock;
-            _auctionGrpcClient = auctionGrpcClient;
             _auctionBidLock = auctionBidLock;
         }
 
@@ -83,13 +80,9 @@ namespace Bidding.Application.Services
                 dto.AuctionId,
                 async lockCt =>
                 {
-                    var (auctionError, reservePrice) = await ValidateAuctionForBid(
-                        dto,
-                        bidderUsername,
-                        bidderId,
-                        lockCt);
-                    if (auctionError != null)
-                        return auctionError;
+                    var validation = await _auctionValidator.ValidateAsync(dto, bidderId, bidderUsername, lockCt);
+                    if (!validation.IsValid)
+                        return CreateRejectedBid(dto, bidderId, bidderUsername, validation.ErrorMessage);
 
                     var highestBid = await _repository.GetHighestBidForAuctionAsync(dto.AuctionId, lockCt);
                     var currentHighBid = highestBid?.Amount ?? 0;
@@ -97,7 +90,7 @@ namespace Bidding.Application.Services
                     if (!IsValidBidIncrement(dto.Amount, currentHighBid, out var incrementError))
                         return CreateBidTooLow(dto, bidderId, bidderUsername, incrementError);
 
-                    var bid = await CreateAndSaveBid(dto, bidderId, bidderUsername, isAutoBid, highestBid, reservePrice, lockCt);
+                    var bid = await CreateAndSaveBid(dto, bidderId, bidderUsername, isAutoBid, highestBid, validation.ReservePrice, lockCt);
                     if (bid.Status == BidStatus.Rejected.ToString())
                         return bid;
 
@@ -227,61 +220,6 @@ namespace Bidding.Application.Services
                 Status = status.ToString(),
                 ErrorMessage = errorMessage
             };
-        }
-
-        private async Task<(BidDto? Error, decimal ReservePrice)> ValidateAuctionForBid(PlaceBidDto dto, string bidderUsername, Guid bidderId, CancellationToken ct)
-        {
-            var snapshot = await _snapshotRepository.GetAsync(dto.AuctionId, ct);
-            if (snapshot != null)
-            {
-                if (!string.Equals(snapshot.Status, BidDefaults.AuctionStatuses.Live, StringComparison.OrdinalIgnoreCase) &&
-                    !string.Equals(snapshot.Status, "Active", StringComparison.OrdinalIgnoreCase))
-                {
-                    _logger.LogWarning(
-                        "Auction validation failed locally for {AuctionId}: Auction is not active. Current status: {Status}",
-                        dto.AuctionId,
-                        snapshot.Status);
-                    return (CreateRejectedBid(dto, bidderId, bidderUsername, $"Auction is not active. Current status: {snapshot.Status}"), 0m);
-                }
-
-                if (snapshot.EndTime < _dateTime.UtcNow)
-                {
-                    _logger.LogWarning(
-                        "Auction validation failed locally for {AuctionId}: Auction has ended",
-                        dto.AuctionId);
-                    return (CreateRejectedBid(dto, bidderId, bidderUsername, "Auction has ended"), 0m);
-                }
-
-                if (snapshot.SellerId == bidderId || string.Equals(snapshot.SellerUsername, bidderUsername, StringComparison.OrdinalIgnoreCase))
-                {
-                    _logger.LogWarning(
-                        "Auction validation failed locally for {AuctionId}: Seller cannot bid",
-                        dto.AuctionId);
-                    return (CreateRejectedBid(dto, bidderId, bidderUsername, "You cannot bid on your own auction"), 0m);
-                }
-
-                return (null, snapshot.ReservePrice);
-            }
-
-            _logger.LogInformation("Auction snapshot missing for {AuctionId}, falling back to gRPC validation", dto.AuctionId);
-            var validationResult = await _auctionGrpcClient.ValidateAuctionForBidAsync(
-                dto.AuctionId,
-                bidderUsername,
-                dto.Amount,
-                ct);
-
-            if (!validationResult.IsValid)
-            {
-                _logger.LogWarning(
-                    "Auction validation failed for {AuctionId}: {ErrorCode} - {ErrorMessage}",
-                    dto.AuctionId,
-                    validationResult.ErrorCode,
-                    validationResult.ErrorMessage);
-
-                return (CreateRejectedBid(dto, bidderId, bidderUsername, validationResult.ErrorMessage), 0m);
-            }
-
-            return (null, validationResult.ReservePrice);
         }
 
         private async Task<BidDto> CreateAndSaveBid(PlaceBidDto dto, Guid bidderId, string bidderUsername, bool isAutoBid, Bid? highestBid, decimal reservePrice, CancellationToken ct)

@@ -52,8 +52,12 @@ public class OrderOwnershipTests
     [Fact]
     public async Task PrepareCheckout_WhenPurchaseIsStillPending_DoesNotUpdateOrder()
     {
-        var order = Order.Create(Guid.NewGuid(), Guid.NewGuid(), "buyer", Guid.NewGuid(), "seller", "item", 100,
-            buyNowCorrelationId: Guid.NewGuid());
+        var order = Order.Create(new CreateOrderParams
+        {
+            AuctionId = Guid.NewGuid(), BuyerId = Guid.NewGuid(), BuyerUsername = "buyer",
+            SellerId = Guid.NewGuid(), SellerUsername = "seller", ItemTitle = "item", WinningBid = 100,
+            BuyNowCorrelationId = Guid.NewGuid()
+        });
         var repository = CreateRepository(order);
         var handler = new PrepareCheckoutCommandHandler(repository, null!, null!, null!, null!);
         var result = await handler.Handle(new PrepareCheckoutCommand(order.Id, order.BuyerId, "address", null), default);

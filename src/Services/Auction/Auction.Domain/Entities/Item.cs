@@ -30,27 +30,23 @@ public class Item : BaseEntity
 
     private Item() { }
 
-    public static Item Create(
-        string title,
-        string description,
-        string? condition = null,
-        int? yearManufactured = null,
-        Guid? categoryId = null,
-        string? categoryName = null,
-        Guid? brandId = null,
-        string? brandName = null)
+    public static Item Create(string title, string description) =>
+        Create(new CreateItemParams { Title = title, Description = description });
+
+    public static Item Create(CreateItemParams parameters)
     {
+        ArgumentNullException.ThrowIfNull(parameters);
         return new Item
         {
             Id = Guid.NewGuid(),
-            Title = title,
-            Description = description,
-            Condition = condition,
-            YearManufactured = yearManufactured,
-            CategoryId = categoryId,
-            CategoryName = categoryName,
-            BrandId = brandId,
-            BrandName = brandName,
+            Title = parameters.Title,
+            Description = parameters.Description,
+            Condition = parameters.Condition,
+            YearManufactured = parameters.YearManufactured,
+            CategoryId = parameters.CategoryId,
+            CategoryName = parameters.CategoryName,
+            BrandId = parameters.BrandId,
+            BrandName = parameters.BrandName,
             Files = new List<MediaFile>(),
             Attributes = new Dictionary<string, string>()
         };

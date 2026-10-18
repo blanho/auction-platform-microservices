@@ -22,34 +22,27 @@ public class StoredFile : AggregateRoot
     public string? Checksum { get; private set; }
     public Dictionary<string, string> Metadata { get; private set; } = new();
 
-    public static StoredFile Create(
-        string fileName,
-        string storedFileName,
-        string contentType,
-        long fileSize,
-        string url,
-        string? subFolder,
-        Guid? ownerId,
-        StorageProvider provider)
+    public static StoredFile Create(CreateStoredFileParams parameters)
     {
-        Guard.AgainstNullOrEmpty(fileName, nameof(fileName));
-        Guard.AgainstNullOrEmpty(storedFileName, nameof(storedFileName));
-        Guard.AgainstNullOrEmpty(contentType, nameof(contentType));
-        Guard.AgainstNonPositive(fileSize, nameof(fileSize));
-        Guard.AgainstNullOrEmpty(url, nameof(url));
+        ArgumentNullException.ThrowIfNull(parameters);
+        Guard.AgainstNullOrEmpty(parameters.FileName, nameof(parameters.FileName));
+        Guard.AgainstNullOrEmpty(parameters.StoredFileName, nameof(parameters.StoredFileName));
+        Guard.AgainstNullOrEmpty(parameters.ContentType, nameof(parameters.ContentType));
+        Guard.AgainstNonPositive(parameters.FileSize, nameof(parameters.FileSize));
+        Guard.AgainstNullOrEmpty(parameters.Url, nameof(parameters.Url));
 
         var file = new StoredFile
         {
             Id = Guid.NewGuid(),
-            FileName = fileName,
-            StoredFileName = storedFileName,
-            ContentType = contentType,
-            FileSize = fileSize,
-            Url = url,
-            SubFolder = subFolder,
-            OwnerId = ownerId,
+            FileName = parameters.FileName,
+            StoredFileName = parameters.StoredFileName,
+            ContentType = parameters.ContentType,
+            FileSize = parameters.FileSize,
+            Url = parameters.Url,
+            SubFolder = parameters.SubFolder,
+            OwnerId = parameters.OwnerId,
             Status = FileStatus.Ready,
-            Provider = provider,
+            Provider = parameters.Provider,
             CreatedAt = DateTimeOffset.UtcNow,
         };
 
@@ -64,21 +57,20 @@ public class StoredFile : AggregateRoot
         return file;
     }
 
-    public static StoredFile ReserveUpload(Guid id, string fileName, string storedFileName,
-        string contentType, long fileSize, string? subFolder, Guid ownerId,
-        StorageProvider provider, DateTimeOffset expiresAt)
+    public static StoredFile ReserveUpload(ReserveStoredFileUploadParams parameters)
     {
+        ArgumentNullException.ThrowIfNull(parameters);
         return new StoredFile
         {
-            Id = id,
-            FileName = fileName,
-            StoredFileName = storedFileName,
-            ContentType = contentType,
-            FileSize = fileSize,
-            SubFolder = subFolder,
-            OwnerId = ownerId,
-            Provider = provider,
-            UploadExpiresAt = expiresAt,
+            Id = parameters.Id,
+            FileName = parameters.FileName,
+            StoredFileName = parameters.StoredFileName,
+            ContentType = parameters.ContentType,
+            FileSize = parameters.FileSize,
+            SubFolder = parameters.SubFolder,
+            OwnerId = parameters.OwnerId,
+            Provider = parameters.Provider,
+            UploadExpiresAt = parameters.ExpiresAt,
             Status = FileStatus.Pending,
             CreatedAt = DateTimeOffset.UtcNow
         };

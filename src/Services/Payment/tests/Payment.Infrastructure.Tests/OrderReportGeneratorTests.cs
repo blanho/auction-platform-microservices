@@ -125,8 +125,12 @@ public class OrderReportGeneratorTests
 
     private static Order CreatePaidOrder()
     {
-        var order = Order.Create(Guid.NewGuid(), Guid.NewGuid(), "buyer", Guid.NewGuid(),
-            "seller", "Đồng hồ", 100m, platformFeePercent: 10m, shippingCost: 5m);
+        var order = Order.Create(new CreateOrderParams
+        {
+            AuctionId = Guid.NewGuid(), BuyerId = Guid.NewGuid(), BuyerUsername = "buyer",
+            SellerId = Guid.NewGuid(), SellerUsername = "seller", ItemTitle = "Đồng hồ", WinningBid = 100m,
+            PlatformFeePercent = 10m, ShippingCost = 5m
+        });
         order.CompletePayment(Guid.NewGuid().ToString());
         return order;
     }
