@@ -49,7 +49,7 @@ public sealed class SharedRepositoryTests
 
         var detached = (await repository.GetByIdAsync(order.Id))!;
         using var cancellation = new CancellationTokenSource();
-        cancellation.Cancel();
+        await cancellation.CancelAsync();
         await Assert.ThrowsAnyAsync<OperationCanceledException>(() => repository.UpdateAsync(detached, cancellation.Token));
         Assert.Empty(db.ChangeTracker.Entries());
     }

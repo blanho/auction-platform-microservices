@@ -185,7 +185,7 @@ public class StorageJobExecutionTests
             var storage = Storage();
             var results = new List<ReportJobItemResultCommand>();
             var consumer = new ProcessImageConsumer(db, new StorageJobFiles(db, storage, Options.Create(new FileStorageSettings())),
-                new ImageProcessor(), UnitOfWork(db));
+                UnitOfWork(db));
             await consumer.Consume(Context(new ProcessImageCommand
             {
                 FileId = FileId, RequestedBy = requester ?? Owner, ParentJobId = JobId, ParentJobItemId = ItemId,

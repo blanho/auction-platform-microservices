@@ -96,7 +96,8 @@ public class CategoryEndpoints : ICarterModule
     private static async Task<IResult> DeleteCategory(Guid id, IMediator mediator, CancellationToken ct)
     {
         var result = await mediator.Send(new DeleteCategoryCommand(id), ct);
-        return result.IsSuccess ? Results.NoContent()
-            : result.Error?.Code == CatalogErrors.Category.NotFound.Code ? Results.NotFound() : Results.BadRequest(result.Error);
+        if (result.IsSuccess)
+            return Results.NoContent();
+        return result.Error?.Code == CatalogErrors.Category.NotFound.Code ? Results.NotFound() : Results.BadRequest(result.Error);
     }
 }

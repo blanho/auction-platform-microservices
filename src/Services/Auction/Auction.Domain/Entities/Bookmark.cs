@@ -8,6 +8,7 @@ public class Bookmark : AggregateRoot
     public Guid UserId { get; private set; }
     public string Username { get; private set; } = string.Empty;
     public Guid AuctionId { get; private set; }
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "S1144", Justification = "EF Core sets this navigation during materialization and relationship fixup.")]
     public Auction? Auction { get; private set; }
     public DateTimeOffset AddedAt { get; private set; }
     public BookmarkType Type { get; private set; }

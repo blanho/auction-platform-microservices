@@ -73,7 +73,7 @@ public static class ExceptionHandlingMiddleware
 
         context.Response.ContentType = MediaTypeConstants.ProblemJson;
         context.Response.StatusCode = problem.Status ?? (int)HttpStatusCode.InternalServerError;
-        return context.Response.WriteAsJsonAsync(problem);
+        return context.Response.WriteAsJsonAsync(problem, cancellationToken: context.RequestAborted);
     }
 
     private static Task WriteDomainExceptionAsync(HttpContext context, DomainException ex)
@@ -105,7 +105,7 @@ public static class ExceptionHandlingMiddleware
 
         context.Response.ContentType = MediaTypeConstants.ProblemJson;
         context.Response.StatusCode = problem.Status ?? (int)HttpStatusCode.BadRequest;
-        return context.Response.WriteAsJsonAsync(problem);
+        return context.Response.WriteAsJsonAsync(problem, cancellationToken: context.RequestAborted);
     }
 
     private static Task WriteGenericExceptionAsync(HttpContext context, Exception ex)
@@ -149,11 +149,11 @@ public static class ExceptionHandlingMiddleware
             logger?.LogError(ex, "Unhandled exception occurred at {Path}", context.Request.Path);
         }
 
-        var detail = isDevelopment
-            ? ex.Message
-            : status == HttpStatusCode.InternalServerError
-                ? localizer?[LocalizationKeys.Errors.InternalServerError] ?? "An internal server error occurred. Please try again later."
-                : UserMessageLocalizer.Translate(ex.Message);
+        var detail = UserMessageLocalizer.Translate(ex.Message);
+        if (isDevelopment)
+            detail = ex.Message;
+        else if (status == HttpStatusCode.InternalServerError)
+            detail = localizer?[LocalizationKeys.Errors.InternalServerError] ?? "An internal server error occurred. Please try again later.";
 
         var problem = new ProblemDetails
         {
@@ -176,6 +176,6 @@ public static class ExceptionHandlingMiddleware
 
         context.Response.ContentType = MediaTypeConstants.ProblemJson;
         context.Response.StatusCode = problem.Status ?? (int)HttpStatusCode.InternalServerError;
-        return context.Response.WriteAsJsonAsync(problem);
+        return context.Response.WriteAsJsonAsync(problem, cancellationToken: context.RequestAborted);
     }
 }

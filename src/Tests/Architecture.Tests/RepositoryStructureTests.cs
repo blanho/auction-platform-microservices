@@ -220,7 +220,7 @@ public sealed class RepositoryStructureTests
         var violations = Directory
             .EnumerateFiles(featuresRoot, "*.cs", SearchOption.AllDirectories)
             .Where(path => Path.GetRelativePath(featuresRoot, path)
-                .Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar).Length < 3)
+                .Split([Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar], StringSplitOptions.None).Length < 3)
             .Select(path => $"Analytics feature is not grouped by area and operation: {Relative(path)}")
             .ToList();
 
@@ -382,7 +382,7 @@ public sealed class RepositoryStructureTests
     private static bool HasAreaFolder(string path, string anchorFolder)
     {
         var segments = Path.GetRelativePath(ServicesRoot, path)
-            .Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+            .Split([Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar], StringSplitOptions.None);
         var anchorIndex = Array.FindIndex(
             segments,
             segment => segment.Equals(anchorFolder, StringComparison.OrdinalIgnoreCase));
@@ -398,7 +398,7 @@ public sealed class RepositoryStructureTests
     private static bool HasFolderAfterProjectLayer(string path, string projectSuffix, string expectedFolder)
     {
         var segments = Path.GetRelativePath(ServicesRoot, path)
-            .Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+            .Split([Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar], StringSplitOptions.None);
         var projectIndex = Array.FindIndex(
             segments,
             segment => segment.EndsWith(projectSuffix, StringComparison.OrdinalIgnoreCase));

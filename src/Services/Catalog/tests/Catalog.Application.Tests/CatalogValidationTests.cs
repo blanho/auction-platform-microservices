@@ -77,9 +77,12 @@ public class CatalogValidationTests
     {
         var category = Category.Create("Child", "child");
         var parent = Category.Create("Parent", "parent", isActive: false);
-        var repository = Repository((method, args) => method.Name == "GetByIdAsync"
-            ? Task.FromResult<Category?>((Guid)args![0]! == category.Id ? category : parent)
-            : throw new InvalidOperationException("No write should happen"));
+        var repository = Repository((method, args) =>
+        {
+            if (method.Name != "GetByIdAsync")
+                throw new InvalidOperationException("No write should happen");
+            return Task.FromResult<Category?>((Guid)args![0]! == category.Id ? category : parent);
+        });
         var result = await new UpdateCategoryCommandHandler(repository, null!, null!, null!)
             .Handle(new(category.Id, category.Name, category.Slug, category.Icon, null, 0, true, parent.Id), default);
         Assert.Equal("Category.ParentInactive", result.Error?.Code);

@@ -7,16 +7,13 @@ namespace Notification.Infrastructure.Persistence;
 public class RedisIdempotencyService : IIdempotencyService
 {
     private readonly IDatabase _db;
-    private readonly ILogger<RedisIdempotencyService> _logger;
     private const string KeyPrefix = "notification:idempotency";
     private static readonly TimeSpan DefaultTtl = TimeSpan.FromHours(NotificationDefaults.Idempotency.DefaultTtlHours);
 
     public RedisIdempotencyService(
-        IConnectionMultiplexer redis,
-        ILogger<RedisIdempotencyService> logger)
+        IConnectionMultiplexer redis)
     {
         _db = redis.GetDatabase();
-        _logger = logger;
     }
 
     public async Task<bool> IsProcessedAsync(string eventId, string channel, CancellationToken ct = default)

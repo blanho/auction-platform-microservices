@@ -1,3 +1,6 @@
 namespace Auctions.Application.Resources;
 
-public sealed class AuctionResources;
+public abstract class AuctionResources
+{
+    protected AuctionResources() { }
+}

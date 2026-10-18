@@ -66,7 +66,7 @@ public class UploadOwnershipAndDeletionTests
         var retry = await handler.Handle(request, CancellationToken.None);
         Assert.True(first.IsSuccess);
         Assert.Equal(first.Value!.FileId, retry.Value!.FileId);
-        Assert.Equal(reservation.Id, first.Value!.FileId);
+        Assert.Equal(reservation.Id, first.Value.FileId);
         Assert.Equal(1, saves);
     }
 

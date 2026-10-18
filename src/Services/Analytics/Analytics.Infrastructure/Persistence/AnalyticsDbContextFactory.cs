@@ -8,7 +8,8 @@ public class AnalyticsDbContextFactory : IDesignTimeDbContextFactory<AnalyticsDb
     public AnalyticsDbContext CreateDbContext(string[] args)
     {
         var options = new DbContextOptionsBuilder<AnalyticsDbContext>()
-            .UseNpgsql("Host=localhost;Database=auction_analytics;Username=postgres;Password=postgres")
+            .UseNpgsql(Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection")
+                ?? throw new InvalidOperationException("Set ConnectionStrings__DefaultConnection before running EF Core tools."))
             .Options;
 
         return new AnalyticsDbContext(options);

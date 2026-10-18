@@ -31,7 +31,7 @@ public class ExchangeCodeForTokensCommandHandler(
             return Result.Failure<LoginResponse>(IdentityErrors.Auth.InvalidAuthCode);
         }
 
-        var (user, _) = await userService.GetByIdWithRolesAsync(userId);
+        var (user, _) = await userService.GetByIdWithRolesAsync(userId, cancellationToken);
         if (user == null)
             return Result.Failure<LoginResponse>(IdentityErrors.User.NotFound);
 

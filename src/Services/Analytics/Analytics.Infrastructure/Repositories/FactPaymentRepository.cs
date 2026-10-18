@@ -34,7 +34,7 @@ public class FactPaymentRepository : IFactPaymentRepository
         var now = DateTimeOffset.UtcNow;
         var todayStart = now.Date;
         var weekStart = todayStart.AddDays(-(int)todayStart.DayOfWeek);
-        var monthStart = new DateTime(todayStart.Year, todayStart.Month, 1);
+        var monthStart = new DateTime(todayStart.Year, todayStart.Month, 1, 0, 0, 0, DateTimeKind.Utc);
 
         var paidPayments = payments.Where(p => p.IsPaid).ToList();
         var totalRevenue = paidPayments.Sum(p => p.TotalAmount);

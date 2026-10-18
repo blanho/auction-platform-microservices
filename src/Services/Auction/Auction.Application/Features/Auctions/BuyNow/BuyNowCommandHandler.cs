@@ -141,7 +141,7 @@ public class BuyNowCommandHandler : ICommandHandler<BuyNowCommand, BuyNowResultD
                 AuctionAuditMetadata.ForBuyNow(
                     request.BuyerId,
                     request.BuyerUsername,
-                    auction.BuyNowPrice!.Value),
+                    auction.BuyNowPrice.Value),
                 cancellationToken);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
             _logger.LogInformation("Buy Now purchase {CorrelationId} accepted for auction {AuctionId}", correlationId, auction.Id);

@@ -55,7 +55,7 @@ public class LocalFileStorageService : IFileStorageService
         {
             throw new ArgumentException(
                 "The upload subfolder must be a relative path within the configured storage root.",
-                nameof(request.SubFolder));
+                nameof(request));
         }
 
         EnsureDirectoryExists(directoryPath);

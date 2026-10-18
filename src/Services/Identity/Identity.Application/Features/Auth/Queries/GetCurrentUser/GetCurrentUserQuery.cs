@@ -15,7 +15,7 @@ public class GetCurrentUserQueryHandler(
 {
     public async Task<Result<UserDto>> Handle(GetCurrentUserQuery query, CancellationToken cancellationToken)
     {
-        var (user, roles) = await userService.GetByIdWithRolesAsync(query.UserId);
+        var (user, roles) = await userService.GetByIdWithRolesAsync(query.UserId, cancellationToken);
         if (user == null)
             return Result.Failure<UserDto>(IdentityErrors.User.NotFound);
 

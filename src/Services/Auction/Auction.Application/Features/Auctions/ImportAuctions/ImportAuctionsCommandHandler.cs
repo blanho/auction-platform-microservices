@@ -54,7 +54,7 @@ public class ImportAuctionsCommandHandler : ICommandHandler<ImportAuctionsComman
                 checkpoint.LastProcessedRowIndex, request.CorrelationId);
         }
 
-        var validationResult = ValidateAllRows(request.Rows, request.Currency);
+        var validationResult = ValidateAllRows(request.Rows);
         var failedRowCount = request.Rows.Count - validationResult.ValidRows.Count;
 
         if (validationResult.ValidRows.Count == 0)
@@ -169,7 +169,7 @@ public class ImportAuctionsCommandHandler : ICommandHandler<ImportAuctionsComman
         await _checkpointRepository.DeleteCheckpointAsync(correlationId, cancellationToken);
     }
 
-    private RowValidationResult ValidateAllRows(IReadOnlyList<ImportAuctionRow> rows, string currency)
+    private static RowValidationResult ValidateAllRows(IReadOnlyList<ImportAuctionRow> rows)
     {
         var validRows = new List<ValidatedRow>();
         var errors = new List<ImportRowError>();
@@ -178,7 +178,7 @@ public class ImportAuctionsCommandHandler : ICommandHandler<ImportAuctionsComman
         {
             var rowNumber = i + 1;
             var row = rows[i];
-            var rowErrors = ValidateSingleRow(row, rowNumber, currency);
+            var rowErrors = ValidateSingleRow(row, rowNumber);
 
             if (rowErrors.Count == 0)
             {
@@ -193,7 +193,7 @@ public class ImportAuctionsCommandHandler : ICommandHandler<ImportAuctionsComman
         return new RowValidationResult(validRows, errors);
     }
 
-    private static List<ImportRowError> ValidateSingleRow(ImportAuctionRow row, int rowNumber, string currency)
+    private static List<ImportRowError> ValidateSingleRow(ImportAuctionRow row, int rowNumber)
     {
         var errors = new List<ImportRowError>();
 
@@ -233,9 +233,8 @@ public class ImportAuctionsCommandHandler : ICommandHandler<ImportAuctionsComman
     {
         var auctions = new List<Auction>(rows.Count);
 
-        foreach (var validatedRow in rows)
+        foreach (var row in rows.Select(validatedRow => validatedRow.Row))
         {
-            var row = validatedRow.Row;
 
             var item = Item.Create(
                 title: _sanitizationService.SanitizeText(row.Title),

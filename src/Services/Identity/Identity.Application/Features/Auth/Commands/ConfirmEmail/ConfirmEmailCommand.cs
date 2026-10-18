@@ -48,7 +48,7 @@ public class ConfirmEmailCommandHandler(
             UserId = user.Id,
             Username = user.UserName!,
             Email = user.Email!
-        });
+        }, cancellationToken);
 
         logger.LogInformation("Email confirmed for user {Username}", user.UserName);
         return Result.Success();

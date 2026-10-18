@@ -45,10 +45,16 @@ public class CatalogBehaviorTests
     {
         var category = Category.Create("Root", "root");
         var child = Category.Create("Child", "child", parentCategoryId: category.Id);
-        var parentId = scenario == "self" ? category.Id : scenario == "descendant" ? child.Id : Guid.NewGuid();
+        var parentId = scenario switch
+        {
+            "self" => category.Id,
+            "descendant" => child.Id,
+            _ => Guid.NewGuid()
+        };
+        var categories = new Dictionary<Guid, Category> { [category.Id] = category, [child.Id] = child };
         var repository = Stub<ICategoryRepository>((method, args) => method.Name switch
         {
-            "GetByIdAsync" => Task.FromResult((Guid)args![0]! == category.Id ? category : (Guid)args[0]! == child.Id ? child : null),
+            "GetByIdAsync" => Task.FromResult(categories.GetValueOrDefault((Guid)args![0]!)),
             _ => throw new NotSupportedException(method.Name)
         });
         var handler = new UpdateCategoryCommandHandler(repository, null!, null!, null!);

@@ -51,7 +51,7 @@ public class UpdateProfileCommandHandler(
             Email = profile.Email,
             FullName = profile.FullName,
             PhoneNumber = profile.PhoneNumber
-        });
+        }, cancellationToken);
 
         await auditPublisher.PublishAsync(
             Guid.Parse(user.Id),

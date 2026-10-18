@@ -403,9 +403,9 @@ public class TokenGenerationService : ITokenGenerationService
 
             return (true, userId);
         }
-        catch (SecurityTokenExpiredException)
+        catch (SecurityTokenExpiredException ex)
         {
-            _logger.LogWarning("2FA state token has expired");
+            _logger.LogWarning(ex, "2FA state token has expired");
             return (false, null);
         }
         catch (Exception ex)

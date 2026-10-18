@@ -19,7 +19,9 @@ public class Item : BaseEntity
 
     public string? BrandName { get; private set; }
 
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "S1144", Justification = "EF Core sets this navigation during materialization and relationship fixup.")]
     public Auction? Auction { get; private set; }
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "S1144", Justification = "EF Core sets this foreign key during materialization and relationship fixup.")]
     public Guid AuctionId { get; private set; }
 
     public List<MediaFile> Files { get; private set; } = new();

@@ -103,7 +103,7 @@ public sealed class NotificationPagingTests
         var handler = new GetNotificationSummaryQueryHandler(repository, mapper, NullLogger<GetNotificationSummaryQueryHandler>.Instance);
         var result = await handler.Handle(new GetNotificationSummaryQuery("user"), default);
         Assert.NotNull(result.Value);
-        var service = new NotificationServiceImpl(repository, null!, null!, mapper, null!, null!, null!);
+        var service = new NotificationServiceImpl(repository, null!, null!, mapper, null!, null!);
         var fromService = await service.GetNotificationSummaryAsync("user");
         Assert.Equal(25, result.Value.TotalCount);
         Assert.Equal(20, result.Value.UnreadCount);

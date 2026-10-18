@@ -72,7 +72,7 @@ public static class ValidationConstants
         public static string MaxLength(string fieldName, int maxLength)
             => $"{fieldName} must not exceed {maxLength} characters";
 
-        public static string MinLength(string fieldName, int minLength)
+        public static string MinimumLength(string fieldName, int minLength)
             => $"{fieldName} must be at least {minLength} characters";
 
         public static string Required(string fieldName)

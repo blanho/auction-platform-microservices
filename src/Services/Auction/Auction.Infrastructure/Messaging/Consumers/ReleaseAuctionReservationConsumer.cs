@@ -30,39 +30,13 @@ public class ReleaseAuctionReservationConsumer : IConsumer<ReleaseAuctionReserva
             "Releasing auction reservation - CorrelationId: {CorrelationId}, AuctionId: {AuctionId}, Reason: {Reason}",
             message.CorrelationId, message.AuctionId, message.Reason);
 
-        try
+        var auction = await _writeRepository.GetByIdForUpdateAsync(message.AuctionId, context.CancellationToken);
+
+        if (auction == null)
         {
-            var auction = await _writeRepository.GetByIdForUpdateAsync(message.AuctionId, context.CancellationToken);
-
-            if (auction == null)
-            {
-                _logger.LogWarning(
-                    "Auction not found for reservation release - CorrelationId: {CorrelationId}, AuctionId: {AuctionId}",
-                    message.CorrelationId, message.AuctionId);
-
-                await context.Publish(new AuctionReservationReleased
-                {
-                    CorrelationId = message.CorrelationId,
-                    AuctionId = message.AuctionId,
-                    ReleasedAt = _dateTime.UtcNow
-                });
-                return;
-            }
-            if (auction.BuyNowCorrelationId == message.CorrelationId && auction.BuyNowOrderId.HasValue)
-            {
-                await context.Publish(new BuyNowAuctionCompleted
-                {
-                    CorrelationId = message.CorrelationId,
-                    AuctionId = message.AuctionId,
-                    OrderId = auction.BuyNowOrderId.Value,
-                    CompletedAt = _dateTime.UtcNow
-                });
-                return;
-            }
-
-            auction.ReleaseBuyNow(message.CorrelationId);
-            await _writeRepository.UpdateAsync(auction, context.CancellationToken);
-            await _unitOfWork.SaveChangesAsync(context.CancellationToken);
+            _logger.LogWarning(
+                "Auction not found for reservation release - CorrelationId: {CorrelationId}, AuctionId: {AuctionId}",
+                message.CorrelationId, message.AuctionId);
 
             await context.Publish(new AuctionReservationReleased
             {
@@ -70,13 +44,30 @@ public class ReleaseAuctionReservationConsumer : IConsumer<ReleaseAuctionReserva
                 AuctionId = message.AuctionId,
                 ReleasedAt = _dateTime.UtcNow
             });
+            return;
         }
-        catch (Exception ex) when (ex is not OperationCanceledException)
+        if (auction.BuyNowCorrelationId == message.CorrelationId && auction.BuyNowOrderId.HasValue)
         {
-            _logger.LogError(ex,
-                "Failed to release auction reservation - CorrelationId: {CorrelationId}, AuctionId: {AuctionId}",
-                message.CorrelationId, message.AuctionId);
-            throw;
+            await context.Publish(new BuyNowAuctionCompleted
+            {
+                CorrelationId = message.CorrelationId,
+                AuctionId = message.AuctionId,
+                OrderId = auction.BuyNowOrderId.Value,
+                CompletedAt = _dateTime.UtcNow
+            });
+            return;
         }
+
+        auction.ReleaseBuyNow(message.CorrelationId);
+        await _writeRepository.UpdateAsync(auction, context.CancellationToken);
+        await _unitOfWork.SaveChangesAsync(context.CancellationToken);
+
+        await context.Publish(new AuctionReservationReleased
+        {
+            CorrelationId = message.CorrelationId,
+            AuctionId = message.AuctionId,
+            ReleasedAt = _dateTime.UtcNow
+        });
+
     }
 }

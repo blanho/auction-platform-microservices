@@ -4,6 +4,7 @@ using Xunit;
 
 namespace TestSupport;
 
+[AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
 public sealed class PostgresFactAttribute : FactAttribute
 {
     public PostgresFactAttribute()
@@ -58,6 +59,7 @@ public class TestProxy : DispatchProxy
     }
 }
 
+[AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
 public sealed class BrokerFactAttribute : FactAttribute
 {
     public BrokerFactAttribute()

@@ -94,6 +94,6 @@ public class PrivateReportAccessTests
     {
         public Func<MethodInfo, object?[]?, object?> Handler { get; set; } = null!;
 
-        protected override object? Invoke(MethodInfo? method, object?[]? args) => Handler(method!, args);
+        protected override object? Invoke(MethodInfo? targetMethod, object?[]? args) => Handler(targetMethod!, args);
     }
 }

@@ -104,9 +104,11 @@ public class UploadFileFailureTests
         }
 
         var repository = TestProxy.Create<IStoredFileRepository>((method, _) =>
-            method.Name == nameof(IStoredFileRepository.AddAsync)
-                ? failOnAdd ? Task.FromException(databaseError) : Task.CompletedTask
-                : throw new NotSupportedException(method.Name));
+        {
+            if (method.Name != nameof(IStoredFileRepository.AddAsync))
+                throw new NotSupportedException(method.Name);
+            return failOnAdd ? Task.FromException(databaseError) : Task.CompletedTask;
+        });
         var unitOfWork = TestProxy.Create<IUnitOfWork>((method, _) =>
             method.Name == nameof(IUnitOfWork.SaveChangesAsync)
                 ? Task.FromException<int>(databaseError)

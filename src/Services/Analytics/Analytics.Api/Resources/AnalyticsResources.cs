@@ -1,3 +1,6 @@
 namespace Analytics.Api.Resources;
 
-public sealed class AnalyticsResources;
+public abstract class AnalyticsResources
+{
+    protected AnalyticsResources() { }
+}

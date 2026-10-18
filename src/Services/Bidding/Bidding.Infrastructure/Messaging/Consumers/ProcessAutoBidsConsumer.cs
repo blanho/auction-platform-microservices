@@ -26,26 +26,15 @@ public class ProcessAutoBidsConsumer : IConsumer<ProcessAutoBidsEvent>
             message.AuctionId,
             message.CurrentHighBid);
 
-        try
-        {
-            await _autoBidService.ProcessAutoBidsForAuctionAsync(
-                message.AuctionId,
-                message.CurrentHighBid,
-                context.CancellationToken);
+        await _autoBidService.ProcessAutoBidsForAuctionAsync(
+            message.AuctionId,
+            message.CurrentHighBid,
+            context.CancellationToken);
 
-            _logger.LogInformation(
-                "Successfully processed auto-bids for auction {AuctionId}",
-                message.AuctionId);
-        }
-        catch (Exception ex) when (ex is not OperationCanceledException)
-        {
-            _logger.LogError(ex,
-                "Failed to process auto-bids for auction {AuctionId}. " +
-                "Message will be retried according to retry policy.",
-                message.AuctionId);
+        _logger.LogInformation(
+            "Successfully processed auto-bids for auction {AuctionId}",
+            message.AuctionId);
 
-            throw;
-        }
     }
 }
 

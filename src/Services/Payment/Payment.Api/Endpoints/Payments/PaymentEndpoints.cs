@@ -76,9 +76,9 @@ public class PaymentEndpoints : ICarterModule
             amountInCents = checked(decimal.ToInt64(
                 decimal.Round(order.TotalAmount * 100m, 0, MidpointRounding.AwayFromZero)));
         }
-        catch (OverflowException)
+        catch (OverflowException ex)
         {
-            logger.LogError("Order {OrderId} amount is outside the supported Stripe range", order.Id);
+            logger.LogError(ex, "Order {OrderId} amount is outside the supported Stripe range", order.Id);
             return Results.BadRequest(ProblemDetailsHelper.ValidationError(
                 "The order amount cannot be processed"));
         }

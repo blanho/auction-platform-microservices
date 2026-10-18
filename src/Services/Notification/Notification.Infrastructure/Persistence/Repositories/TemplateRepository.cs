@@ -18,30 +18,30 @@ public class TemplateRepository : EfRepository<NotificationTemplate, Notificatio
     {
     }
 
-    public Task<NotificationTemplate?> GetByKeyAsync(string key, CancellationToken ct = default) =>
-        FirstOrDefaultAsync(template => template.Key == key.ToLowerInvariant(), ct);
+    public Task<NotificationTemplate?> GetByKeyAsync(string key, CancellationToken cancellationToken = default) =>
+        FirstOrDefaultAsync(template => template.Key == key.ToLowerInvariant(), cancellationToken);
 
-    public async Task<List<NotificationTemplate>> GetAllActiveAsync(CancellationToken ct = default)
+    public async Task<List<NotificationTemplate>> GetAllActiveAsync(CancellationToken cancellationToken = default)
     {
         return await Query
             .AsNoTracking()
             .Where(t => t.IsActive)
             .OrderBy(t => t.Name)
-            .ToListAsync(ct);
+            .ToListAsync(cancellationToken);
     }
 
-    public override async Task<PaginatedResult<NotificationTemplate>> GetPagedAsync(int page, int pageSize, CancellationToken ct = default)
+    public override async Task<PaginatedResult<NotificationTemplate>> GetPagedAsync(int page, int pageSize, CancellationToken cancellationToken = default)
     {
         var query = Query
             .AsNoTracking()
             .OrderBy(t => t.Name);
         return await query
             .ThenBy(entity => entity.Id)
-            .ToPaginatedResultAsync(page, pageSize, ct);
+            .ToPaginatedResultAsync(page, pageSize, cancellationToken);
     }
 
-    Task ITemplateRepository.AddAsync(NotificationTemplate template, CancellationToken ct) =>
-        CreateAsync(template, ct);
+    Task ITemplateRepository.AddAsync(NotificationTemplate template, CancellationToken cancellationToken) =>
+        CreateAsync(template, cancellationToken);
 
     public override async Task<NotificationTemplate> CreateAsync(
         NotificationTemplate template, CancellationToken cancellationToken = default)
@@ -57,13 +57,13 @@ public class TemplateRepository : EfRepository<NotificationTemplate, Notificatio
         await Context.SaveChangesAsync(cancellationToken);
     }
 
-    public override async Task DeleteAsync(Guid id, CancellationToken ct = default)
+    public override async Task DeleteAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        var template = await GetByIdForUpdateAsync(id, ct);
+        var template = await GetByIdForUpdateAsync(id, cancellationToken);
         if (template != null)
         {
             Context.Templates.Remove(template);
-            await Context.SaveChangesAsync(ct);
+            await Context.SaveChangesAsync(cancellationToken);
         }
     }
 }

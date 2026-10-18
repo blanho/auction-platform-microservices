@@ -101,6 +101,6 @@ public static class HealthCheckExtensions
             duration = report.TotalDuration.TotalMilliseconds
         };
 
-        await context.Response.WriteAsJsonAsync(response);
+        await context.Response.WriteAsJsonAsync(response, cancellationToken: context.RequestAborted);
     }
 }

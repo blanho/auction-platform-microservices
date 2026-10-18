@@ -8,7 +8,8 @@ public class JobDbContextFactory : IDesignTimeDbContextFactory<JobDbContext>
     public JobDbContext CreateDbContext(string[] args)
     {
         var options = new DbContextOptionsBuilder<JobDbContext>()
-            .UseNpgsql("Host=localhost;Database=auction_jobs;Username=postgres;Password=postgres")
+            .UseNpgsql(Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection")
+                ?? throw new InvalidOperationException("Set ConnectionStrings__DefaultConnection before running EF Core tools."))
             .Options;
 
         return new JobDbContext(options);

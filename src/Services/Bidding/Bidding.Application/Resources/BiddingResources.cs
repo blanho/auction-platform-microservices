@@ -1,3 +1,6 @@
 namespace Bidding.Application.Resources;
 
-public sealed class BiddingResources;
+public abstract class BiddingResources
+{
+    protected BiddingResources() { }
+}

@@ -67,7 +67,7 @@ public class ImportAuctionsBatchConsumer : IConsumer<ProcessAuctionImportBatchCo
             MaxRetryCount = 0
         });
 
-        var validationResult = ValidateRows(message.Rows, message.Currency);
+        var validationResult = ValidateRows(message.Rows);
         var failedRowCount = message.Rows.Count - validationResult.ValidRows.Count;
 
         var insertedCount = 0;
@@ -112,14 +112,14 @@ public class ImportAuctionsBatchConsumer : IConsumer<ProcessAuctionImportBatchCo
         }
     }
 
-    private static RowValidationResult ValidateRows(List<ImportAuctionItemPayload> rows, string currency)
+    private static RowValidationResult ValidateRows(List<ImportAuctionItemPayload> rows)
     {
         var validRows = new List<ValidatedRow>();
         var errors = new List<RowError>();
 
         foreach (var row in rows)
         {
-            var rowErrors = ValidateRow(row, currency);
+            var rowErrors = ValidateRow(row);
             if (rowErrors.Count == 0)
             {
                 validRows.Add(new ValidatedRow(row.RowNumber, row));
@@ -133,7 +133,7 @@ public class ImportAuctionsBatchConsumer : IConsumer<ProcessAuctionImportBatchCo
         return new RowValidationResult(validRows, errors);
     }
 
-    private static List<RowError> ValidateRow(ImportAuctionItemPayload row, string currency)
+    private static List<RowError> ValidateRow(ImportAuctionItemPayload row)
     {
         var errors = new List<RowError>();
 
@@ -170,9 +170,8 @@ public class ImportAuctionsBatchConsumer : IConsumer<ProcessAuctionImportBatchCo
     {
         var auctions = new List<Auction>(rows.Count);
 
-        foreach (var validatedRow in rows)
+        foreach (var row in rows.Select(validatedRow => validatedRow.Payload))
         {
-            var row = validatedRow.Payload;
 
             var item = Item.Create(
                 title: _sanitizationService.SanitizeText(row.Title),

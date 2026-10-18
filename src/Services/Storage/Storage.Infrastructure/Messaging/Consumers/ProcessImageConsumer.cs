@@ -8,7 +8,7 @@ using StorageService.Contracts.Commands;
 namespace Storage.Infrastructure.Messaging.Consumers;
 
 public sealed class ProcessImageConsumer(StorageDbContext db, StorageJobFiles files,
-    ImageProcessor processor, IUnitOfWork unitOfWork) : IConsumer<ProcessImageCommand>
+    IUnitOfWork unitOfWork) : IConsumer<ProcessImageCommand>
 {
     public async Task Consume(ConsumeContext<ProcessImageCommand> context)
     {
@@ -30,7 +30,7 @@ public sealed class ProcessImageConsumer(StorageDbContext db, StorageJobFiles fi
             if (file.Checksum != checksum || !file.Metadata.TryGetValue(StorageDefaults.Images.VersionKey, out var version) ||
                 version != StorageDefaults.Images.ProcessingVersion)
             {
-                var processed = await processor.ProcessAsync(bytes, file.ContentType, context.CancellationToken);
+                var processed = await ImageProcessor.ProcessAsync(bytes, file.ContentType, context.CancellationToken);
                 file.RecordProcessedImage(checksum, processed.Width, processed.Height, processed.ThumbnailDataUrl);
             }
         }

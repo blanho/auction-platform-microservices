@@ -101,7 +101,7 @@ public class WalletPaymentIdempotencyTests
         async Task CancelAfterFirstSave()
         {
             Assert.Single(await db.WalletTransactions.AsNoTracking().ToListAsync());
-            cancellation.Cancel();
+            await cancellation.CancelAsync();
             await Task.FromCanceled(cancellation.Token);
         }
 

@@ -43,7 +43,7 @@ public sealed class OrderPagingTests
         Assert.Empty(db.ChangeTracker.Entries());
 
         using var cancellation = new CancellationTokenSource();
-        cancellation.Cancel();
+        await cancellation.CancelAsync();
         await Assert.ThrowsAnyAsync<OperationCanceledException>(() => new GetOrdersByBuyerQueryHandler(repository, null!)
             .Handle(new GetOrdersByBuyerQuery("buyer"), cancellation.Token));
         await Assert.ThrowsAnyAsync<OperationCanceledException>(() => new GetOrdersBySellerQueryHandler(repository, null!)

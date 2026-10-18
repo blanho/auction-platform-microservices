@@ -144,28 +144,21 @@ public class JobProgressUpdatedConsumer : IdempotentNotificationConsumer<JobProg
         {
             UserId = Guid.Empty.ToString(),
             Type = NotificationType.JobProgressUpdated,
-            LocalizedText = e.TotalItems > 0
-                ? e.FailedItems > 0
-                    ? new(
-                        NotificationMessageKeys.JobProgressTitle,
-                        NotificationMessageKeys.JobProgressWithErrorsMessage,
-                        e.Type,
-                        Math.Round(e.ProgressPercentage),
-                        e.CompletedItems,
-                        e.TotalItems,
-                        e.FailedItems)
-                    : new(
-                        NotificationMessageKeys.JobProgressTitle,
-                        NotificationMessageKeys.JobProgressMessage,
-                        e.Type,
-                        Math.Round(e.ProgressPercentage),
-                        e.CompletedItems,
-                        e.TotalItems)
-                : new(
+            LocalizedText = (e.TotalItems, e.FailedItems) switch
+            {
+                (> 0, > 0) => new(
+                    NotificationMessageKeys.JobProgressTitle,
+                    NotificationMessageKeys.JobProgressWithErrorsMessage,
+                    e.Type, Math.Round(e.ProgressPercentage), e.CompletedItems, e.TotalItems, e.FailedItems),
+                (> 0, _) => new(
+                    NotificationMessageKeys.JobProgressTitle,
+                    NotificationMessageKeys.JobProgressMessage,
+                    e.Type, Math.Round(e.ProgressPercentage), e.CompletedItems, e.TotalItems),
+                _ => new(
                     NotificationMessageKeys.JobProgressTitle,
                     NotificationMessageKeys.JobProgressSimpleMessage,
-                    e.Type,
-                    Math.Round(e.ProgressPercentage)),
+                    e.Type, Math.Round(e.ProgressPercentage))
+            },
             Data = NotificationDataBuilder.Create()
                 .Add("JobId", e.JobId)
                 .Add("JobType", e.Type.ToString())

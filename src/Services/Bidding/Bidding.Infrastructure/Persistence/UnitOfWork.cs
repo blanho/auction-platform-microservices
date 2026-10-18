@@ -3,7 +3,7 @@ using MediatR;
 
 namespace Bidding.Infrastructure.Persistence;
 
-public class UnitOfWork : BaseUnitOfWork<BidDbContext>, IUnitOfWork
+public class UnitOfWork : BaseUnitOfWork<BidDbContext>
 {
     public UnitOfWork(BidDbContext context, IMediator mediator)
         : base(context, mediator)

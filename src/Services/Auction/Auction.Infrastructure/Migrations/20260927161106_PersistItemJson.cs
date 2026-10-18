@@ -5,6 +5,7 @@
 namespace Auctions.Infrastructure.Migrations
 {
     /// <inheritdoc />
+    [System.CodeDom.Compiler.GeneratedCode("Microsoft.EntityFrameworkCore.Migrations", "9.0.13")]
     public partial class PersistItemJson : Migration
     {
         /// <inheritdoc />

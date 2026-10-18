@@ -1,3 +1,6 @@
 namespace Gateway.Api.Resources;
 
-public sealed class GatewayResources;
+public abstract class GatewayResources
+{
+    protected GatewayResources() { }
+}

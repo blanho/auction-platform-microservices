@@ -14,7 +14,7 @@ namespace BuildingBlocks.Infrastructure.Tests;
 public sealed class EfRepositoryTests
 {
     private static readonly Guid Actor = Guid.NewGuid();
-    private static readonly DateTimeOffset Now = new(2026, 10, 18, 0, 0, 0, TimeSpan.Zero);
+    private static readonly DateTimeOffset TestTimestamp = new(2026, 10, 18, 0, 0, 0, TimeSpan.Zero);
 
     [PostgresFact]
     public async Task Writes_AreStagedUntilCommitAndShareTheCallersTransaction()
@@ -30,7 +30,7 @@ public sealed class EfRepositoryTests
         await using var observer = await OpenAsync(database);
         Assert.Equal(0, await observer.Aggregates.CountAsync());
         Assert.Equal(Actor, first.CreatedBy);
-        Assert.Equal(Now, first.CreatedAt);
+        Assert.Equal(TestTimestamp, first.CreatedAt);
         await using (var transaction = await db.Database.BeginTransactionAsync())
         {
             await db.SaveChangesAsync();
@@ -47,7 +47,7 @@ public sealed class EfRepositoryTests
         await using var db = await OpenAsync(database);
         var active = TestAggregate.Create("active");
         var deleted = TestAggregate.Create("deleted");
-        deleted.MarkAsDeleted(Actor, Now);
+        deleted.MarkAsDeleted(Actor, TestTimestamp);
         db.AddRange(active, deleted);
         await db.SaveChangesAsync();
         db.ChangeTracker.Clear();
@@ -64,7 +64,7 @@ public sealed class EfRepositoryTests
         tracked.Rename("updated");
         await repository.UpdateAsync(tracked);
         Assert.Equal(Actor, tracked.UpdatedBy);
-        Assert.Equal(Now, tracked.UpdatedAt);
+        Assert.Equal(TestTimestamp, tracked.UpdatedAt);
         await db.SaveChangesAsync();
         await using var observer = await OpenAsync(database);
         Assert.Equal("updated", (await observer.Aggregates.SingleAsync(row => row.Id == active.Id)).Name);
@@ -88,7 +88,7 @@ public sealed class EfRepositoryTests
         var persisted = await observer.Aggregates.AsNoTracking().SingleAsync();
         Assert.True(persisted.IsDeleted);
         Assert.Equal(Actor, persisted.DeletedBy);
-        Assert.Equal(Now, persisted.DeletedAt);
+        Assert.Equal(TestTimestamp, persisted.DeletedAt);
         Assert.Null(await repository.GetByIdAsync(entity.Id));
         await repository.DeleteAsync(entity.Id);
         await repository.DeleteAsync(Guid.NewGuid());
@@ -225,7 +225,7 @@ public sealed class EfRepositoryTests
         var repository = new TestRepository(db);
         var entity = TestAggregate.Create("cancelled");
         using var cancellation = new CancellationTokenSource();
-        cancellation.Cancel();
+        await cancellation.CancelAsync();
 
         await Assert.ThrowsAnyAsync<OperationCanceledException>(() => repository.CreateAsync(entity, cancellation.Token));
         await Assert.ThrowsAnyAsync<OperationCanceledException>(() => repository.UpdateAsync(entity, cancellation.Token));
@@ -246,7 +246,7 @@ public sealed class EfRepositoryTests
         await using var db = await OpenAsync(database);
         var own = TestAggregate.Create("unique", Actor);
         var deleted = TestAggregate.Create("deleted", Actor);
-        deleted.MarkAsDeleted(Actor, Now);
+        deleted.MarkAsDeleted(Actor, TestTimestamp);
         db.AddRange(own, deleted, TestAggregate.Create("duplicate", Actor), TestAggregate.Create("duplicate", Actor),
             TestAggregate.Create("other", Guid.NewGuid()), TestAggregate.Create("globally-hidden", Actor));
         await db.SaveChangesAsync();
@@ -298,7 +298,7 @@ public sealed class EfRepositoryTests
         await using var db = await OpenAsync(database);
         var own = new[] { TestAggregate.Create("one", Actor), TestAggregate.Create("two", Actor) };
         var deleted = TestAggregate.Create("deleted", Actor);
-        deleted.MarkAsDeleted(Actor, Now);
+        deleted.MarkAsDeleted(Actor, TestTimestamp);
         var other = TestAggregate.Create("other", Guid.NewGuid());
         var globallyHidden = TestAggregate.Create("globally-hidden", Actor);
         db.AddRange(own.Concat([deleted, other, globallyHidden]));
@@ -377,7 +377,7 @@ public sealed class EfRepositoryTests
         var deleted = TestAggregate.Create("keep deleted", Actor);
         await repository.AddRangeAsync(keep.Concat([deleted, TestAggregate.Create("skip", Actor),
             TestAggregate.Create("keep other", Guid.NewGuid()), TestAggregate.Create("globally-hidden", Actor)]));
-        deleted.MarkAsDeleted(Actor, Now);
+        deleted.MarkAsDeleted(Actor, TestTimestamp);
         await db.SaveChangesAsync();
         db.ChangeTracker.Clear();
 
@@ -432,7 +432,7 @@ public sealed class EfRepositoryTests
             .UseNpgsql("Host=localhost;Database=repository_state_only").Options);
         var repository = new TestRepository(db);
         using var cancellation = new CancellationTokenSource();
-        cancellation.Cancel();
+        await cancellation.CancelAsync();
         IEnumerable<Guid> Keys()
         {
             yield return UnexpectedKey();
@@ -490,9 +490,9 @@ public sealed class EfRepositoryTests
 
     private sealed class FixedClock : IDateTimeProvider
     {
-        public DateTime UtcNow => EfRepositoryTests.Now.UtcDateTime;
-        public DateTime Now => EfRepositoryTests.Now.UtcDateTime;
-        public DateTimeOffset UtcNowOffset => EfRepositoryTests.Now;
+        public DateTime UtcNow => EfRepositoryTests.TestTimestamp.UtcDateTime;
+        public DateTime Now => EfRepositoryTests.TestTimestamp.UtcDateTime;
+        public DateTimeOffset UtcNowOffset => EfRepositoryTests.TestTimestamp;
     }
 
     private sealed class TestDbContext(DbContextOptions<TestDbContext> options) : DbContext(options)
@@ -519,6 +519,7 @@ public sealed class EfRepositoryTests
     private sealed class TestChild
     {
         public Guid Id { get; set; } = Guid.NewGuid();
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "S1144", Justification = "EF Core sets this foreign key through relationship fixup when children are added to an aggregate.")]
         public Guid AggregateId { get; set; }
         public string Name { get; set; } = string.Empty;
     }

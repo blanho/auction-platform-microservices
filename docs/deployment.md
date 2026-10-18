@@ -308,7 +308,7 @@ graph TD
     Merge --> CI["ci.yml"]
     CI --> Build["Build all services"]
     CI --> Test["Run tests + coverage"]
-    CI --> SONAR["sonarcloud.yml<br/>Quality gate"]
+    CI --> SONAR["sonar.yml<br/>Local Sonar Analysis"]
     Test --> |Pass| CD["cd.yml"]
     SONAR --> |Pass| CD
     CD --> Docker["Build digest-pinned images"]
@@ -328,13 +328,13 @@ graph TD
 **ci.yml** (Continuous Integration)
 - Triggered on: Push to main
 - Steps: Build all projects, run all tests, collect code coverage
-- Uploads coverage reports for SonarCloud
+- Uploads test results and coverage artifacts
 
-**sonarcloud.yml** (Code Quality)
-- Triggered by: CI pipeline
-- Steps: Run SonarCloud analysis, enforce quality gate
-- Configuration: `sonar-project.properties`
-- Quality gate timeout: 300 seconds
+**sonar.yml** (Code Quality)
+- Triggered on: Pushes to `main`/`develop`, pull requests targeting those branches, and manual dispatch
+- Steps: Restore and build all projects in Release with the pinned local Sonar C# analyzer; warnings fail the build
+- Configuration: `Directory.Packages.props` and `Directory.Build.props`
+- See [Code Quality](code-quality.md) for the local command and rule scope
 
 **cd.yml** (Continuous Deployment)
 - Builds images after successful CI and supports a manually approved production deployment
@@ -433,6 +433,10 @@ applying application Deployments. A failed or timed-out migration stops the
 rollout.
 
 For local migration work:
+
+Set `ConnectionStrings__DefaultConnection` to the target service database's
+connection string in your environment before invoking EF tools. Design-time
+factories no longer contain default credentials.
 
 ```bash
 # Apply migrations locally

@@ -1,3 +1,6 @@
 namespace Identity.Api.Resources;
 
-public sealed class IdentityResources;
+public abstract class IdentityResources
+{
+    protected IdentityResources() { }
+}

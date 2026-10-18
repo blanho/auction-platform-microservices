@@ -39,7 +39,10 @@ public static partial class UserMessageLocalizer
             {
                 return string.Format(culture, template, arguments.Cast<object>().ToArray());
             }
-            catch (FormatException) { }
+            catch (FormatException)
+            {
+                return Translate(fallbackMessage ?? DefaultFallback);
+            }
         }
         return Translate(fallbackMessage ?? DefaultFallback);
     }

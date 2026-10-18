@@ -21,7 +21,7 @@ public class SearchCancellationTests
         var index = new AuctionIndexService(client, options, NullLogger<AuctionIndexService>.Instance);
         var management = new IndexManagementService(client, options, NullLogger<IndexManagementService>.Instance);
         using var cancellation = new CancellationTokenSource();
-        cancellation.Cancel();
+        await cancellation.CancelAsync();
 
         await Assert.ThrowsAnyAsync<OperationCanceledException>(() =>
             search.GetByIdAsync(Guid.NewGuid(), cancellation.Token));

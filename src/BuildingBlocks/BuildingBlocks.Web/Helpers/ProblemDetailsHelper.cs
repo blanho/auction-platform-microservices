@@ -9,7 +9,7 @@ namespace BuildingBlocks.Web.Helpers;
 
 public static class ProblemDetailsHelper
 {
-    private const string DefaultErrorTypeBaseUrl = "https://api.example.com/errors";
+    private const string DefaultErrorTypeBaseUrl = "urn:auction-platform:errors";
 
     public static ProblemDetails FromError(Error error, string? errorTypeBaseUrl = null)
     {

@@ -86,6 +86,9 @@ if (app.Environment.IsDevelopment())
     app.UseCommonSwaggerUI("Payment Service");
 }
 
-app.Run();
+await app.RunAsync();
 
-public partial class Program { }
+public partial class Program
+{
+    protected Program() { }
+}

@@ -83,7 +83,7 @@ public class JobProgressPersistenceTests
 
         async Task Apply(string batch)
         {
-            for (var attempt = 0; ; attempt++)
+            for (var attempt = 0; attempt <= 5; attempt++)
             {
                 await using var db = Open(database);
                 await using var transaction = await db.Database.BeginTransactionAsync(IsolationLevel.Serializable);
@@ -93,7 +93,10 @@ public class JobProgressPersistenceTests
                     await transaction.CommitAsync();
                     return;
                 }
-                catch (Exception ex) when (attempt < 5 && IsRetryable(ex)) { }
+                catch (Exception ex) when (attempt < 5 && IsRetryable(ex))
+                {
+                    await transaction.RollbackAsync();
+                }
             }
         }
     }

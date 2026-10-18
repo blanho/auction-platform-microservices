@@ -49,7 +49,7 @@ public class AuctionBulkRepository : IAuctionBulkRepository
             totalInserted += batch.Length;
 
             _logger.LogDebug(
-                "Bulk inserted batch of {Count} auctions ({Total}/{Grand})",
+                "Bulk inserted batch of {BatchLength} auctions ({TotalInserted}/{Count})",
                 batch.Length, totalInserted, auctions.Count);
         }
     }

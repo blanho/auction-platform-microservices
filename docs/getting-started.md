@@ -428,6 +428,11 @@ docker compose -f deploy/docker/docker-compose.yml up -d
 
 ### Database Migration Errors
 
+Set `ConnectionStrings__DefaultConnection` in your environment to the service's
+PostgreSQL connection string before running EF tools. Factories require this
+setting and contain no embedded credentials. See [Code Quality](code-quality.md)
+for the configuration details.
+
 ```bash
 # Apply migrations for a specific service
 cd src/Services/Auction/Auction.Infrastructure

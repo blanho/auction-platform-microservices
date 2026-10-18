@@ -17,7 +17,6 @@ namespace Notification.Application.Services
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
         private readonly INotificationHubService _hubService;
-        private readonly IDateTimeProvider _dateTime;
         private readonly ILocalizationService _localization;
 
         public NotificationServiceImpl(
@@ -26,7 +25,6 @@ namespace Notification.Application.Services
             IUnitOfWork unitOfWork,
             IMapper mapper,
             INotificationHubService hubService,
-            IDateTimeProvider dateTime,
             ILocalizationService localization)
         {
             _repository = repository;
@@ -34,7 +32,6 @@ namespace Notification.Application.Services
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _hubService = hubService;
-            _dateTime = dateTime;
             _localization = localization;
         }
 

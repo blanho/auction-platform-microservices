@@ -36,7 +36,7 @@ public class EnableAuthenticatorCommandHandler(
             UserId = user.Id,
             Username = user.UserName!,
             Email = user.Email!
-        });
+        }, cancellationToken);
 
         await auditPublisher.PublishAsync(
             Guid.Parse(user.Id),
@@ -48,7 +48,7 @@ public class EnableAuthenticatorCommandHandler(
                 IsEnabled = true
             },
             AuditAction.Updated,
-            metadata: new Dictionary<string, object> { [AuditMetadataKeys.ActionLower] = IdentityDefaults.Audit.TwoFactorEnabled });
+            metadata: new Dictionary<string, object> { [AuditMetadataKeys.ActionLower] = IdentityDefaults.Audit.TwoFactorEnabled }, cancellationToken: cancellationToken);
 
         return Result.Success(new RecoveryCodesResponse
         {

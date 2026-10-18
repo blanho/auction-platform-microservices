@@ -10,14 +10,14 @@ namespace Identity.Api;
 
 public static class SeedData
 {
-    private const string DefaultSeedPassword = "SeedUser@Dev123!";
-
     public static async Task EnsureSeedDataAsync(WebApplication app)
     {
         await using var scope = app.Services.GetRequiredService<IServiceScopeFactory>().CreateAsyncScope();
 
         var configuration = scope.ServiceProvider.GetRequiredService<IConfiguration>();
-        var seedPassword = configuration["SeedData:Password"] ?? DefaultSeedPassword;
+        var seedPassword = configuration["SeedData:Password"];
+        if (string.IsNullOrWhiteSpace(seedPassword))
+            throw new ConfigurationException("SeedData:Password is required when identity seed data is enabled.");
 
         var roleMgr = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
         var userMgr = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();

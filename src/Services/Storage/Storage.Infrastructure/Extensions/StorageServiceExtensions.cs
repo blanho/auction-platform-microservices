@@ -14,7 +14,6 @@ public static class StorageServiceExtensions
         services.AddScoped<IStoredFileRepository, StoredFileRepository>();
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddScoped<Processing.StorageJobFiles>();
-        services.AddSingleton<Processing.ImageProcessor>();
 
         return services;
     }

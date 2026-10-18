@@ -17,7 +17,7 @@ public abstract class ValueObject : IEquatable<ValueObject>
             .SequenceEqual(other.GetEqualityComponents());
     }
 
-    public bool Equals(ValueObject? other)
+    public virtual bool Equals(ValueObject? other)
     {
         return Equals((object?)other);
     }

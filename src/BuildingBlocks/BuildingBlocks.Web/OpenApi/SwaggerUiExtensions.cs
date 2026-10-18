@@ -17,9 +17,8 @@ public static class SwaggerUiExtensions
             options.RoutePrefix = "swagger";
             if (provider != null && provider.ApiVersionDescriptions.Count > 0)
             {
-                foreach (var desc in provider.ApiVersionDescriptions)
+                foreach (var groupName in provider.ApiVersionDescriptions.Select(description => description.GroupName))
                 {
-                    var groupName = desc.GroupName;
                     options.SwaggerEndpoint($"../openapi/{groupName}.json", $"{title ?? "API"} {groupName.ToUpperInvariant()}");
                 }
             }

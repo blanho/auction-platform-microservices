@@ -128,7 +128,7 @@ public class JobReportExecutionTests
                 Stored = true;
                 return Task.FromResult("/files/report/download");
             });
-            return new GenerateOrderReportConsumer(generator, storage, null!,
+            return new GenerateOrderReportConsumer(generator, storage,
                 NullLogger<GenerateOrderReportConsumer>.Instance).Consume(context);
         }
 

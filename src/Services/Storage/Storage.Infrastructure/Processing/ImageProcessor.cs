@@ -4,11 +4,11 @@ namespace Storage.Infrastructure.Processing;
 
 public sealed record ProcessedImage(int Width, int Height, string ThumbnailDataUrl);
 
-public sealed class ImageProcessor
+public static class ImageProcessor
 {
     public static bool Supports(string contentType) => contentType?.ToLowerInvariant() is "image/jpeg" or "image/png" or "image/gif" or "image/webp";
 
-    public Task<ProcessedImage> ProcessAsync(byte[] bytes, string contentType, CancellationToken ct)
+    public static Task<ProcessedImage> ProcessAsync(byte[] bytes, string contentType, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
         if (!Supports(contentType))

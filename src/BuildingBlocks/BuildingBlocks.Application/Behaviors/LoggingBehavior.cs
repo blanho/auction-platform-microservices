@@ -26,6 +26,11 @@ public class LoggingBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, 
     {
         var requestName = typeof(TRequest).Name;
         var correlationId = _userContext?.CorrelationId ?? Guid.NewGuid().ToString();
+        using var scope = _logger.BeginScope(new Dictionary<string, object>
+        {
+            ["RequestName"] = requestName,
+            ["CorrelationId"] = correlationId
+        });
 
         _logger.LogInformation(
             "[START] {RequestName} CorrelationId={CorrelationId} UserId={UserId}",
@@ -56,17 +61,9 @@ public class LoggingBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, 
 
             return response;
         }
-        catch (Exception ex)
+        finally
         {
             stopwatch.Stop();
-
-            _logger.LogWarning(ex,
-                "[FAILED] {RequestName} CorrelationId={CorrelationId} failed after {ElapsedMilliseconds}ms",
-                requestName,
-                correlationId,
-                stopwatch.ElapsedMilliseconds);
-
-            throw;
         }
     }
 }

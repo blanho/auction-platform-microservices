@@ -97,9 +97,9 @@ public class JobEndpoints : ICarterModule
         if (!result.IsSuccess)
         {
             if (result.Error!.Code.Contains("Duplicate"))
-                return Results.Conflict(ProblemDetailsHelper.FromError(result.Error!));
+                return Results.Conflict(ProblemDetailsHelper.FromError(result.Error));
 
-            return Results.BadRequest(ProblemDetailsHelper.FromError(result.Error!));
+            return Results.BadRequest(ProblemDetailsHelper.FromError(result.Error));
         }
 
         return Results.Created($"/api/v1/jobs/{result.Value!.Id}", result.Value);
@@ -153,9 +153,9 @@ public class JobEndpoints : ICarterModule
         if (!result.IsSuccess)
         {
             if (result.Error!.Code.Contains("NotFound"))
-                return Results.NotFound(ProblemDetailsHelper.FromError(result.Error!));
+                return Results.NotFound(ProblemDetailsHelper.FromError(result.Error));
 
-            return Results.BadRequest(ProblemDetailsHelper.FromError(result.Error!));
+            return Results.BadRequest(ProblemDetailsHelper.FromError(result.Error));
         }
 
         return Results.Ok(result.Value);
@@ -176,9 +176,9 @@ public class JobEndpoints : ICarterModule
         if (!result.IsSuccess)
         {
             if (result.Error!.Code.Contains("NotFound"))
-                return Results.NotFound(ProblemDetailsHelper.FromError(result.Error!));
+                return Results.NotFound(ProblemDetailsHelper.FromError(result.Error));
 
-            return Results.BadRequest(ProblemDetailsHelper.FromError(result.Error!));
+            return Results.BadRequest(ProblemDetailsHelper.FromError(result.Error));
         }
 
         return Results.Ok(result.Value);
@@ -195,9 +195,9 @@ public class JobEndpoints : ICarterModule
         if (!result.IsSuccess)
         {
             if (result.Error!.Code.Contains("NotFound"))
-                return Results.NotFound(ProblemDetailsHelper.FromError(result.Error!));
+                return Results.NotFound(ProblemDetailsHelper.FromError(result.Error));
 
-            return Results.BadRequest(ProblemDetailsHelper.FromError(result.Error!));
+            return Results.BadRequest(ProblemDetailsHelper.FromError(result.Error));
         }
 
         return Results.Ok(result.Value);
@@ -214,9 +214,9 @@ public class JobEndpoints : ICarterModule
         if (!result.IsSuccess)
         {
             if (result.Error!.Code.Contains("NotFound"))
-                return Results.NotFound(ProblemDetailsHelper.FromError(result.Error!));
+                return Results.NotFound(ProblemDetailsHelper.FromError(result.Error));
 
-            return Results.BadRequest(ProblemDetailsHelper.FromError(result.Error!));
+            return Results.BadRequest(ProblemDetailsHelper.FromError(result.Error));
         }
 
         return Results.Ok(result.Value);

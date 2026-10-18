@@ -228,7 +228,7 @@ public class AuctionCrudEndpoints : ICarterModule
         var isConflict = result.Error!.Code.StartsWith("BuyNow.Conflict");
         return isConflict
             ? Results.Conflict(ProblemDetailsHelper.FromError(result.Error))
-            : Results.BadRequest(ProblemDetailsHelper.FromError(result.Error!));
+            : Results.BadRequest(ProblemDetailsHelper.FromError(result.Error));
     }
 
     private static async Task<IResult> CancelAuction(

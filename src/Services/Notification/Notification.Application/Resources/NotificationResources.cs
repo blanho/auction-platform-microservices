@@ -1,3 +1,6 @@
 namespace Notification.Application.Resources;
 
-public sealed class NotificationResources;
+public abstract class NotificationResources
+{
+    protected NotificationResources() { }
+}

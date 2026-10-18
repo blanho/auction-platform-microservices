@@ -97,7 +97,7 @@ public sealed class ServiceBoundaryTests
         .Any(part => part.Equals("tests", StringComparison.OrdinalIgnoreCase) || part is "obj" or "bin");
 
     private static string[] Parts(string path) => Path.GetRelativePath(SourceRoot, path)
-        .Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+        .Split([Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar], StringSplitOptions.None);
 
     private static string Relative(string path) => Path.GetRelativePath(RepositoryRoot, path);
 
