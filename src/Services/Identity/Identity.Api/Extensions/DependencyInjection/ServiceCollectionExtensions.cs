@@ -24,6 +24,7 @@ internal static class ServiceCollectionExtensions
             cfg.RegisterServicesFromAssemblies(
                 typeof(ServiceCollectionExtensions).Assembly,
                 typeof(IUserService).Assembly);
+            cfg.AddOpenBehavior(typeof(IdentityCommandTransactionBehavior<,>));
         });
 
         services.AddScoped<ITokenGenerationService, TokenGenerationService>();

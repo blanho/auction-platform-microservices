@@ -55,8 +55,6 @@ public class UpdateAutoBidCommandHandler : ICommandHandler<UpdateAutoBidCommand,
 
         autoBid.UpdateMaxAmount(request.NewMaxAmount);
 
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
-
         await _auditPublisher.PublishAsync(
             autoBid.Id,
             AutoBidAuditData.FromAutoBid(autoBid),
@@ -69,6 +67,8 @@ public class UpdateAutoBidCommandHandler : ICommandHandler<UpdateAutoBidCommand,
                 [AuditMetadataKeys.NewMaxAmount] = request.NewMaxAmount
             },
             cancellationToken);
+
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         _logger.LogDebug("Auto-bid {AutoBidId} updated successfully", request.AutoBidId);
 

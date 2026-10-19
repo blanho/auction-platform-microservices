@@ -51,8 +51,6 @@ public class CancelAutoBidCommandHandler : ICommandHandler<CancelAutoBidCommand,
         var oldAutoBidData = AutoBidAuditData.FromAutoBid(autoBid);
 
         autoBid.Deactivate();
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
-
         await _auditPublisher.PublishAsync(
             autoBid.Id,
             AutoBidAuditData.FromAutoBid(autoBid),
@@ -60,6 +58,8 @@ public class CancelAutoBidCommandHandler : ICommandHandler<CancelAutoBidCommand,
             oldAutoBidData,
             new Dictionary<string, object> { [AuditMetadataKeys.Action] = BidDefaults.BiddingAuditActions.Cancelled },
             cancellationToken);
+
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         _logger.LogInformation("Auto-bid {AutoBidId} cancelled successfully", request.AutoBidId);
 

@@ -50,13 +50,13 @@ public class DeleteAuctionCommandHandler : ICommandHandler<DeleteAuctionCommand,
 
         await _repository.DeleteAsync(auction, cancellationToken);
 
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
-
         await _auditPublisher.PublishAsync(
             auction.Id,
             auctionAuditData,
             AuditAction.SoftDeleted,
             cancellationToken: cancellationToken);
+
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         _logger.LogInformation("Deleted auction {AuctionId}", request.Id);
         return Result.Success(true);

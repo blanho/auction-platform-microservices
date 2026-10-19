@@ -60,8 +60,6 @@ public class CreateJobCommandHandler : ICommandHandler<CreateJobCommand, JobDto>
             await _jobItemRepository.AddRangeAsync(items, cancellationToken);
         }
 
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
-
         await _auditPublisher.PublishAsync(
             job.Id,
             JobAuditData.FromJob(job),
@@ -73,6 +71,8 @@ public class CreateJobCommandHandler : ICommandHandler<CreateJobCommand, JobDto>
                 [AuditMetadataKeys.TotalItems] = job.TotalItems
             },
             cancellationToken: cancellationToken);
+
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         _logger.LogInformation("Created job {JobId} of type {JobType} with {TotalItems} items",
             job.Id, job.Type, job.TotalItems);

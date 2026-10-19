@@ -82,10 +82,16 @@ public class UploadOwnershipAndDeletionTests
     {
         var file = File();
         var repository = Repository(file);
-        var uow = Stub<IUnitOfWork>((_, _) => Task.FromException<int>(new IOException("database unavailable")));
+        var audited = false;
+        var audit = Stub<IAuditPublisher>((_, _) => { audited = true; return Task.CompletedTask; });
+        var uow = Stub<IUnitOfWork>((_, _) =>
+        {
+            Assert.True(audited);
+            return Task.FromException<int>(new IOException("database unavailable"));
+        });
         var storage = Stub<IFileStorageService>((_, _) => throw new InvalidOperationException("Blob must remain intact"));
         var handler = new DeleteFileCommandHandler(repository, storage, uow,
-            NullLogger<DeleteFileCommandHandler>.Instance, null!);
+            NullLogger<DeleteFileCommandHandler>.Instance, audit);
         await Assert.ThrowsAsync<IOException>(() => handler.Handle(new DeleteFileCommand(file.Id, file.OwnerId), CancellationToken.None));
     }
 

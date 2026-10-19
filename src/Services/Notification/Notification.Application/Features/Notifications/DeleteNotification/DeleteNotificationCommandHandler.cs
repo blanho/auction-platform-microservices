@@ -37,14 +37,14 @@ public class DeleteNotificationCommandHandler : ICommandHandler<DeleteNotificati
         var oldNotificationData = NotificationAuditData.FromNotification(notification);
 
         await _repository.DeleteAsync(request.NotificationId, cancellationToken);
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
-
         await _auditPublisher.PublishAsync(
             request.NotificationId,
             oldNotificationData,
             AuditAction.Deleted,
             oldNotificationData,
             cancellationToken: cancellationToken);
+
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         return Result.Success();
     }

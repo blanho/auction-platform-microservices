@@ -67,13 +67,13 @@ public class CreateAuctionCommandHandler : ICommandHandler<CreateAuctionCommand,
 
         var createdAuction = await _repository.CreateAsync(auction, cancellationToken);
 
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
-
         await _auditPublisher.PublishAsync(
             createdAuction.Id,
             AuctionAuditData.FromAuction(createdAuction),
             AuditAction.Created,
             cancellationToken: cancellationToken);
+
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         _logger.LogInformation("Created auction {AuctionId} for seller {Seller}", createdAuction.Id, request.SellerUsername);
 

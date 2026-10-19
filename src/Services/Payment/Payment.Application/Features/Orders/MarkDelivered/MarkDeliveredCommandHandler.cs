@@ -66,8 +66,6 @@ public class MarkDeliveredCommandHandler : ICommandHandler<MarkDeliveredCommand,
         order.MarkAsDelivered();
 
         var updated = await _repository.UpdateAsync(order, cancellationToken);
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
-
         await _auditPublisher.PublishAsync(
             updated.Id,
             OrderAuditData.FromOrder(updated),
@@ -75,6 +73,8 @@ public class MarkDeliveredCommandHandler : ICommandHandler<MarkDeliveredCommand,
             oldOrderData,
             new Dictionary<string, object> { [AuditMetadataKeys.Action] = OrderAuditActions.Delivered },
             cancellationToken);
+
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         _logger.LogInformation("Order {OrderId} marked as delivered", updated.Id);
 

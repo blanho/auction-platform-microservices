@@ -58,8 +58,6 @@ public class DeactivateAuctionCommandHandler : ICommandHandler<DeactivateAuction
 
         await _repository.UpdateAsync(auction, cancellationToken);
 
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
-
         await _auditPublisher.PublishAsync(
             auction.Id,
             AuctionAuditData.FromAuction(auction),
@@ -67,6 +65,8 @@ public class DeactivateAuctionCommandHandler : ICommandHandler<DeactivateAuction
             oldAuctionData,
             AuctionAuditMetadata.ForDeactivation(previousStatus),
             cancellationToken);
+
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         _logger.LogInformation("Deactivated auction {AuctionId} from {PreviousStatus} to Inactive",
             request.AuctionId, previousStatus);

@@ -49,7 +49,8 @@ public class AuthHelper(
                 Success = true
             },
             AuditAction.Updated,
-            metadata: new Dictionary<string, object> { [AuditMetadataKeys.ActionLower] = IdentityDefaults.Audit.Login });
+            metadata: new Dictionary<string, object> { [AuditMetadataKeys.ActionLower] = IdentityDefaults.Audit.Login },
+            actor: new AuditActor(Guid.Parse(user.Id), user.UserName));
 
         logger.LogInformation("User {Username} logged in successfully", user.UserName);
 

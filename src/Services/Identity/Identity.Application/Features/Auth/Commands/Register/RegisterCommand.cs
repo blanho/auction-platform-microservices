@@ -72,7 +72,8 @@ public class RegisterCommandHandler(
         await auditPublisher.PublishAsync(
             Guid.Parse(user.Id),
             UserAuditData.FromUser(user, [Roles.User]),
-            AuditAction.Created, cancellationToken: cancellationToken);
+            AuditAction.Created, cancellationToken: cancellationToken,
+            actor: new AuditActor(Guid.Parse(user.Id), user.UserName));
 
         logger.LogInformation("User {Username} registered successfully, awaiting email confirmation", request.Username);
 

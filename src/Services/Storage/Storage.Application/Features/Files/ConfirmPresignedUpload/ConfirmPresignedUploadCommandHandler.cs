@@ -54,8 +54,6 @@ public class ConfirmPresignedUploadCommandHandler(
         var url = await fileStorageService.GetUrlAsync(request.StoredFileName, cancellationToken);
         storedFile.ConfirmUpload(url ?? string.Empty);
         await repository.UpdateAsync(storedFile, cancellationToken);
-        await unitOfWork.SaveChangesAsync(cancellationToken);
-
         await auditPublisher.PublishAsync(
             storedFile.Id,
             StoredFileAuditData.FromStoredFile(storedFile),
@@ -68,6 +66,8 @@ public class ConfirmPresignedUploadCommandHandler(
                 [AuditMetadataKeys.PresignedUpload] = true
             },
             cancellationToken: cancellationToken);
+
+        await unitOfWork.SaveChangesAsync(cancellationToken);
 
         logger.LogInformation("Presigned upload confirmed: {FileId} ({FileName})",
             storedFile.Id, storedFile.FileName);

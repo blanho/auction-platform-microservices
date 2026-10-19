@@ -35,8 +35,6 @@ public class RetryJobCommandHandler(
         job.ResetForRetry();
 
         await jobRepository.UpdateAsync(job, cancellationToken);
-        await unitOfWork.SaveChangesAsync(cancellationToken);
-
         await auditPublisher.PublishAsync(
             job.Id,
             JobAuditData.FromJob(job),
@@ -48,6 +46,8 @@ public class RetryJobCommandHandler(
                 [AuditMetadataKeys.PreviousStatus] = oldJobData.Status
             },
             cancellationToken: cancellationToken);
+
+        await unitOfWork.SaveChangesAsync(cancellationToken);
 
         logger.LogInformation("Job {JobId} reset for retry successfully", job.Id);
 

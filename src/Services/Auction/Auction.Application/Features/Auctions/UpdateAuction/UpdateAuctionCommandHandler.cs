@@ -138,8 +138,6 @@ public class UpdateAuctionCommandHandler : ICommandHandler<UpdateAuctionCommand,
 
         await _repository.UpdateAsync(auction, cancellationToken);
 
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
-
         await _auditPublisher.PublishAsync(
             auction.Id,
             AuctionAuditData.FromAuction(auction),
@@ -147,6 +145,8 @@ public class UpdateAuctionCommandHandler : ICommandHandler<UpdateAuctionCommand,
             oldAuctionData,
             AuctionAuditMetadata.ForModifiedFields(modifiedFields),
             cancellationToken);
+
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         _logger.LogInformation("Updated auction {AuctionId} with fields: {ModifiedFields}",
             request.Id, string.Join(", ", modifiedFields));

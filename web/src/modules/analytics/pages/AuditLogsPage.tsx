@@ -29,7 +29,7 @@ import {
 import { motion } from 'framer-motion'
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { AUDIT_ACTION } from '../constants'
+import { AUDIT_ACTION, AUDIT_ENTITY_TYPES, AUDIT_SERVICE_NAMES } from '../constants'
 import { useAuditLogs } from '../hooks/useAnalytics'
 import type { AuditAction, AuditLog, AuditLogQueryParams } from '../types'
 import {
@@ -41,27 +41,6 @@ import {
   getServiceNameLabel,
   parseJsonSafely,
 } from '../utils'
-
-const ENTITY_TYPES = [
-  'Auction',
-  'Bid',
-  'User',
-  'Order',
-  'Payment',
-  'Category',
-  'Brand',
-  'Report',
-  'Notification',
-]
-
-const SERVICE_NAMES = [
-  'AuctionService',
-  'BidService',
-  'IdentityService',
-  'PaymentService',
-  'NotificationService',
-  'AnalyticsService',
-]
 
 const ACTIONS = Object.values(AUDIT_ACTION)
 
@@ -81,13 +60,13 @@ export function AuditLogsPage() {
       {
         key: 'entityType',
         label: t('auditLogs.entityType'),
-        options: ENTITY_TYPES.map((value) => ({ value, label: getEntityTypeLabel(value) })),
+        options: AUDIT_ENTITY_TYPES.map((value) => ({ value, label: getEntityTypeLabel(value) })),
         minWidth: 160,
       },
       {
         key: 'serviceName',
         label: t('auditLogs.service'),
-        options: SERVICE_NAMES.map((value) => ({ value, label: getServiceNameLabel(value) })),
+        options: AUDIT_SERVICE_NAMES.map((value) => ({ value, label: getServiceNameLabel(value) })),
         minWidth: 160,
       },
       {
@@ -443,6 +422,32 @@ export function AuditLogsPage() {
                       <Chip key={prop} label={prop} size="small" variant="outlined" />
                     ))}
                   </Box>
+                </Box>
+              )}
+
+              {selectedLog.metadata && (
+                <Box>
+                  <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    sx={{ display: 'block', mb: 1 }}
+                  >
+                    {t('auditLogs.metadata')}
+                  </Typography>
+                  <Paper variant="outlined" sx={{ p: 2, maxHeight: 200, overflow: 'auto' }}>
+                    <Typography
+                      component="pre"
+                      variant="body2"
+                      sx={{
+                        fontFamily: 'monospace',
+                        fontSize: '0.75rem',
+                        m: 0,
+                        whiteSpace: 'pre-wrap',
+                      }}
+                    >
+                      {JSON.stringify(selectedLog.metadata, null, 2)}
+                    </Typography>
+                  </Paper>
                 </Box>
               )}
 

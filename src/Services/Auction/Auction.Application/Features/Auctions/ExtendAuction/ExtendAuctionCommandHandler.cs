@@ -56,8 +56,6 @@ public class ExtendAuctionCommandHandler : ICommandHandler<ExtendAuctionCommand,
         auction.ExtendAuctionEnd(extension);
 
         await _repository.UpdateAsync(auction, cancellationToken);
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
-
         await _auditPublisher.PublishAsync(
             auction.Id,
             AuctionAuditData.FromAuction(auction),
@@ -68,6 +66,8 @@ public class ExtendAuctionCommandHandler : ICommandHandler<ExtendAuctionCommand,
                 previousEnd,
                 auction.AuctionEnd),
             cancellationToken);
+
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         _logger.LogInformation("Auction {AuctionId} extended to {NewEnd}",
             request.AuctionId, auction.AuctionEnd);

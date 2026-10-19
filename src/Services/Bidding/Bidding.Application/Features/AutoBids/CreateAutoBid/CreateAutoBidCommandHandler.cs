@@ -69,13 +69,13 @@ public class CreateAutoBidCommandHandler : ICommandHandler<CreateAutoBidCommand,
             request.MaxAmount);
 
         await _repository.CreateAsync(autoBid, cancellationToken);
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
-
         await _auditPublisher.PublishAsync(
             autoBid.Id,
             AutoBidAuditData.FromAutoBid(autoBid),
             AuditAction.Created,
             cancellationToken: cancellationToken);
+
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         _logger.LogInformation("Auto-bid {AutoBidId} created successfully for auction {AuctionId}",
             autoBid.Id, request.AuctionId);

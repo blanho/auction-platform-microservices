@@ -34,6 +34,12 @@ public class DeleteFileCommandHandler(
 
         file.MarkAsDeleted(request.RequestedById);
         await repository.UpdateAsync(file, cancellationToken);
+        await auditPublisher.PublishAsync(
+            file.Id,
+            StoredFileAuditData.FromStoredFile(file),
+            AuditAction.Deleted,
+            oldFileData,
+            cancellationToken: cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
         try
@@ -44,13 +50,6 @@ public class DeleteFileCommandHandler(
         {
             logger.LogWarning(ex, "Physical deletion deferred to cleanup for file {FileId}", file.Id);
         }
-
-        await auditPublisher.PublishAsync(
-            file.Id,
-            StoredFileAuditData.FromStoredFile(file),
-            AuditAction.Deleted,
-            oldFileData,
-            cancellationToken: cancellationToken);
 
         logger.LogInformation("File deleted: {FileId} ({FileName})", file.Id, file.FileName);
 

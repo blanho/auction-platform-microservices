@@ -1,19 +1,6 @@
 import type { QueryParameters } from '@/shared/types'
 
-export type AuditAction =
-  | 'Created'
-  | 'Updated'
-  | 'Deleted'
-  | 'StatusChanged'
-  | 'PriceChanged'
-  | 'BidPlaced'
-  | 'AuctionEnded'
-  | 'PaymentProcessed'
-  | 'UserRegistered'
-  | 'UserLoggedIn'
-  | 'UserLoggedOut'
-  | 'PermissionChanged'
-  | 'SettingChanged'
+export type AuditAction = 'Created' | 'Updated' | 'Deleted' | 'SoftDeleted' | 'Restored'
 
 export interface AuditLog {
   id: string
@@ -29,6 +16,7 @@ export interface AuditLog {
   serviceName: string
   correlationId?: string
   ipAddress?: string
+  metadata?: Record<string, unknown> | null
   timestamp: string
 }
 

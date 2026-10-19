@@ -66,8 +66,6 @@ public class ActivateAuctionCommandHandler : ICommandHandler<ActivateAuctionComm
 
         await _repository.UpdateAsync(auction, cancellationToken);
 
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
-
         await _auditPublisher.PublishAsync(
             auction.Id,
             AuctionAuditData.FromAuction(auction),
@@ -75,6 +73,8 @@ public class ActivateAuctionCommandHandler : ICommandHandler<ActivateAuctionComm
             oldAuctionData,
             AuctionAuditMetadata.ForActivation(previousStatus),
             cancellationToken);
+
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         _logger.LogInformation("Activated auction {AuctionId} from {PreviousStatus} to Live",
             request.AuctionId, previousStatus);

@@ -4,7 +4,6 @@
   "myDashboard": "マイダッシュボード",
   "trackActivity": "オークション活動とパフォーマンスを追跡",
   "reviewReports": "ユーザーレポートの確認と管理",
-
   "stats": {
     "totalRevenue": "総収益",
     "revenueChange": "収益変動",
@@ -16,13 +15,11 @@
     "completionRate": "完了率",
     "vsLast": "前{{period}}比"
   },
-
   "orders": {
     "title": "注文概要",
     "total": "総注文数",
     "completed": "完了注文数"
   },
-
   "health": {
     "title": "プラットフォーム状態",
     "apiStatus": "APIステータス",
@@ -37,12 +34,10 @@
     "disconnected": "切断",
     "unavailable": "稼働状況を読み込めません"
   },
-
   "categories": {
     "title": "トップカテゴリ",
     "auctions": "{{count}}件のオークション"
   },
-
   "performers": {
     "title": "トップパフォーマー",
     "topSellers": "トップセラー",
@@ -50,12 +45,10 @@
     "orders": "{{count}}件の注文",
     "won": "{{count}}件落札"
   },
-
   "activity": {
     "title": "最近の活動",
     "noActivity": "最近の活動はありません"
   },
-
   "metrics": {
     "title": "指標",
     "auctions": "オークション指標",
@@ -74,7 +67,6 @@
     "sellersBuyers": "セラー / バイヤー",
     "retentionRate": "継続率"
   },
-
   "charts": {
     "dailyActivity": "日次アクティビティ",
     "dailyActivityLast14Days": "日次アクティビティ（過去14日間）",
@@ -89,7 +81,6 @@
     "revenueTrend": "収益推移",
     "performanceBreakdown": "パフォーマンス内訳"
   },
-
   "user": {
     "title": "マイダッシュボード",
     "activeAuctions": "アクティブオークション",
@@ -117,7 +108,6 @@
     "createFirstAuction": "最初のオークションを作成",
     "noCategoryData": "カテゴリーデータがありません"
   },
-
   "seller": {
     "title": "セラー分析",
     "totalAuctions": "総オークション数",
@@ -133,7 +123,6 @@
     "auctions": "オークション",
     "revenue": "収益"
   },
-
   "period": {
     "timeRange": "期間",
     "day": "日",
@@ -145,7 +134,6 @@
     "90d": "90日",
     "1y": "1年"
   },
-
   "reports": {
     "title": "レポート管理",
     "description": "ユーザーレポートの確認と管理",
@@ -188,7 +176,6 @@
     "deleting": "削除中...",
     "failedToLoad": "レポート統計の読み込みに失敗しました"
   },
-
   "reportTypes": {
     "Fraud": "詐欺",
     "FakeItem": "偽物",
@@ -198,26 +185,22 @@
     "SuspiciousActivity": "不審な活動",
     "Other": "その他"
   },
-
   "reportStatus": {
     "Pending": "保留中",
     "UnderReview": "審査中",
     "Resolved": "解決済み",
     "Dismissed": "却下"
   },
-
   "reportPriority": {
     "Low": "低",
     "Medium": "中",
     "High": "高",
     "Critical": "緊急"
   },
-
   "errors": {
     "loadFailed": "ダッシュボードデータの読み込みに失敗しました。後でもう一度お試しください。",
     "statsLoadFailed": "ダッシュボード統計の読み込みに失敗しました。後でもう一度お試しください。"
   },
-
   "filter": {
     "status": "ステータス",
     "type": "タイプ",
@@ -226,7 +209,6 @@
     "all": "すべて",
     "refresh": "更新"
   },
-
   "auditLogs": {
     "title": "監査ログ",
     "description": "システム上のすべての操作と変更を追跡します",
@@ -253,48 +235,41 @@
     "oldValues": "変更前の値",
     "newValues": "変更後の値",
     "details": "監査ログ詳細",
-    "close": "閉じる"
+    "close": "閉じる",
+    "metadata": "詳細情報"
   },
-
   "auditActions": {
     "Created": "作成",
     "Updated": "更新",
     "Deleted": "削除",
-    "StatusChanged": "ステータス変更",
-    "PriceChanged": "価格変更",
-    "BidPlaced": "入札",
-    "AuctionEnded": "オークション終了",
-    "PaymentProcessed": "決済処理",
-    "UserRegistered": "ユーザー登録",
-    "UserLoggedIn": "ログイン",
-    "UserLoggedOut": "ログアウト",
-    "PermissionChanged": "権限変更",
-    "SettingChanged": "設定変更"
+    "SoftDeleted": "論理削除",
+    "Restored": "復元"
   },
-
   "entityTypes": {
-    "Auction": "オークション",
-    "Bid": "入札",
-    "User": "ユーザー",
-    "Order": "注文",
-    "Payment": "決済",
-    "Category": "カテゴリー",
-    "Brand": "ブランド",
-    "Report": "レポート",
-    "Notification": "通知",
-    "Setting": "設定"
+    "AuctionAuditData": "オークション",
+    "BidAuditData": "入札",
+    "AutoBidAuditData": "自動入札",
+    "UserAuditData": "ユーザー",
+    "AuthAuditData": "認証",
+    "TwoFactorAuditData": "二要素認証",
+    "OrderAuditData": "注文",
+    "WalletAuditData": "ウォレット",
+    "WalletTransactionAuditData": "ウォレット取引",
+    "JobAuditData": "ジョブ",
+    "StoredFileAuditData": "ファイル",
+    "NotificationAuditData": "通知",
+    "NotificationPreferenceAuditData": "通知設定",
+    "NotificationTemplateAuditData": "通知テンプレート"
   },
-
   "serviceNames": {
-    "AuctionService": "オークションサービス",
-    "BidService": "入札サービス",
-    "IdentityService": "IDサービス",
-    "PaymentService": "決済サービス",
-    "NotificationService": "通知サービス",
-    "AnalyticsService": "分析サービス",
-    "SearchService": "検索サービス"
+    "auction-service": "オークションサービス",
+    "bidding-service": "入札サービス",
+    "identity-service": "認証サービス",
+    "payment-service": "決済サービス",
+    "notification-service": "通知サービス",
+    "job-service": "ジョブサービス",
+    "storage-service": "ストレージサービス"
   },
-
   "settings": {
     "title": "プラットフォーム設定",
     "description": "プラットフォームの構成と設定を管理",

@@ -71,7 +71,7 @@ public class UploadFileFailureTests
             _ => throw new NotSupportedException(method.Name)
         });
         var handler = new UploadFileCommandHandler(storage, repository, unitOfWork,
-            Options.Create(new FileStorageSettings()), NullLogger<UploadFileCommandHandler>.Instance, null!);
+            Options.Create(new FileStorageSettings()), NullLogger<UploadFileCommandHandler>.Instance, TestProxy.Create<IAuditPublisher>((_, _) => Task.CompletedTask));
 
         var thrown = await Assert.ThrowsAsync<IOException>(() => handler.Handle(
             new UploadFileCommand(Stream.Null, "report.csv", "text/csv", 1,
@@ -121,7 +121,7 @@ public class UploadFileFailureTests
             unitOfWork,
             Options.Create(new FileStorageSettings()),
             NullLogger<UploadFileCommandHandler>.Instance,
-            TestProxy.Create<IAuditPublisher>((method, _) => throw new NotSupportedException(method.Name)));
+            TestProxy.Create<IAuditPublisher>((_, _) => Task.CompletedTask));
 
         var thrown = await Assert.ThrowsAsync<InvalidOperationException>(() =>
             handler.Handle(new UploadFileCommand(new MemoryStream([1]), "report.csv", "text/csv", 1),

@@ -83,6 +83,18 @@ public class ReleaseFundsCommandHandler : ICommandHandler<ReleaseFundsCommand, W
         {
             await _walletRepository.UpdateAsync(wallet);
             await _transactionRepository.AddAsync(transaction);
+            await _auditPublisher.PublishAsync(
+                transaction.Id,
+                WalletTransactionAuditData.FromTransaction(transaction),
+                AuditAction.Created,
+                metadata: new Dictionary<string, object>
+                {
+                    [AuditMetadataKeys.Action] = WalletDefaults.Audit.ReleaseFunds,
+                    [AuditMetadataKeys.Amount] = request.Amount,
+                    [AuditMetadataKeys.ReferenceId] = request.ReferenceId,
+                    [AuditMetadataKeys.NewHeldAmount] = wallet.HeldAmount
+                },
+                cancellationToken: cancellationToken);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
         }
         catch (DomainConcurrencyException ex)
@@ -92,19 +104,6 @@ public class ReleaseFundsCommandHandler : ICommandHandler<ReleaseFundsCommand, W
                 request.ReferenceId);
             return Result.Failure<WalletTransactionDto>(PaymentErrors.Wallet.ConcurrencyConflict);
         }
-
-        await _auditPublisher.PublishAsync(
-            transaction.Id,
-            WalletTransactionAuditData.FromTransaction(transaction),
-            AuditAction.Created,
-            metadata: new Dictionary<string, object>
-            {
-                [AuditMetadataKeys.Action] = WalletDefaults.Audit.ReleaseFunds,
-                [AuditMetadataKeys.Amount] = request.Amount,
-                [AuditMetadataKeys.ReferenceId] = request.ReferenceId,
-                [AuditMetadataKeys.NewHeldAmount] = wallet.HeldAmount
-            },
-            cancellationToken: cancellationToken);
 
         _logger.LogDebug("Released {Amount} for reference {ReferenceId}",
             request.Amount, request.ReferenceId);
