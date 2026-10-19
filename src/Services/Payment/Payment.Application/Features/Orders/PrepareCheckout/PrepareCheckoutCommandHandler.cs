@@ -56,8 +56,6 @@ public class PrepareCheckoutCommandHandler : ICommandHandler<PrepareCheckoutComm
         }
 
         var updated = await _repository.UpdateAsync(order, cancellationToken);
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
-
         await _auditPublisher.PublishAsync(
             updated.Id,
             OrderAuditData.FromOrder(updated),
@@ -68,6 +66,8 @@ public class PrepareCheckoutCommandHandler : ICommandHandler<PrepareCheckoutComm
                 [AuditMetadataKeys.Action] = OrderAuditActions.CheckoutPrepared
             },
             cancellationToken);
+
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         _logger.LogInformation("Checkout details prepared for order {OrderId}", updated.Id);
 

@@ -72,8 +72,6 @@ public class ShipOrderCommandHandler : ICommandHandler<ShipOrderCommand, OrderDt
         }
 
         var updated = await _repository.UpdateAsync(order, cancellationToken);
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
-
         await _auditPublisher.PublishAsync(
             updated.Id,
             OrderAuditData.FromOrder(updated),
@@ -86,6 +84,8 @@ public class ShipOrderCommandHandler : ICommandHandler<ShipOrderCommand, OrderDt
                 [AuditMetadataKeys.ShippingCarrier] = request.ShippingCarrier ?? string.Empty
             },
             cancellationToken);
+
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         _logger.LogInformation("Order {OrderId} marked as shipped", updated.Id);
 

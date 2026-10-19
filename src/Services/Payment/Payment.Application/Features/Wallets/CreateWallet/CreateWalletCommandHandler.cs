@@ -40,13 +40,13 @@ public class CreateWalletCommandHandler : ICommandHandler<CreateWalletCommand, W
         var wallet = Wallet.Create(request.UserId, request.Username, WalletDefaults.DefaultCurrency);
 
         var created = await _walletRepository.AddAsync(wallet);
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
-
         await _auditPublisher.PublishAsync(
             created.Id,
             WalletAuditData.FromWallet(created),
             AuditAction.Created,
             cancellationToken: cancellationToken);
+
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         _logger.LogDebug("Wallet created for user");
 

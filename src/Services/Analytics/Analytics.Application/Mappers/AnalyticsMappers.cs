@@ -58,7 +58,10 @@ public static class AnalyticsMappers
             ServiceName = log.ServiceName,
             CorrelationId = log.CorrelationId,
             IpAddress = log.IpAddress,
-            Timestamp = log.Timestamp
+            Timestamp = log.Timestamp,
+            Metadata = string.IsNullOrEmpty(log.Metadata)
+                ? null
+                : JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(log.Metadata)
         };
     }
 

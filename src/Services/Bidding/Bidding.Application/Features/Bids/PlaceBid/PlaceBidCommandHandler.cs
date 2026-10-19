@@ -3,7 +3,6 @@ using Bidding.Application.Interfaces;
 using Bidding.Domain.Constants;
 using Bidding.Domain.Enums;
 using BuildingBlocks.Application.Abstractions;
-using BuildingBlocks.Application.Abstractions.Auditing;
 using BuildingBlocks.Application.CQRS;
 using BuildingBlocks.Application.Constants;
 using Microsoft.Extensions.Logging;
@@ -14,18 +13,15 @@ public class PlaceBidCommandHandler : ICommandHandler<PlaceBidCommand, BidDto>
 {
     private readonly IBidService _bidService;
     private readonly IMessageDeduplicationService _deduplicationService;
-    private readonly IAuditPublisher _auditPublisher;
     private readonly ILogger<PlaceBidCommandHandler> _logger;
 
     public PlaceBidCommandHandler(
         IBidService bidService,
         IMessageDeduplicationService deduplicationService,
-        IAuditPublisher auditPublisher,
         ILogger<PlaceBidCommandHandler> logger)
     {
         _bidService = bidService;
         _deduplicationService = deduplicationService;
-        _auditPublisher = auditPublisher;
         _logger = logger;
     }
 
@@ -73,11 +69,6 @@ public class PlaceBidCommandHandler : ICommandHandler<PlaceBidCommand, BidDto>
                 return result;
             }
 
-            await _auditPublisher.PublishAsync(
-                bid.Id,
-                BidAuditData.FromDto(bid),
-                AuditAction.Created,
-                cancellationToken: cancellationToken);
 
             return result;
         }

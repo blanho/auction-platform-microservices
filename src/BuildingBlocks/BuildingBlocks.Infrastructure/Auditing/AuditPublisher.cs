@@ -39,7 +39,8 @@ public class AuditPublisher : IAuditPublisher
         AppAuditAction action,
         T? oldEntity = default,
         Dictionary<string, object>? metadata = null,
-        CancellationToken cancellationToken = default) where T : class
+        CancellationToken cancellationToken = default,
+        AuditActor? actor = null) where T : class
     {
         var changedProperties = GetChangedProperties(entity, oldEntity);
 
@@ -52,8 +53,8 @@ public class AuditPublisher : IAuditPublisher
             OldValues = oldEntity != null ? SerializeEntity(oldEntity) : null,
             NewValues = SerializeEntity(entity),
             ChangedProperties = changedProperties,
-            UserId = _auditContext.UserId,
-            Username = _auditContext.Username,
+            UserId = actor?.UserId ?? _auditContext.UserId,
+            Username = actor != null ? actor.Username : _auditContext.Username,
             ServiceName = _serviceName,
             CorrelationId = _auditContext.CorrelationId,
             IpAddress = _auditContext.IpAddress,
@@ -65,7 +66,7 @@ public class AuditPublisher : IAuditPublisher
 
         _logger.LogDebug(
             "Published audit event: {Action} on {EntityType} ({EntityId}) by user {UserId}",
-            action, typeof(T).Name, entityId, _auditContext.UserId);
+            action, typeof(T).Name, entityId, auditEvent.UserId);
     }
 
     public async Task PublishBatchAsync<T>(

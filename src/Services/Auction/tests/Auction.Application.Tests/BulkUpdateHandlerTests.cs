@@ -25,6 +25,7 @@ public class BulkUpdateHandlerTests
         var missingId = Guid.NewGuid();
         var requestedIds = new List<Guid> { second.Id, missingId, first.Id };
         var batchReads = 0;
+        var calls = new List<string>();
         var updatedIds = new List<Guid>();
         var repository = Stub<IAuctionWriteRepository>((method, args) => method.Name switch
         {
@@ -45,9 +46,14 @@ public class BulkUpdateHandlerTests
         }
         var unitOfWork = Stub<IUnitOfWork>((method, _) => method.Name switch
         {
-            nameof(IUnitOfWork.SaveChangesAsync) => Task.FromResult(1),
+            nameof(IUnitOfWork.SaveChangesAsync) => Save(),
             _ => throw new NotSupportedException(method.Name)
         });
+        Task<int> Save()
+        {
+            calls.Add("save");
+            return Task.FromResult(1);
+        }
         var auditEntries = new List<(Guid EntityId, AuctionAuditData Data)>();
         var auditPublisher = Stub<IAuditPublisher>((method, args) => method.Name switch
         {
@@ -56,6 +62,7 @@ public class BulkUpdateHandlerTests
         });
         Task RecordAudit(object?[] args)
         {
+            calls.Add("audit");
             auditEntries.AddRange((IEnumerable<(Guid, AuctionAuditData)>)args[0]!);
             Assert.Equal(AuditAction.Updated, args[1]);
             return Task.CompletedTask;
@@ -67,6 +74,7 @@ public class BulkUpdateHandlerTests
         var result = await handler.Handle(new BulkUpdateAuctionsCommand(requestedIds, true), CancellationToken.None);
 
         Assert.True(result.IsSuccess);
+        Assert.Equal(new[] { "audit", "save" }, calls);
         Assert.Equal(2, result.Value);
         Assert.Equal(1, batchReads);
         Assert.Equal(new[] { second.Id, first.Id }, updatedIds);

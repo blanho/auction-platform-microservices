@@ -94,8 +94,6 @@ public class RetractBidCommandHandler : ICommandHandler<RetractBidCommand, Retra
             newHighestBid?.BidderId,
             newHighestBid?.BidderUsername);
 
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
-
         await _auditPublisher.PublishAsync(
             freshBid.Id,
             BidAuditData.FromBid(freshBid),
@@ -108,6 +106,8 @@ public class RetractBidCommandHandler : ICommandHandler<RetractBidCommand, Retra
                 [AuditMetadataKeys.WasHighestBid] = wasHighestBid
             },
             cancellationToken);
+
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         _logger.LogInformation("Bid {BidId} successfully retracted. Was highest: {WasHighest}",
             request.BidId, wasHighestBid);

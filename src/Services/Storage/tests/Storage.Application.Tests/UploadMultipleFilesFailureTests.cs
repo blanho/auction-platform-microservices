@@ -109,7 +109,7 @@ public class UploadMultipleFilesFailureTests
             unitOfWork ?? Stub<IUnitOfWork>((method, _) => throw new NotSupportedException(method.Name)),
             Options.Create(new FileStorageSettings()),
             NullLogger<UploadMultipleFilesCommandHandler>.Instance,
-            Stub<IAuditPublisher>((method, _) => throw new NotSupportedException(method.Name)));
+            Stub<IAuditPublisher>((_, _) => Task.CompletedTask));
     }
 
     private static T Stub<T>(Func<MethodInfo, object?[]?, object?> handler) where T : class

@@ -52,8 +52,6 @@ public class CancelAuctionCommandHandler : ICommandHandler<CancelAuctionCommand,
 
         auction.Cancel(request.Reason);
         await _repository.UpdateAsync(auction, cancellationToken);
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
-
         await _auditPublisher.PublishAsync(
             auction.Id,
             AuctionAuditData.FromAuction(auction),
@@ -61,6 +59,8 @@ public class CancelAuctionCommandHandler : ICommandHandler<CancelAuctionCommand,
             oldAuctionData,
             AuctionAuditMetadata.ForCancellation(request.Reason),
             cancellationToken);
+
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         _logger.LogInformation("Auction {AuctionId} cancelled successfully. Reason: {Reason}",
             request.AuctionId, request.Reason);

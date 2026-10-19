@@ -56,13 +56,13 @@ public class CreateNotificationCommandHandler : ICommandHandler<CreateNotificati
         notification.MarkAsSent();
 
         await _repository.CreateAsync(notification, cancellationToken);
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
-
         await _auditPublisher.PublishAsync(
             notification.Id,
             NotificationAuditData.FromNotification(notification),
             AuditAction.Created,
             cancellationToken: cancellationToken);
+
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         var dto = notification.ToDto(_mapper);
 

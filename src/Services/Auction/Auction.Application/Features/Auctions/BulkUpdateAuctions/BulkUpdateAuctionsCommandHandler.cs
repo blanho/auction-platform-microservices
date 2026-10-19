@@ -53,13 +53,13 @@ public class BulkUpdateAuctionsCommandHandler : ICommandHandler<BulkUpdateAuctio
             }
         }
 
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
-
         await _auditPublisher.PublishBatchAsync(
             auditEntries,
             AuditAction.Updated,
             AuctionAuditMetadata.ForBulkStatusChange(request.Activate),
             cancellationToken);
+
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         _logger.LogInformation("Successfully updated {UpdatedCount} auctions", updatedCount);
         return Result.Success(updatedCount);

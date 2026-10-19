@@ -51,14 +51,14 @@ public class UpdatePreferencesCommandHandler : ICommandHandler<UpdatePreferences
             request.SystemAlerts);
 
         await _repository.UpdateAsync(preference, cancellationToken);
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
-
         await _auditPublisher.PublishAsync(
             preference.Id,
             NotificationPreferenceAuditData.FromPreference(preference),
             isNew ? AuditAction.Created : AuditAction.Updated,
             oldPreferenceData,
             cancellationToken: cancellationToken);
+
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         var dto = new NotificationPreferenceDto
         {

@@ -51,6 +51,20 @@ public class UploadMultipleFilesCommandHandler(
         try
         {
             await repository.AddRangeAsync(successfulFiles, cancellationToken);
+            foreach (var storedFile in successfulFiles)
+            {
+                await auditPublisher.PublishAsync(
+                    storedFile.Id,
+                    StoredFileAuditData.FromStoredFile(storedFile),
+                    AuditAction.Created,
+                    metadata: new Dictionary<string, object>
+                    {
+                        [AuditMetadataKeys.FileName] = storedFile.FileName,
+                        [AuditMetadataKeys.FileSize] = storedFile.FileSize,
+                        [AuditMetadataKeys.BatchUpload] = true
+                    },
+                    cancellationToken: cancellationToken);
+            }
             await unitOfWork.SaveChangesAsync(cancellationToken);
         }
         catch
@@ -58,21 +72,6 @@ public class UploadMultipleFilesCommandHandler(
             await RollbackUploadedBlobsAsync(successfulFiles);
 
             throw;
-        }
-
-        foreach (var storedFile in successfulFiles)
-        {
-            await auditPublisher.PublishAsync(
-                storedFile.Id,
-                StoredFileAuditData.FromStoredFile(storedFile),
-                AuditAction.Created,
-                metadata: new Dictionary<string, object>
-                {
-                    [AuditMetadataKeys.FileName] = storedFile.FileName,
-                    [AuditMetadataKeys.FileSize] = storedFile.FileSize,
-                    [AuditMetadataKeys.BatchUpload] = true
-                },
-                cancellationToken: cancellationToken);
         }
 
         if (errors.Count > 0)

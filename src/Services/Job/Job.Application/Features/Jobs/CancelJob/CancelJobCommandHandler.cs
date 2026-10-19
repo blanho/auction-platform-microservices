@@ -33,8 +33,6 @@ public class CancelJobCommandHandler(
         job.Cancel();
 
         await jobRepository.UpdateAsync(job, cancellationToken);
-        await unitOfWork.SaveChangesAsync(cancellationToken);
-
         await auditPublisher.PublishAsync(
             job.Id,
             JobAuditData.FromJob(job),
@@ -46,6 +44,8 @@ public class CancelJobCommandHandler(
                 [AuditMetadataKeys.PreviousStatus] = oldJobData.Status
             },
             cancellationToken: cancellationToken);
+
+        await unitOfWork.SaveChangesAsync(cancellationToken);
 
         logger.LogInformation("Job {JobId} cancelled successfully", job.Id);
 

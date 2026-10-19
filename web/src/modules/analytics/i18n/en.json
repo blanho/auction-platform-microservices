@@ -4,7 +4,6 @@
   "myDashboard": "My Dashboard",
   "trackActivity": "Track your auction activity and performance",
   "reviewReports": "Review and manage user reports",
-
   "stats": {
     "totalRevenue": "Total Revenue",
     "revenueChange": "Revenue Change",
@@ -16,13 +15,11 @@
     "completionRate": "Completion Rate",
     "vsLast": "vs last {{period}}"
   },
-
   "orders": {
     "title": "Orders Overview",
     "total": "Total Orders",
     "completed": "Completed Orders"
   },
-
   "health": {
     "title": "Platform Health",
     "apiStatus": "API Status",
@@ -37,12 +34,10 @@
     "disconnected": "disconnected",
     "unavailable": "Unable to load health status"
   },
-
   "categories": {
     "title": "Top Categories",
     "auctions": "{{count}} auctions"
   },
-
   "performers": {
     "title": "Top Performers",
     "topSellers": "Top Sellers",
@@ -50,12 +45,10 @@
     "orders": "{{count}} orders",
     "won": "{{count}} won"
   },
-
   "activity": {
     "title": "Recent Activity",
     "noActivity": "No recent activity"
   },
-
   "metrics": {
     "title": "Metrics",
     "auctions": "Auction Metrics",
@@ -74,7 +67,6 @@
     "sellersBuyers": "Sellers / Buyers",
     "retentionRate": "Retention Rate"
   },
-
   "charts": {
     "dailyActivity": "Daily Activity",
     "dailyActivityLast14Days": "Daily Activity (Last 14 Days)",
@@ -89,7 +81,6 @@
     "revenueTrend": "Revenue Trend",
     "performanceBreakdown": "Performance Breakdown"
   },
-
   "user": {
     "title": "My Dashboard",
     "activeAuctions": "Active Auctions",
@@ -117,7 +108,6 @@
     "createFirstAuction": "Create Your First Auction",
     "noCategoryData": "No category data available"
   },
-
   "seller": {
     "title": "Seller Analytics",
     "totalAuctions": "Total Auctions",
@@ -133,7 +123,6 @@
     "auctions": "Auctions",
     "revenue": "Revenue"
   },
-
   "period": {
     "timeRange": "Time range",
     "day": "Day",
@@ -145,7 +134,6 @@
     "90d": "90D",
     "1y": "1Y"
   },
-
   "reports": {
     "title": "Reports Management",
     "description": "Review and manage user reports",
@@ -188,7 +176,6 @@
     "deleting": "Deleting...",
     "failedToLoad": "Failed to load report statistics"
   },
-
   "reportTypes": {
     "Fraud": "Fraud",
     "FakeItem": "Fake Item",
@@ -198,26 +185,22 @@
     "SuspiciousActivity": "Suspicious Activity",
     "Other": "Other"
   },
-
   "reportStatus": {
     "Pending": "Pending",
     "UnderReview": "Under Review",
     "Resolved": "Resolved",
     "Dismissed": "Dismissed"
   },
-
   "reportPriority": {
     "Low": "Low",
     "Medium": "Medium",
     "High": "High",
     "Critical": "Critical"
   },
-
   "errors": {
     "loadFailed": "Failed to load dashboard data. Please try again later.",
     "statsLoadFailed": "Failed to load dashboard statistics. Please try again later."
   },
-
   "filter": {
     "status": "Status",
     "type": "Type",
@@ -226,7 +209,6 @@
     "all": "All",
     "refresh": "Refresh"
   },
-
   "auditLogs": {
     "title": "Audit Logs",
     "description": "Track all system activities and changes",
@@ -253,48 +235,41 @@
     "oldValues": "Old Values",
     "newValues": "New Values",
     "details": "Audit Log Details",
-    "close": "Close"
+    "close": "Close",
+    "metadata": "Context"
   },
-
   "auditActions": {
     "Created": "Created",
     "Updated": "Updated",
     "Deleted": "Deleted",
-    "StatusChanged": "Status Changed",
-    "PriceChanged": "Price Changed",
-    "BidPlaced": "Bid Placed",
-    "AuctionEnded": "Auction Ended",
-    "PaymentProcessed": "Payment Processed",
-    "UserRegistered": "User Registered",
-    "UserLoggedIn": "User Logged In",
-    "UserLoggedOut": "User Logged Out",
-    "PermissionChanged": "Permission Changed",
-    "SettingChanged": "Setting Changed"
+    "SoftDeleted": "Soft Deleted",
+    "Restored": "Restored"
   },
-
   "entityTypes": {
-    "Auction": "Auction",
-    "Bid": "Bid",
-    "User": "User",
-    "Order": "Order",
-    "Payment": "Payment",
-    "Category": "Category",
-    "Brand": "Brand",
-    "Report": "Report",
-    "Notification": "Notification",
-    "Setting": "Setting"
+    "AuctionAuditData": "Auction",
+    "BidAuditData": "Bid",
+    "AutoBidAuditData": "Auto Bid",
+    "UserAuditData": "User",
+    "AuthAuditData": "Authentication",
+    "TwoFactorAuditData": "Two-Factor Authentication",
+    "OrderAuditData": "Order",
+    "WalletAuditData": "Wallet",
+    "WalletTransactionAuditData": "Wallet Transaction",
+    "JobAuditData": "Job",
+    "StoredFileAuditData": "File",
+    "NotificationAuditData": "Notification",
+    "NotificationPreferenceAuditData": "Notification Preferences",
+    "NotificationTemplateAuditData": "Notification Template"
   },
-
   "serviceNames": {
-    "AuctionService": "Auction Service",
-    "BidService": "Bid Service",
-    "IdentityService": "Identity Service",
-    "PaymentService": "Payment Service",
-    "NotificationService": "Notification Service",
-    "AnalyticsService": "Analytics Service",
-    "SearchService": "Search Service"
+    "auction-service": "Auction Service",
+    "bidding-service": "Bidding Service",
+    "identity-service": "Identity Service",
+    "payment-service": "Payment Service",
+    "notification-service": "Notification Service",
+    "job-service": "Job Service",
+    "storage-service": "Storage Service"
   },
-
   "settings": {
     "title": "Platform Settings",
     "description": "Manage platform configuration and preferences",

@@ -83,6 +83,19 @@ public class HoldFundsCommandHandler : ICommandHandler<HoldFundsCommand, WalletT
         {
             await _walletRepository.UpdateAsync(wallet);
             await _transactionRepository.AddAsync(transaction);
+            await _auditPublisher.PublishAsync(
+                transaction.Id,
+                WalletTransactionAuditData.FromTransaction(transaction),
+                AuditAction.Created,
+                metadata: new Dictionary<string, object>
+                {
+                    [AuditMetadataKeys.Action] = WalletDefaults.Audit.HoldFunds,
+                    [AuditMetadataKeys.Amount] = request.Amount,
+                    [AuditMetadataKeys.ReferenceId] = request.ReferenceId,
+                    [AuditMetadataKeys.ReferenceType] = request.ReferenceType,
+                    [AuditMetadataKeys.NewHeldAmount] = wallet.HeldAmount
+                },
+                cancellationToken: cancellationToken);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
         }
         catch (DomainConcurrencyException ex)
@@ -92,20 +105,6 @@ public class HoldFundsCommandHandler : ICommandHandler<HoldFundsCommand, WalletT
                 request.ReferenceId);
             return Result.Failure<WalletTransactionDto>(PaymentErrors.Wallet.ConcurrencyConflict);
         }
-
-        await _auditPublisher.PublishAsync(
-            transaction.Id,
-            WalletTransactionAuditData.FromTransaction(transaction),
-            AuditAction.Created,
-            metadata: new Dictionary<string, object>
-            {
-                [AuditMetadataKeys.Action] = WalletDefaults.Audit.HoldFunds,
-                [AuditMetadataKeys.Amount] = request.Amount,
-                [AuditMetadataKeys.ReferenceId] = request.ReferenceId,
-                [AuditMetadataKeys.ReferenceType] = request.ReferenceType,
-                [AuditMetadataKeys.NewHeldAmount] = wallet.HeldAmount
-            },
-            cancellationToken: cancellationToken);
 
         _logger.LogDebug("Held {Amount} for {ReferenceType} {ReferenceId}",
             request.Amount, request.ReferenceType, request.ReferenceId);

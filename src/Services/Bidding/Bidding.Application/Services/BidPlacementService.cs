@@ -12,7 +12,7 @@ namespace Bidding.Application.Services
         private readonly IAuctionBidValidator _auctionValidator;
         private readonly ILogger<BidPlacementService> _logger;
         private readonly IDateTimeProvider _dateTime;
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly IBidWriter _bidWriter;
         private readonly IDistributedLock _distributedLock;
         private readonly IAuctionBidLock _auctionBidLock;
 
@@ -21,7 +21,7 @@ namespace Bidding.Application.Services
             IAuctionBidValidator auctionValidator,
             ILogger<BidPlacementService> logger,
             IDateTimeProvider dateTime,
-            IUnitOfWork unitOfWork,
+            IBidWriter bidWriter,
             IDistributedLock distributedLock,
             IAuctionBidLock auctionBidLock)
         {
@@ -29,7 +29,7 @@ namespace Bidding.Application.Services
             _auctionValidator = auctionValidator;
             _logger = logger;
             _dateTime = dateTime;
-            _unitOfWork = unitOfWork;
+            _bidWriter = bidWriter;
             _distributedLock = distributedLock;
             _auctionBidLock = auctionBidLock;
         }
@@ -161,6 +161,7 @@ namespace Bidding.Application.Services
         }
 
         private async Task<BidDto?> SaveBidWithRaceConditionHandling(
+            Bid bid,
             PlaceBidDto dto,
             Guid bidderId,
             string bidderUsername,
@@ -168,7 +169,7 @@ namespace Bidding.Application.Services
         {
             try
             {
-                await _unitOfWork.SaveChangesAsync(ct);
+                await _bidWriter.CreateAsync(bid, ct);
                 return null;
             }
             catch (Exception ex) when (IsUniqueConstraintViolation(ex))
@@ -226,13 +227,11 @@ namespace Bidding.Application.Services
         {
             var bid = CreateBid(dto, bidderId, bidderUsername, highestBid, isAutoBid, reservePrice);
 
-            var createdBid = await _repository.CreateAsync(bid, ct);
-
-            var raceConditionResult = await SaveBidWithRaceConditionHandling(dto, bidderId, bidderUsername, ct);
+            var raceConditionResult = await SaveBidWithRaceConditionHandling(bid, dto, bidderId, bidderUsername, ct);
             if (raceConditionResult != null)
                 return raceConditionResult;
 
-            return createdBid.ToDto();
+            return bid.ToDto();
         }
 
         public async Task<PaginatedResult<BidDto>> GetBidsForAuctionAsync(BidQueryParams queryParams, CancellationToken cancellationToken = default)

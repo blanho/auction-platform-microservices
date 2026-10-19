@@ -1,5 +1,7 @@
 using Analytics.Domain.Enums;
 using BuildingBlocks.Application.Paging;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Analytics.Application.DTOs;
 
@@ -8,6 +10,7 @@ public record AuditLogDto
     public Guid Id { get; init; }
     public Guid EntityId { get; init; }
     public string EntityType { get; init; } = string.Empty;
+    [JsonConverter(typeof(JsonStringEnumConverter<AuditAction>))]
     public AuditAction Action { get; init; }
     public string ActionName => Action.ToString();
     public string? OldValues { get; init; }
@@ -19,6 +22,7 @@ public record AuditLogDto
     public string? CorrelationId { get; init; }
     public string? IpAddress { get; init; }
     public DateTimeOffset Timestamp { get; init; }
+    public Dictionary<string, JsonElement>? Metadata { get; init; }
 }
 
 public class AuditLogFilter

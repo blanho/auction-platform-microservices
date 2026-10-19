@@ -1,3 +1,4 @@
+using BuildingBlocks.Application.Abstractions.Auditing;
 using System.Reflection;
 using Bidding.Application.DTOs;
 using Bidding.Application.Interfaces;
@@ -39,7 +40,7 @@ public class BidPlacementServiceTests
         Assert.Equal(scenario.PreviousBid?.BidderId, highestBidEvent.PreviousBidderId);
         Assert.Equal(scenario.PreviousBid?.BidderUsername, highestBidEvent.PreviousBidderUsername);
         Assert.Equal(isAutoBid, highestBidEvent.IsAutoBid);
-        Assert.Equal(new[] { "acquire", "enter", "snapshot", "highest", "create", "save", "exit", "release" }, scenario.Calls);
+        Assert.Equal(new[] { "acquire", "enter", "snapshot", "highest", "create", "audit", "save", "exit", "release" }, scenario.Calls);
     }
 
     [Theory]
@@ -199,8 +200,16 @@ public class BidPlacementServiceTests
             var grpcClient = Proxy<IAuctionGrpcClient>((method, _) => throw new InvalidOperationException(method.Name));
             Service = new BidPlacementService(repository,
                 new AuctionBidValidator(snapshotRepository, grpcClient, clock, NullLogger<AuctionBidValidator>.Instance),
-                NullLogger<BidPlacementService>.Instance, clock, unitOfWork, distributedLock,
-                new AuctionLock(Calls));
+                NullLogger<BidPlacementService>.Instance, clock,
+                new BidWriter(repository, unitOfWork, Proxy<IAuditPublisher>((method, args) =>
+                {
+                    Assert.Equal(nameof(IAuditPublisher.PublishAsync), method.Name);
+                    Assert.Equal(SavedBid!.Id, args[0]);
+                    Assert.Equal(AuditAction.Created, args[2]);
+                    Assert.Equal(Token, args[5]);
+                    Calls.Add("audit");
+                    return Task.CompletedTask;
+                })), distributedLock, new AuctionLock(Calls));
         }
     }
 

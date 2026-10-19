@@ -20,12 +20,11 @@ public class PlaceBidCommandHandlerTests
     [InlineData("unknown", null, "Bid.Rejected", "Bid finished with unsupported status 'unknown'.")]
     [InlineData("999", null, "Bid.Rejected", "Bid finished with unsupported status '999'.")]
     [InlineData("unknown", "Service rejection", "Bid.Rejected", "Service rejection")]
-    public async Task BidOutcome_PreservesStatusMappingAndOnlyAuditsAcceptedBids(
+    public async Task BidOutcome_PreservesStatusMappingAndDeduplication(
         string status, string? serviceError, string? expectedCode, string? expectedDescription)
     {
         var bid = new BidDto { Id = Guid.NewGuid(), Status = status, ErrorMessage = serviceError };
         var removed = false;
-        var audited = false;
         var deduplication = Stub<IMessageDeduplicationService>((method, _) => method.Name switch
         {
             nameof(IMessageDeduplicationService.TryMarkAsProcessedAsync) => Task.FromResult(true),
@@ -42,14 +41,7 @@ public class PlaceBidCommandHandlerTests
             nameof(IBidService.PlaceBidAsync) => Task.FromResult(bid),
             _ => throw new NotSupportedException(method.Name)
         });
-        var audit = Stub<IAuditPublisher>((method, args) =>
-        {
-            Assert.Equal(nameof(IAuditPublisher.PublishAsync), method.Name);
-            Assert.Equal(bid.Id, args![0]);
-            audited = true;
-            return Task.CompletedTask;
-        });
-        var handler = new PlaceBidCommandHandler(bidService, deduplication, audit,
+        var handler = new PlaceBidCommandHandler(bidService, deduplication,
             NullLogger<PlaceBidCommandHandler>.Instance);
 
         var result = await handler.Handle(
@@ -57,7 +49,6 @@ public class PlaceBidCommandHandlerTests
             CancellationToken.None);
 
         Assert.Equal(expectedCode is null, result.IsSuccess);
-        Assert.Equal(expectedCode is null, audited);
         Assert.Equal(expectedCode is not null, removed);
         if (result.IsSuccess)
         {
@@ -99,7 +90,7 @@ public class PlaceBidCommandHandlerTests
             Assert.Equal(cancellation.Token, args[^1]);
             return Task.FromCanceled<BidDto>(cancellation.Token);
         }
-        var handler = new PlaceBidCommandHandler(bidService, deduplication, null!,
+        var handler = new PlaceBidCommandHandler(bidService, deduplication,
             NullLogger<PlaceBidCommandHandler>.Instance);
         var command = new PlaceBidCommand(Guid.NewGuid(), 100m, Guid.NewGuid(), "bidder", "request-1");
 

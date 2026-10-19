@@ -63,8 +63,6 @@ public class ToggleAutoBidCommandHandler : ICommandHandler<ToggleAutoBidCommand,
             autoBid.Deactivate();
         }
 
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
-
         await _auditPublisher.PublishAsync(
             autoBid.Id,
             AutoBidAuditData.FromAutoBid(autoBid),
@@ -75,6 +73,8 @@ public class ToggleAutoBidCommandHandler : ICommandHandler<ToggleAutoBidCommand,
                 [AuditMetadataKeys.Action] = request.Activate ? BidDefaults.BiddingAuditActions.Activated : BidDefaults.BiddingAuditActions.Deactivated
             },
             cancellationToken);
+
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         _logger.LogInformation("Auto-bid {AutoBidId} toggled to {State}",
             request.AutoBidId, autoBid.IsActive ? "active" : "inactive");

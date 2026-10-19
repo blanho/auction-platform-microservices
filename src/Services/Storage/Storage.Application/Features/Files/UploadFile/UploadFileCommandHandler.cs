@@ -76,6 +76,17 @@ public class UploadFileCommandHandler(
         try
         {
             await repository.AddAsync(storedFile, cancellationToken);
+            await auditPublisher.PublishAsync(
+                storedFile.Id,
+                StoredFileAuditData.FromStoredFile(storedFile),
+                AuditAction.Created,
+                metadata: new Dictionary<string, object>
+                {
+                    [AuditMetadataKeys.FileName] = storedFile.FileName,
+                    [AuditMetadataKeys.FileSize] = storedFile.FileSize,
+                    [AuditMetadataKeys.Provider] = provider.ToString()
+                },
+                cancellationToken: cancellationToken);
             await unitOfWork.SaveChangesAsync(cancellationToken);
         }
         catch
@@ -83,18 +94,6 @@ public class UploadFileCommandHandler(
             await RollbackUncommittedBlobAsync(request, storedFile);
             throw;
         }
-
-        await auditPublisher.PublishAsync(
-            storedFile.Id,
-            StoredFileAuditData.FromStoredFile(storedFile),
-            AuditAction.Created,
-            metadata: new Dictionary<string, object>
-            {
-                [AuditMetadataKeys.FileName] = storedFile.FileName,
-                [AuditMetadataKeys.FileSize] = storedFile.FileSize,
-                [AuditMetadataKeys.Provider] = provider.ToString()
-            },
-            cancellationToken: cancellationToken);
 
         logger.LogInformation("File uploaded: {FileId} ({FileName})", storedFile.Id, storedFile.FileName);
 

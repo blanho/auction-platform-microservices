@@ -17,7 +17,8 @@ public interface IAuditPublisher
         AuditAction action,
         T? oldEntity = default,
         Dictionary<string, object>? metadata = null,
-        CancellationToken cancellationToken = default) where T : class;
+        CancellationToken cancellationToken = default,
+        AuditActor? actor = null) where T : class;
 
     Task PublishBatchAsync<T>(
         IEnumerable<(Guid EntityId, T Entity)> entities,
@@ -29,6 +30,8 @@ public interface IAuditPublisher
         IEnumerable<AuditEntry> entries,
         CancellationToken cancellationToken = default);
 }
+
+public sealed record AuditActor(Guid UserId, string? Username);
 
 public interface IAuditContext
 {
