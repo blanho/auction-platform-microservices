@@ -1,0 +1,76 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="980" viewBox="0 0 1400 980">
+<defs><marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8 Z" fill="#52677e"/></marker></defs>
+<rect width="1400" height="980" fill="#f6f8fc"/>
+<rect x="30" y="20" width="1340" height="60" rx="12" fill="#e8f1fc" stroke="#e8f1fc" stroke-width="1.5"/>
+<text x="700.0" y="44.0" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="18" font-weight="600" fill="#142b46">Auction platform | Managed deployment configuration</text>
+<text x="700.0" y="68.0" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="15" font-weight="400" fill="#142b46">Repository configuration • Single region • Providers and CDN require provisioning</text>
+<rect x="390" y="350" width="600" height="310" rx="12" fill="#e8f1fc" stroke="#6c9ed1" stroke-width="1.5"/>
+<text x="690.0" y="378" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="18" font-weight="600" fill="#142b46">AKS | replicas spread across nodes and zones</text>
+<text x="690.0" y="402" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="15" font-weight="400" fill="#142b46">13 Deployments · 28 starting replicas · 12 HPAs</text>
+<rect x="540" y="105" width="320" height="65" rx="12" fill="#ffffff" stroke="#b5c5d8" stroke-width="1.5"/>
+<text x="700.0" y="131.5" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="18" font-weight="600" fill="#142b46">Users / browser</text>
+<text x="700.0" y="155.5" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="15" font-weight="400" fill="#142b46">HTTPS + authenticated live updates</text>
+<rect x="540" y="215" width="320" height="95" rx="12" fill="#e3f5fa" stroke="#b5c5d8" stroke-width="1.5"/>
+<text x="700.0" y="244.5" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="18" font-weight="600" fill="#142b46">Optional Azure Front Door</text>
+<text x="700.0" y="268.5" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="15" font-weight="400" fill="#142b46">/assets/* cached</text>
+<text x="700.0" y="292.5" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="15" font-weight="400" fill="#142b46">HTML, API, auth, hubs: cache disabled</text>
+<rect x="1030" y="215" width="330" height="95" rx="12" fill="#e3f5fa" stroke="#b5c5d8" stroke-width="1.5"/>
+<text x="1195.0" y="244.5" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="18" font-weight="600" fill="#142b46">Azure SignalR</text>
+<text x="1195.0" y="268.5" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="15" font-weight="400" fill="#142b46">Shared delivery across notification pods</text>
+<text x="1195.0" y="292.5" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="15" font-weight="400" fill="#142b46">Browser connects directly after negotiation</text>
+<rect x="40" y="215" width="310" height="120" rx="12" fill="#ffffff" stroke="#b5c5d8" stroke-width="1.5"/>
+<text x="195.0" y="245.0" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="18" font-weight="600" fill="#142b46">Delivery and operations</text>
+<text x="195.0" y="269.0" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="15" font-weight="400" fill="#142b46">GitHub Actions → ACR → AKS</text>
+<text x="195.0" y="293.0" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="15" font-weight="400" fill="#142b46">Key Vault → External Secrets</text>
+<text x="195.0" y="317.0" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="15" font-weight="400" fill="#142b46">Azure Monitor / Log Analytics</text>
+<rect x="40" y="500" width="300" height="110" rx="12" fill="#f0edf9" stroke="#b5c5d8" stroke-width="1.5"/>
+<text x="190.0" y="537.0" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="18" font-weight="600" fill="#142b46">Azure Blob Storage</text>
+<text x="190.0" y="561.0" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="15" font-weight="400" fill="#142b46">Private files and signed downloads</text>
+<text x="190.0" y="585.0" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="15" font-weight="400" fill="#142b46">No global public-media cache</text>
+<rect x="425" y="435" width="210" height="65" rx="12" fill="#ffffff" stroke="#b5c5d8" stroke-width="1.5"/>
+<text x="530.0" y="461.5" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="18" font-weight="600" fill="#142b46">Web / NGINX</text>
+<text x="530.0" y="485.5" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="15" font-weight="400" fill="#142b46">Same-origin /api and /hubs</text>
+<rect x="725" y="435" width="210" height="65" rx="12" fill="#ffffff" stroke="#b5c5d8" stroke-width="1.5"/>
+<text x="830.0" y="461.5" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="18" font-weight="600" fill="#142b46">Gateway / YARP</text>
+<text x="830.0" y="485.5" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="15" font-weight="400" fill="#142b46">HTTP routes + hub negotiation</text>
+<rect x="425" y="540" width="510" height="95" rx="12" fill="#ffffff" stroke="#b5c5d8" stroke-width="1.5"/>
+<text x="680.0" y="569.5" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="18" font-weight="600" fill="#142b46">11 backend services</text>
+<text x="680.0" y="593.5" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="15" font-weight="400" fill="#142b46">Bidding: PostgreSQL advisory locks</text>
+<text x="680.0" y="617.5" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="15" font-weight="400" fill="#142b46">Notification: Azure SignalR · Auction: browse DTO cache</text>
+<rect x="40" y="760" width="300" height="115" rx="12" fill="#e9f3ea" stroke="#b5c5d8" stroke-width="1.5"/>
+<text x="190.0" y="787.5" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="18" font-weight="600" fill="#142b46">PostgreSQL Flexible Server</text>
+<text x="190.0" y="811.5" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="15" font-weight="400" fill="#142b46">Zone-redundant HA</text>
+<text x="190.0" y="835.5" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="15" font-weight="400" fill="#142b46">10 logical databases</text>
+<text x="190.0" y="859.5" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="15" font-weight="400" fill="#142b46">Authoritative bids and transactions</text>
+<rect x="380" y="760" width="280" height="115" rx="12" fill="#e9f3ea" stroke="#b5c5d8" stroke-width="1.5"/>
+<text x="520.0" y="787.5" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="18" font-weight="600" fill="#142b46">Azure Managed Redis</text>
+<text x="520.0" y="811.5" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="15" font-weight="400" fill="#142b46">HA cache / deduplication / locks</text>
+<text x="520.0" y="835.5" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="15" font-weight="400" fill="#142b46">Live browse cache: five-second TTL</text>
+<text x="520.0" y="859.5" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="15" font-weight="400" fill="#142b46">Cache does not validate bids</text>
+<rect x="700" y="760" width="300" height="115" rx="12" fill="#fff2dd" stroke="#b5c5d8" stroke-width="1.5"/>
+<text x="850.0" y="787.5" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="18" font-weight="600" fill="#142b46">Managed RabbitMQ</text>
+<text x="850.0" y="811.5" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="15" font-weight="400" fill="#142b46">AMQPS 5671 · three-node quorum</text>
+<text x="850.0" y="835.5" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="15" font-weight="400" fill="#142b46">Provider plan + migration required</text>
+<text x="850.0" y="859.5" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="15" font-weight="400" fill="#142b46">Delayed delivery needs separate validation</text>
+<rect x="1040" y="760" width="320" height="115" rx="12" fill="#fff2dd" stroke="#b5c5d8" stroke-width="1.5"/>
+<text x="1200.0" y="787.5" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="18" font-weight="600" fill="#142b46">Managed Elasticsearch</text>
+<text x="1200.0" y="811.5" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="15" font-weight="400" fill="#142b46">HTTPS 443 · multiple zones</text>
+<text x="1200.0" y="835.5" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="15" font-weight="400" fill="#142b46">Replicated indexes + snapshots</text>
+<text x="1200.0" y="859.5" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="15" font-weight="400" fill="#142b46">Provider plan + migration required</text>
+<polyline points="700,170 700,215" fill="none" stroke="#52677e" stroke-width="2" marker-end="url(#arrow)"/>
+<polyline points="860,137 1195,137 1195,215" fill="none" stroke="#52677e" stroke-width="2" marker-end="url(#arrow)"/>
+<text x="1203" y="127" font-family="Segoe UI,Arial,sans-serif" font-size="13" fill="#52677e">Direct live connection</text>
+<polyline points="620,310 620,330 410,330 410,468 425,468" fill="none" stroke="#52677e" stroke-width="2" marker-end="url(#arrow)"/>
+<polyline points="635,468 725,468" fill="none" stroke="#52677e" stroke-width="2" marker-end="url(#arrow)"/>
+<polyline points="830,500 830,540" fill="none" stroke="#52677e" stroke-width="2" marker-end="url(#arrow)"/>
+<polyline points="935,585 1195,585 1195,310" fill="none" stroke="#52677e" stroke-width="2" marker-end="url(#arrow)"/>
+<polyline points="425,585 340,585" fill="none" stroke="#52677e" stroke-width="2" marker-end="url(#arrow)"/>
+<polyline points="350,280 375,280 375,450 390,450" fill="none" stroke="#52677e" stroke-width="2" stroke-dasharray="7 5" marker-end="url(#arrow)"/>
+<polyline points="480,635 480,695 190,695 190,760" fill="none" stroke="#52677e" stroke-width="2" marker-end="url(#arrow)"/>
+<polyline points="580,635 580,720 520,720 520,760" fill="none" stroke="#52677e" stroke-width="2" marker-end="url(#arrow)"/>
+<polyline points="780,635 780,695 850,695 850,760" fill="none" stroke="#52677e" stroke-width="2" marker-end="url(#arrow)"/>
+<polyline points="900,635 900,720 1200,720 1200,760" fill="none" stroke="#52677e" stroke-width="2" marker-end="url(#arrow)"/>
+<rect x="40" y="905" width="1320" height="50" rx="12" fill="#f6f8fc" stroke="#f6f8fc" stroke-width="1.5"/>
+<text x="700.0" y="924.0" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="18" font-weight="600" fill="#142b46">Configuration is not proof of capacity or failover.</text>
+<text x="700.0" y="948.0" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="15" font-weight="400" fill="#142b46">Validate load, bid correctness, provider failover and recovery before production cutover.</text>
+</svg>

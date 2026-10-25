@@ -46,22 +46,19 @@ namespace Auctions.Api.Extensions.DependencyInjection
             services.AddAutoMapper(_ => { }, AppDomain.CurrentDomain.GetAssemblies());
 
             services.AddScoped<AuctionRepository>();
-            services.AddScoped(sp =>
-            {
-                var inner = sp.GetRequiredService<AuctionRepository>();
-                var cache = sp.GetRequiredService<ICacheService>();
-                var logger = sp.GetRequiredService<ILogger<CachedAuctionRepository>>();
-                return new CachedAuctionRepository(inner, cache, logger);
-            });
             services.AddScoped<IAuctionReadRepository>(sp => sp.GetRequiredService<AuctionRepository>());
-            services.AddScoped<IAuctionWriteRepository>(sp => sp.GetRequiredService<CachedAuctionRepository>());
+            services.AddScoped<IAuctionWriteRepository>(sp => sp.GetRequiredService<AuctionRepository>());
 
             services.AddScoped<IBookmarkRepository, BookmarkRepository>();
             services.AddScoped<IReviewRepository, ReviewRepository>();
             services.AddScoped<IAuctionBulkRepository, AuctionBulkRepository>();
             services.AddScoped<IImportCheckpointRepository, ImportCheckpointRepository>();
 
-            services.AddScoped<IPaginatedAuctionQueryService, PaginatedAuctionQueryService>();
+            services.AddScoped<PaginatedAuctionQueryService>();
+            services.AddScoped<IPaginatedAuctionQueryService>(sp => new CachedAuctionBrowseService(
+                sp.GetRequiredService<PaginatedAuctionQueryService>(),
+                sp.GetRequiredService<ICacheService>(),
+                sp.GetRequiredService<ILogger<CachedAuctionBrowseService>>()));
             services.AddHttpClient<AuctionExportStorageClient>();
 
             services.AddGrpcClient<CatalogGrpc.CatalogGrpcClient>((sp, o) =>

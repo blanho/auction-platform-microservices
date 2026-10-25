@@ -15,6 +15,8 @@ public static class MassTransitOutboxExtensions
     {
         services.AddMassTransit(x =>
         {
+            x.AddConfigureEndpointsCallback((context, _, endpoint) =>
+                RabbitMqDeployment.ConfigureQuorumQueue(endpoint, context));
             x.AddEntityFrameworkOutbox<CatalogDbContext>(o =>
             {
                 o.UsePostgres();
@@ -24,21 +26,8 @@ public static class MassTransitOutboxExtensions
 
             x.UsingRabbitMq((context, cfg) =>
             {
-                var host = configuration["RabbitMQ:Host"]
-                    ?? throw new InvalidOperationException("RabbitMQ:Host configuration is required");
-                var username = configuration["RabbitMQ:Username"]
-                    ?? throw new InvalidOperationException("RabbitMQ:Username configuration is required");
-                var password = configuration["RabbitMQ:Password"]
-                    ?? throw new InvalidOperationException("RabbitMQ:Password configuration is required");
-                var virtualHost = configuration["RabbitMQ:VirtualHost"] ?? "/";
 
-                cfg.Host(host, virtualHost, h =>
-                {
-                    h.Username(username);
-                    h.Password(password);
-                    h.RequestedConnectionTimeout(TimeSpan.FromSeconds(30));
-                    h.ContinuationTimeout(TimeSpan.FromSeconds(30));
-                });
+                cfg.ConfigureRabbitMqHost(configuration);
 
                 cfg.UseMessageRetry(r => r.Exponential(
                     retryLimit: 3,

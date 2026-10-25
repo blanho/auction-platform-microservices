@@ -13,6 +13,11 @@ export default defineConfig({
   server: {
     port: 3000,
     proxy: {
+      '/hubs': {
+        target: 'http://localhost:6001',
+        changeOrigin: true,
+        ws: true,
+      },
       '/api': {
         target: 'http://localhost:6001',
         changeOrigin: true,

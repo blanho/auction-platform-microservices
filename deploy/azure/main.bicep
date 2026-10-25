@@ -18,6 +18,12 @@ param postgresqlAdministratorPassword string
 param postgresqlSkuName string = 'Standard_D2ds_v5'
 param postgresqlStorageSizeGB int = 128
 param deployManagedRedis bool = true
+@minValue(1)
+@maxValue(100)
+param signalRCapacity int = 1
+@description('Exact browser origins, including the Front Door URL when enabled.')
+@minLength(1)
+param signalRAllowedOrigins array
 
 @description('GitHub repository in owner/name format for deployment OIDC federation.')
 param githubRepository string
@@ -46,6 +52,29 @@ var databaseNames = [
   'job_db'
   'orchestration_db'
 ]
+
+resource signalR 'Microsoft.SignalRService/signalR@2024-03-01' = {
+  name: '${baseName}-signalr-${suffix}'
+  location: location
+  tags: tags
+  sku: {
+    name: 'Standard_S1'
+    tier: 'Standard'
+    capacity: signalRCapacity
+  }
+  properties: {
+    features: [
+      {
+        flag: 'ServiceMode'
+        value: 'Default'
+      }
+    ]
+    cors: {
+      allowedOrigins: signalRAllowedOrigins
+    }
+    publicNetworkAccess: 'Enabled'
+  }
+}
 
 resource vnet 'Microsoft.Network/virtualNetworks@2024-05-01' = {
   name: '${baseName}-vnet'
@@ -534,3 +563,4 @@ output githubActionsClientId string = githubIdentity.properties.clientId
 output managedRedisHost string = deployManagedRedis ? managedRedis.properties.hostName : ''
 output managedRedisPort int = deployManagedRedis ? managedRedisDatabase.properties.port : 0
 output managedRedisName string = deployManagedRedis ? managedRedis.name : ''
+output signalRName string = signalR.name

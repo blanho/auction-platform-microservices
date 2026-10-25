@@ -1,3 +1,4 @@
+using BuildingBlocks.Infrastructure.Messaging;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Notification.Domain.Constants;
@@ -18,6 +19,8 @@ public static class MassTransitConfiguration
 
         services.AddMassTransit(x =>
         {
+            x.AddConfigureEndpointsCallback((context, _, endpoint) =>
+                RabbitMqDeployment.ConfigureQuorumQueue(endpoint, context));
             x.AddNotificationConsumer<AuctionRoomUpdatesConsumer>();
             x.AddNotificationConsumer<SendAuctionCompletionNotificationsConsumer>();
             x.AddNotificationConsumer<NotificationRequestedConsumer>(
@@ -121,12 +124,7 @@ public static class MassTransitConfiguration
 
             x.UsingRabbitMq((context, cfg) =>
             {
-                cfg.Host(rabbitMqSettings.Host, rabbitMqSettings.Port, rabbitMqSettings.VirtualHost, h =>
-                {
-                    h.Username(rabbitMqSettings.Username);
-                    h.Password(rabbitMqSettings.Password);
-                    h.Heartbeat(TimeSpan.FromSeconds(NotificationDefaults.Transport.HeartbeatSeconds));
-                });
+                cfg.ConfigureRabbitMqHost(configuration);
 
                 cfg.UseMessageRetry(r => r
                     .Incremental(
@@ -136,6 +134,7 @@ public static class MassTransitConfiguration
 
                 cfg.ReceiveEndpoint("notification-auction-completion-saga", e =>
                 {
+                    RabbitMqDeployment.ConfigureQuorumQueue(e, context);
                     e.UseEntityFrameworkOutbox<NotificationDbContext>(context);
                     e.ConfigureConsumer<SendAuctionCompletionNotificationsConsumer>(context);
                 });
@@ -156,6 +155,7 @@ public static class MassTransitConfiguration
     {
         cfg.ReceiveEndpoint("notification-requests", e =>
         {
+            RabbitMqDeployment.ConfigureQuorumQueue(e, context);
             e.ConfigureConsumer<NotificationRequestedConsumer>(context);
             e.PrefetchCount = settings.PrefetchCount;
             e.UseDelayedRedelivery(r => r
@@ -224,6 +224,7 @@ public static class MassTransitConfiguration
 
         cfg.ReceiveEndpoint("notification-security-alert", e =>
         {
+            RabbitMqDeployment.ConfigureQuorumQueue(e, context);
             e.ConfigureConsumer<SecurityAlertConsumer>(context);
             e.PrefetchCount = settings.PrefetchCount;
             e.UseDelayedRedelivery(r => r
@@ -244,6 +245,7 @@ public static class MassTransitConfiguration
 
         cfg.ReceiveEndpoint("notification-bulk-send", e =>
         {
+            RabbitMqDeployment.ConfigureQuorumQueue(e, context);
             e.ConfigureConsumer<SendBulkNotificationConsumer>(context);
             e.PrefetchCount = NotificationDefaults.Transport.BulkConsumerPrefetchCount;
             e.UseConcurrencyLimit(NotificationDefaults.Transport.BulkConsumerConcurrencyLimit);

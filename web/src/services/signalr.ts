@@ -3,7 +3,7 @@ import { getAccessToken } from '@/modules/auth/utils/token.utils'
 import { signalRLogger } from '@/shared/lib/logger'
 import * as signalR from '@microsoft/signalr'
 
-const SIGNALR_URL = import.meta.env.VITE_SIGNALR_URL || 'http://localhost:6001/hubs/notifications'
+const SIGNALR_URL = import.meta.env.VITE_SIGNALR_URL || '/hubs/notifications'
 const MAX_RECONNECT_ATTEMPTS = 5
 const AUTOMATIC_RECONNECT_BASE_DELAY_MS = 1000
 const MAX_AUTOMATIC_RECONNECT_DELAY_MS = 30000

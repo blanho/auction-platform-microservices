@@ -49,7 +49,7 @@ builder.Services.AddRbacAuthorization();
 builder.Services.AddCoreAuthorization();
 builder.Services.AddCustomHealthChecks(
     redisConnectionString: builder.Configuration.GetConnectionString("Redis"),
-    rabbitMqConnectionString: $"amqp://{builder.Configuration["RabbitMQ:Username"] ?? "guest"}:{builder.Configuration["RabbitMQ:Password"] ?? "guest"}@{builder.Configuration["RabbitMQ:Host"] ?? "localhost"}:5672",
+    rabbitMqConnectionString: BuildingBlocks.Infrastructure.Messaging.RabbitMqDeployment.HealthCheckUri(builder.Configuration),
     databaseConnectionString: builder.Configuration.GetConnectionString("DefaultConnection"),
     serviceName: "AuctionService");
 

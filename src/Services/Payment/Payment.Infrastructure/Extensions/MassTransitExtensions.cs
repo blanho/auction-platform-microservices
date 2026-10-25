@@ -17,6 +17,8 @@ public static class MassTransitExtensions
         services.AddScoped<IBuyNowOrderAttemptStore, BuyNowOrderAttemptStore>();
         services.AddMassTransit(x =>
         {
+            x.AddConfigureEndpointsCallback((context, _, endpoint) =>
+                RabbitMqDeployment.ConfigureQuorumQueue(endpoint, context));
             x.AddConsumer<BuyerAuctionPaymentStatusesConsumer>();
             x.AddConsumer<AuctionFinishedConsumer>();
             x.AddConsumer<BuyNowExecutedConsumer>();
@@ -35,25 +37,12 @@ public static class MassTransitExtensions
 
             x.UsingRabbitMq((context, cfg) =>
             {
-                var host = configuration["RabbitMQ:Host"]
-                    ?? throw new InvalidOperationException("RabbitMQ:Host configuration is required");
-                var username = configuration["RabbitMQ:Username"]
-                    ?? throw new InvalidOperationException("RabbitMQ:Username configuration is required");
-                var password = configuration["RabbitMQ:Password"]
-                    ?? throw new InvalidOperationException("RabbitMQ:Password configuration is required");
-                var virtualHost = configuration["RabbitMQ:VirtualHost"] ?? "/";
 
-                var port = configuration.GetValue<ushort?>("RabbitMQ:Port") ?? 5672;
-                cfg.Host(host, port, virtualHost, h =>
-                {
-                    h.Username(username);
-                    h.Password(password);
-                    h.RequestedConnectionTimeout(TimeSpan.FromSeconds(WalletDefaults.Messaging.ConnectionTimeoutSeconds));
-                    h.ContinuationTimeout(TimeSpan.FromSeconds(WalletDefaults.Messaging.ContinuationTimeoutSeconds));
-                });
+                cfg.ConfigureRabbitMqHost(configuration);
 
                 cfg.ReceiveEndpoint("payment-auction-finished", e =>
                 {
+                    RabbitMqDeployment.ConfigureQuorumQueue(e, context);
                     e.ConfigureConsumer<AuctionFinishedConsumer>(context);
                     e.UseMessageRetry(r => r.Exponential(
                         retryLimit: WalletDefaults.Messaging.StandardRetryLimit,
@@ -64,6 +53,7 @@ public static class MassTransitExtensions
 
                 cfg.ReceiveEndpoint("payment-buy-now-executed", e =>
                 {
+                    RabbitMqDeployment.ConfigureQuorumQueue(e, context);
                     e.ConfigureConsumer<BuyNowExecutedConsumer>(context);
                     e.UseMessageRetry(r => r.Exponential(
                         retryLimit: WalletDefaults.Messaging.StandardRetryLimit,
@@ -74,6 +64,7 @@ public static class MassTransitExtensions
 
                 cfg.ReceiveEndpoint("payment-buy-now-saga", e =>
                 {
+                    RabbitMqDeployment.ConfigureQuorumQueue(e, context);
                     e.UseEntityFrameworkOutbox<PaymentDbContext>(context);
                     e.ConfigureConsumer<CreateBuyNowOrderConsumer>(context);
                     e.ConfigureConsumer<CancelBuyNowOrderConsumer>(context);
@@ -87,12 +78,14 @@ public static class MassTransitExtensions
 
                 cfg.ReceiveEndpoint("payment-auction-winner-saga", e =>
                 {
+                    RabbitMqDeployment.ConfigureQuorumQueue(e, context);
                     e.UseEntityFrameworkOutbox<PaymentDbContext>(context);
                     e.ConfigureConsumer<CreateAuctionWinnerOrderConsumer>(context);
                 });
 
                 cfg.ReceiveEndpoint("payment-generate-order-report", e =>
                 {
+                    RabbitMqDeployment.ConfigureQuorumQueue(e, context);
                     e.UseEntityFrameworkOutbox<PaymentDbContext>(context);
                     e.ConfigureConsumer<GenerateOrderReportConsumer>(context);
                     e.UseMessageRetry(r => r.Exponential(

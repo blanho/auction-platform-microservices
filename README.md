@@ -25,6 +25,7 @@ The system supports real-time bidding, authoritative auction closing, buy-now fl
 - [Environment Variables](#environment-variables)
 - [API Gateway Routes](#api-gateway-routes)
 - [Cloud and Deployment](#cloud-and-deployment)
+  - [Deployment Topology](#deployment-topology)
 - [Observability](#observability)
 - [Testing](#testing)
 - [Code Quality](#code-quality)
@@ -51,8 +52,9 @@ The platform follows a **domain-driven microservices** architecture with strict 
 
 ## System Architecture Diagram
 
-> Diagrams are written in **Mermaid** and render natively on GitHub.
+> System and workflow diagrams use **Mermaid** and render natively on GitHub.
 > To edit visually, paste any block into [Mermaid Live](https://mermaid.live).
+> The [cloud deployment diagram](#deployment-topology) uses Azure icons and includes an editable draw.io file.
 
 ```mermaid
 graph TB
@@ -624,58 +626,49 @@ graph LR
 
 ### Deployment Topology
 
-```mermaid
-graph TB
-    subgraph Internet
-        Users["Users"]
-    end
+The managed-provider deployment option adds Azure SignalR, short-lived browse
+caching, replica spreading, TLS connections to RabbitMQ/Elasticsearch providers,
+and optional Front Door caching for frontend assets. These are repository
+configurations; cloud capacity and failover have not yet been validated.
 
-    subgraph AKS["Azure Kubernetes Service"]
-        ING["Managed ingress<br/>TLS termination"]
+[![Managed Azure deployment with CDN, SignalR, AKS and HA data providers](docs/diagrams/auction-managed-ha.svg)](docs/diagrams/auction-managed-ha.svg)
 
-        subgraph App["Application Tier"]
-            GW["Gateway x3"]
-            AUC["Auction"]
-            BID["Bidding x3"]
-            PAY["Payment"]
-            NOT["Notification"]
-            IDN["Identity"]
-            SRC["Search"]
-            STR["Storage"]
-            ANA["Analytics"]
-            JOB["Job"]
-        end
+[Rollout, migration and remaining HA limits](docs/production-readiness.md) ·
+[Capacity and failure tests](tests/load/README.md) ·
+[Editable draw.io file — page 04](docs/diagrams/auction-azure-architecture.drawio)
 
-        subgraph DataLayer["Azure-managed data"]
-            PG["PostgreSQL Flexible Server"]
-            RD["Azure Managed Redis"]
-            BLOB["Blob Storage"]
-        end
+<details>
+<summary>Earlier baseline diagrams — before the HA changes</summary>
 
-        subgraph InCluster["In-cluster stateful services"]
-            RMQ["RabbitMQ<br/>StatefulSet"]
-            ES["Elasticsearch<br/>StatefulSet"]
-        end
-    end
+The following three diagrams preserve the 24 October baseline, including the
+single-pod RabbitMQ/Elasticsearch deployment. Use page 04 above for the new
+managed-provider configuration.
 
-    subgraph Ext["External"]
-        STRIPE["Stripe"]
-        SG["SendGrid"]
-        TW["Twilio"]
-        FB["Firebase"]
-    end
+[![Azure deployment architecture with AKS, private PostgreSQL, managed Redis, Blob Storage, Key Vault, and GitHub Actions](docs/diagrams/auction-azure-deployment.svg)](docs/diagrams/auction-azure-deployment.svg)
 
-    Users -->|HTTPS| ING
-    ING --> GW
-    GW --> AUC & BID & PAY & NOT & IDN & SRC & STR & ANA & JOB
-    AUC & BID & PAY & NOT & IDN & STR & ANA & JOB --> PG
-    AUC & BID & NOT --> RD
-    SRC --> ES
-    App --> RMQ
-    PAY --> STRIPE
-    NOT --> SG & TW & FB
-    STR --> BLOB
-```
+[Editable draw.io file](docs/diagrams/auction-azure-architecture.drawio) ·
+[Architecture notes and deployment findings](docs/cloud-deployment-architecture.md) ·
+[Editing instructions](docs/diagrams/README.md)
+
+The editable file includes four pages: **Azure deployment**, **Runtime flows**,
+**Kubernetes details**, and **Managed HA configuration**. Open it in [draw.io](https://app.diagrams.net/) with
+**File → Open From → Device**.
+
+<details>
+<summary>View service runtime flows</summary>
+
+[![Service runtime flows for bid entry, gRPC queries, sale coordination, notifications, search, and file storage](docs/diagrams/auction-runtime-flows.svg)](docs/diagrams/auction-runtime-flows.svg)
+
+</details>
+
+<details>
+<summary>View Kubernetes replicas, autoscaling, ports, and data connections</summary>
+
+[![Production Kubernetes deployment details for all 13 application Deployments, autoscaling ranges, Service port mappings, and backend connections](docs/diagrams/auction-kubernetes-details.svg)](docs/diagrams/auction-kubernetes-details.svg)
+
+</details>
+
+</details>
 
 ---
 
@@ -794,6 +787,7 @@ retention, batch limits, and token security behavior.
 | Document | Description |
 |---|---|
 | [Architecture Guide](docs/architecture.md) | System design, bounded contexts, data flow, design decisions |
+| [Cloud Architecture Diagrams](docs/diagrams/README.md) | Editable Azure deployment, runtime flow, and Kubernetes detail diagrams with SVG previews |
 | [Getting Started Guide](docs/getting-started.md) | Step-by-step onboarding for new developers |
 | [API Reference](docs/api-reference.md) | Gateway routes, authentication, request/response schemas |
 | [Background Jobs](docs/background-jobs.md) | Supported job operations, payload examples, retries, and staged roadmap |

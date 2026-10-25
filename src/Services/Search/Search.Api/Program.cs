@@ -27,7 +27,7 @@ builder.Services.AddJwtAuthentication(builder.Configuration, builder.Environment
 builder.Services.AddAuthorization();
 builder.Services.AddCustomHealthChecks(
     redisConnectionString: builder.Configuration.GetConnectionString("Redis"),
-    rabbitMqConnectionString: $"amqp://{builder.Configuration["RabbitMQ:Username"]}:{builder.Configuration["RabbitMQ:Password"]}@{builder.Configuration["RabbitMQ:Host"]}:5672",
+    rabbitMqConnectionString: BuildingBlocks.Infrastructure.Messaging.RabbitMqDeployment.HealthCheckUri(builder.Configuration),
     elasticsearchUri: builder.Configuration["Elasticsearch:Url"],
     serviceName: "SearchService");
 builder.Services.AddCommonApiVersioning();

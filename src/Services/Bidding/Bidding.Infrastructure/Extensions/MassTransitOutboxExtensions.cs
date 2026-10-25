@@ -19,6 +19,8 @@ public static class MassTransitOutboxExtensions
         services.AddScoped<IPaymentStatusClient, Services.PaymentStatusClient>();
         services.AddMassTransit(x =>
         {
+            x.AddConfigureEndpointsCallback((context, _, endpoint) =>
+                RabbitMqDeployment.ConfigureQuorumQueue(endpoint, context));
             x.AddRequestClient<PaymentService.Contracts.Requests.GetBuyerAuctionPaymentStatuses>();
             x.AddConsumer<AuctionFinishedConsumer>();
             x.AddConsumer<ProcessAutoBidsConsumer>();
@@ -38,22 +40,8 @@ public static class MassTransitOutboxExtensions
 
             x.UsingRabbitMq((context, cfg) =>
             {
-                var host = configuration["RabbitMQ:Host"]
-                    ?? throw new InvalidOperationException("RabbitMQ:Host configuration is required");
-                var username = configuration["RabbitMQ:Username"]
-                    ?? throw new InvalidOperationException("RabbitMQ:Username configuration is required");
-                var password = configuration["RabbitMQ:Password"]
-                    ?? throw new InvalidOperationException("RabbitMQ:Password configuration is required");
-                var virtualHost = configuration["RabbitMQ:VirtualHost"] ?? "/";
 
-                var port = configuration.GetValue<ushort?>("RabbitMQ:Port") ?? 5672;
-                cfg.Host(host, port, virtualHost, h =>
-                {
-                    h.Username(username);
-                    h.Password(password);
-                    h.RequestedConnectionTimeout(TimeSpan.FromSeconds(30));
-                    h.ContinuationTimeout(TimeSpan.FromSeconds(20));
-                });
+                cfg.ConfigureRabbitMqHost(configuration);
                 cfg.UseDelayedRedelivery(r => r.Intervals(
                     TimeSpan.FromSeconds(5),
                     TimeSpan.FromSeconds(30),

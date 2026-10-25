@@ -17,6 +17,8 @@ public static class MassTransitOutboxExtensions
         services.AddScoped<IBuyNowPurchaseRepository, Auctions.Infrastructure.Persistence.Repositories.BuyNowPurchaseRepository>();
         services.AddMassTransit(x =>
         {
+            x.AddConfigureEndpointsCallback((context, _, endpoint) =>
+                RabbitMqDeployment.ConfigureQuorumQueue(endpoint, context));
             x.AddConsumer<ImportAuctionsBatchConsumer>();
             x.AddConsumer<ImportAuctionsConsumer>();
             x.AddConsumer<ExportAuctionsConsumer>();
@@ -54,25 +56,12 @@ public static class MassTransitOutboxExtensions
 
             x.UsingRabbitMq((context, cfg) =>
             {
-                var host = configuration["RabbitMQ:Host"]
-                    ?? throw new InvalidOperationException("RabbitMQ:Host configuration is required");
-                var username = configuration["RabbitMQ:Username"]
-                    ?? throw new InvalidOperationException("RabbitMQ:Username configuration is required");
-                var password = configuration["RabbitMQ:Password"]
-                    ?? throw new InvalidOperationException("RabbitMQ:Password configuration is required");
-                var virtualHost = configuration["RabbitMQ:VirtualHost"] ?? "/";
 
-                var port = configuration.GetValue<ushort?>("RabbitMQ:Port") ?? 5672;
-                cfg.Host(host, port, virtualHost, h =>
-                {
-                    h.Username(username);
-                    h.Password(password);
-                    h.RequestedConnectionTimeout(TimeSpan.FromSeconds(AuctionDefaults.Messaging.ConnectionTimeoutSeconds));
-                    h.ContinuationTimeout(TimeSpan.FromSeconds(AuctionDefaults.Messaging.ContinuationTimeoutSeconds));
-                });
+                cfg.ConfigureRabbitMqHost(configuration);
 
                 cfg.ReceiveEndpoint("auction-buy-now-saga", e =>
                 {
+                    RabbitMqDeployment.ConfigureQuorumQueue(e, context);
                     e.UseEntityFrameworkOutbox<AuctionDbContext>(context);
                     e.ConfigureConsumer<BuyNowPurchaseStatusConsumer>(context);
                     e.ConfigureConsumer<ReserveAuctionForBuyNowConsumer>(context);
@@ -87,6 +76,7 @@ public static class MassTransitOutboxExtensions
 
                 cfg.ReceiveEndpoint("auction-file-events", e =>
                 {
+                    RabbitMqDeployment.ConfigureQuorumQueue(e, context);
                     e.ConfigureConsumer<FileUploadedConsumer>(context);
                     e.ConfigureConsumer<FileDeletedConsumer>(context);
                     e.UseMessageRetry(r => r.Exponential(
@@ -98,6 +88,7 @@ public static class MassTransitOutboxExtensions
 
                 cfg.ReceiveEndpoint("auction-catalog-events", e =>
                 {
+                    RabbitMqDeployment.ConfigureQuorumQueue(e, context);
                     e.ConfigureConsumer<BrandUpdatedConsumer>(context);
                     e.ConfigureConsumer<CategoryUpdatedConsumer>(context);
                     e.UseMessageRetry(r => r.Exponential(

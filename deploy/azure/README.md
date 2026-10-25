@@ -4,7 +4,8 @@ This directory contains the Azure deployment path for the platform:
 
 - `main.bicep` provisions AKS, ACR, PostgreSQL Flexible Server, Azure Managed
   Redis, Key Vault, Blob Storage, identities, private PostgreSQL networking, and
-  Log Analytics.
+  Log Analytics and Azure SignalR.
+- `edge.bicep` optionally adds Front Door CDN delivery for hashed frontend assets.
 - `bootstrap-key-vault.sh` writes application secrets and service-specific
   PostgreSQL connection strings to Key Vault.
 - `render-kubernetes.sh` turns the production Kustomize overlay into a
@@ -12,7 +13,10 @@ This directory contains the Azure deployment path for the platform:
 - `.github/workflows/cd.yml` builds immutable images in ACR and deploys to AKS
   through GitHub OIDC.
 
-RabbitMQ and Elasticsearch remain in AKS for the first Azure release. Replacing
+The default `production` overlay keeps RabbitMQ and Elasticsearch in AKS as
+single pods. The opt-in `production-managed` overlay connects to HA providers
+over TLS; see the [migration and validation runbook](../../docs/production-readiness.md).
+It does not provision third-party subscriptions. Replacing
 RabbitMQ with Azure Service Bus or Elasticsearch with another search engine
 requires application adapters and a data migration, so those changes are not
 hidden inside the infrastructure deployment.
@@ -93,6 +97,7 @@ Provide the remaining values and run the bootstrap:
 export KEY_VAULT_NAME='<keyVaultName output>'
 export POSTGRES_HOST='<postgresqlHost output>'
 export POSTGRES_ADMIN_USER=auctionadmin
+export AZURE_SIGNALR_CONNECTION='<Default-mode Azure SignalR connection string>'
 export ELASTICSEARCH_USERNAME=elastic
 export ELASTICSEARCH_PASSWORD='<strong-random-password>'
 export SENDGRID_API_KEY='<sendgrid-api-key>'
@@ -131,6 +136,7 @@ STORAGE_ACCOUNT_NAME=<storageAccountName>
 STORAGE_IDENTITY_CLIENT_ID=<storageIdentityClientId>
 API_DOMAIN=api.example.com
 WEB_DOMAIN=example.com
+FRONTEND_DOMAIN=example.com
 CERT_MANAGER_EMAIL=ops@example.com
 ```
 

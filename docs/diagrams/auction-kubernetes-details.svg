@@ -1,0 +1,186 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1800" height="1510" viewBox="0 0 1800 1510">
+<title>Auction platform — Kubernetes deployment details</title>
+<rect width="100%" height="100%" fill="white"/>
+<defs>
+<marker id="arrow1677B8" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10z" fill="#1677B8"/></marker>
+<marker id="arrow16847B" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10z" fill="#16847B"/></marker>
+</defs>
+<rect x="35" y="190" width="240" height="90" fill="#FFFFFF" stroke="#B8C9D8"/>
+<rect x="335" y="190" width="320" height="90" fill="#FFFFFF" stroke="#B8C9D8"/>
+<rect x="740" y="150" width="320" height="80" fill="#FFFFFF" stroke="#B8C9D8"/>
+<rect x="740" y="260" width="320" height="80" fill="#FFFFFF" stroke="#B8C9D8"/>
+<rect x="1180" y="225" width="585" height="90" fill="#FFFFFF" stroke="#B8C9D8"/>
+<rect x="35" y="380" width="1110" height="800" fill="#F1F7FC" stroke="#A6C5DC"/>
+<rect x="45" y="480" width="1090" height="50" fill="#FFFFFF" stroke="#E1EAF1"/>
+<rect x="45" y="530" width="1090" height="50" fill="#EAF2F8" stroke="#E1EAF1"/>
+<rect x="45" y="580" width="1090" height="50" fill="#FFFFFF" stroke="#E1EAF1"/>
+<rect x="45" y="630" width="1090" height="50" fill="#EAF2F8" stroke="#E1EAF1"/>
+<rect x="45" y="680" width="1090" height="50" fill="#FFFFFF" stroke="#E1EAF1"/>
+<rect x="45" y="730" width="1090" height="50" fill="#EAF2F8" stroke="#E1EAF1"/>
+<rect x="45" y="780" width="1090" height="50" fill="#FFFFFF" stroke="#E1EAF1"/>
+<rect x="45" y="830" width="1090" height="50" fill="#EAF2F8" stroke="#E1EAF1"/>
+<rect x="45" y="880" width="1090" height="50" fill="#FFFFFF" stroke="#E1EAF1"/>
+<rect x="45" y="930" width="1090" height="50" fill="#EAF2F8" stroke="#E1EAF1"/>
+<rect x="45" y="980" width="1090" height="50" fill="#FFFFFF" stroke="#E1EAF1"/>
+<rect x="45" y="1030" width="1090" height="50" fill="#EAF2F8" stroke="#E1EAF1"/>
+<rect x="45" y="1080" width="1090" height="50" fill="#FFFFFF" stroke="#E1EAF1"/>
+<rect x="1180" y="380" width="585" height="1050" fill="#F1F7FC" stroke="#A6C5DC"/>
+<rect x="1210" y="445" width="525" height="80" fill="#FFFFFF" stroke="#B8C9D8"/>
+<rect x="1260" y="560" width="475" height="110" fill="#FFFFFF" stroke="#B8C9D8"/>
+<rect x="1260" y="730" width="475" height="110" fill="#FFFFFF" stroke="#B8C9D8"/>
+<rect x="1260" y="900" width="475" height="110" fill="#FFFFFF" stroke="#B8C9D8"/>
+<rect x="1260" y="1070" width="475" height="110" fill="#FFFFFF" stroke="#B8C9D8"/>
+<rect x="1260" y="1240" width="475" height="110" fill="#FFFFFF" stroke="#B8C9D8"/>
+<rect x="35" y="1210" width="1110" height="220" fill="#EEF8F5" stroke="#A6C5DC"/>
+<polyline points="275,235 335,235" fill="none" stroke="#1677B8" stroke-width="2" marker-end="url(#arrow1677B8)"/>
+<polyline points="655,220 695,220 695,190 740,190" fill="none" stroke="#1677B8" stroke-width="2" marker-end="url(#arrow1677B8)"/>
+<polyline points="655,250 695,250 695,300 740,300" fill="none" stroke="#1677B8" stroke-width="2" marker-end="url(#arrow1677B8)"/>
+<polyline points="900,230 900,260" fill="none" stroke="#1677B8" stroke-width="2" marker-end="url(#arrow1677B8)"/>
+<polyline points="1060,300 1120,300 1120,270 1180,270" fill="none" stroke="#1677B8" stroke-width="2" marker-end="url(#arrow1677B8)"/>
+<polyline points="1225,525 1225,615 1260,615" fill="none" stroke="#16847B" stroke-width="2" marker-end="url(#arrow16847B)"/>
+<polyline points="1225,525 1225,785 1260,785" fill="none" stroke="#16847B" stroke-width="2" marker-end="url(#arrow16847B)"/>
+<polyline points="1225,525 1225,955 1260,955" fill="none" stroke="#16847B" stroke-width="2" marker-end="url(#arrow16847B)"/>
+<polyline points="1225,525 1225,1125 1260,1125" fill="none" stroke="#16847B" stroke-width="2" marker-end="url(#arrow16847B)"/>
+<polyline points="1225,525 1225,1295 1260,1295" fill="none" stroke="#16847B" stroke-width="2" marker-end="url(#arrow16847B)"/>
+<text x="35" y="60.88" fill="#16324F" font-family="Arial,Helvetica,sans-serif" font-size="32" font-weight="600">Auction platform | Kubernetes deployment details</text>
+<text x="35" y="105.44" fill="#53677D" font-family="Arial,Helvetica,sans-serif" font-size="16" font-weight="400">Production overlay • auction-platform namespace • 13 application Deployments • 27 configured replicas • 12 autoscalers</text>
+<text x="53" y="220.78" fill="#16324F" font-family="Arial,Helvetica,sans-serif" font-size="17" font-weight="600">Users / browser</text>
+<text x="53" y="258.76" fill="#53677D" font-family="Arial,Helvetica,sans-serif" font-size="14" font-weight="400">HTTPS :443</text>
+<text x="353" y="220.78" fill="#16324F" font-family="Arial,Helvetica,sans-serif" font-size="17" font-weight="600">Public ingress</text>
+<text x="353" y="258.76" fill="#53677D" font-family="Arial,Helvetica,sans-serif" font-size="14" font-weight="400">TLS termination / host routing</text>
+<text x="758" y="180.78" fill="#16324F" font-family="Arial,Helvetica,sans-serif" font-size="17" font-weight="600">Web / NGINX</text>
+<text x="758" y="213.76" fill="#53677D" font-family="Arial,Helvetica,sans-serif" font-size="14" font-weight="400">HTTP 80 → pod 8080</text>
+<text x="758" y="290.78" fill="#16324F" font-family="Arial,Helvetica,sans-serif" font-size="17" font-weight="600">YARP gateway</text>
+<text x="758" y="323.76" fill="#53677D" font-family="Arial,Helvetica,sans-serif" font-size="14" font-weight="400">HTTP 80 or 8080 → pod 8080</text>
+<text x="1198" y="255.78" fill="#16324F" font-family="Arial,Helvetica,sans-serif" font-size="17" font-weight="600">Internal ClusterIP services</text>
+<text x="1198" y="293.76" fill="#53677D" font-family="Arial,Helvetica,sans-serif" font-size="14" font-weight="400">HTTP 80 → 8080; declared gRPC 81 → 8081</text>
+<text x="920" y="250.42" fill="#1677B8" font-family="Arial,Helvetica,sans-serif" font-size="13" font-weight="400">/api proxy</text>
+<text x="55" y="416.46" fill="#16324F" font-family="Arial,Helvetica,sans-serif" font-size="19" font-weight="600">Workloads, scaling and declared Service mappings</text>
+<text x="55" y="456.76" fill="#16324F" font-family="Arial,Helvetica,sans-serif" font-size="14" font-weight="600">Deployment</text>
+<text x="245" y="456.76" fill="#16324F" font-family="Arial,Helvetica,sans-serif" font-size="14" font-weight="600">Initial</text>
+<text x="330" y="456.76" fill="#16324F" font-family="Arial,Helvetica,sans-serif" font-size="14" font-weight="600">HPA</text>
+<text x="420" y="456.76" fill="#16324F" font-family="Arial,Helvetica,sans-serif" font-size="14" font-weight="600">Service → pod port</text>
+<text x="650" y="456.76" fill="#16324F" font-family="Arial,Helvetica,sans-serif" font-size="14" font-weight="600">State / cache</text>
+<text x="905" y="456.76" fill="#16324F" font-family="Arial,Helvetica,sans-serif" font-size="14" font-weight="600">HPA targets</text>
+<text x="55" y="509.59" fill="#16324F" font-family="Arial,Helvetica,sans-serif" font-size="13.5" font-weight="600">web</text>
+<text x="245" y="509.59" fill="#16324F" font-family="Arial,Helvetica,sans-serif" font-size="13.5" font-weight="400">2</text>
+<text x="330" y="509.59" fill="#16324F" font-family="Arial,Helvetica,sans-serif" font-size="13.5" font-weight="400">Fixed</text>
+<text x="420" y="509.59" fill="#16324F" font-family="Arial,Helvetica,sans-serif" font-size="13.5" font-weight="400">http 80 → 8080</text>
+<text x="650" y="509.59" fill="#16324F" font-family="Arial,Helvetica,sans-serif" font-size="13.5" font-weight="400">Static SPA assets</text>
+<text x="905" y="509.59" fill="#16324F" font-family="Arial,Helvetica,sans-serif" font-size="13.5" font-weight="400">—</text>
+<text x="55" y="559.59" fill="#16324F" font-family="Arial,Helvetica,sans-serif" font-size="13.5" font-weight="600">gateway-api</text>
+<text x="245" y="559.59" fill="#16324F" font-family="Arial,Helvetica,sans-serif" font-size="13.5" font-weight="400">3</text>
+<text x="330" y="559.59" fill="#16324F" font-family="Arial,Helvetica,sans-serif" font-size="13.5" font-weight="400">3–10</text>
+<text x="420" y="551.1525" fill="#16324F" font-family="Arial,Helvetica,sans-serif" font-size="13.5" font-weight="400">http 80 → 8080</text>
+<text x="420" y="568.0275" fill="#16324F" font-family="Arial,Helvetica,sans-serif" font-size="13.5" font-weight="400">alias 8080 → 8080</text>
+<text x="650" y="559.59" fill="#16324F" font-family="Arial,Helvetica,sans-serif" font-size="13.5" font-weight="400">API routing</text>
+<text x="905" y="559.59" fill="#16324F" font-family="Arial,Helvetica,sans-serif" font-size="13.5" font-weight="400">CPU 60%</text>
+<text x="55" y="609.59" fill="#16324F" font-family="Arial,Helvetica,sans-serif" font-size="13.5" font-weight="600">identity-api</text>
+<text x="245" y="609.59" fill="#16324F" font-family="Arial,Helvetica,sans-serif" font-size="13.5" font-weight="400">2</text>
+<text x="330" y="609.59" fill="#16324F" font-family="Arial,Helvetica,sans-serif" font-size="13.5" font-weight="400">2–6</text>
+<text x="420" y="609.59" fill="#16324F" font-family="Arial,Helvetica,sans-serif" font-size="13.5" font-weight="400">http 80 → 8080</text>
+<text x="650" y="601.1525" fill="#16324F" font-family="Arial,Helvetica,sans-serif" font-size="13.5" font-weight="400">PG identity_db</text>
+<text x="650" y="618.0275" fill="#16324F" font-family="Arial,Helvetica,sans-serif" font-size="13.5" font-weight="400">Redis</text>
+<text x="905" y="609.59" fill="#16324F" font-family="Arial,Helvetica,sans-serif" font-size="13.5" font-weight="400">CPU 70%</text>
+<text x="55" y="659.59" fill="#16324F" font-family="Arial,Helvetica,sans-serif" font-size="13.5" font-weight="600">auction-api</text>
+<text x="245" y="659.59" fill="#16324F" font-family="Arial,Helvetica,sans-serif" font-size="13.5" font-weight="400">2</text>
+<text x="330" y="659.59" fill="#16324F" font-family="Arial,Helvetica,sans-serif" font-size="13.5" font-weight="400">2–10</text>
+<text x="420" y="651.1525" fill="#16324F" font-family="Arial,Helvetica,sans-serif" font-size="13.5" font-weight="400">http 80 → 8080</text>
+<text x="420" y="668.0275" fill="#16324F" font-family="Arial,Helvetica,sans-serif" font-size="13.5" font-weight="400">grpc 81 → 8081</text>
+<text x="650" y="651.1525" fill="#16324F" font-family="Arial,Helvetica,sans-serif" font-size="13.5" font-weight="400">PG auction_db</text>
+<text x="650" y="668.0275" fill="#16324F" font-family="Arial,Helvetica,sans-serif" font-size="13.5" font-weight="400">Redis</text>
+<text x="905" y="659.59" fill="#16324F" font-family="Arial,Helvetica,sans-serif" font-size="13.5" font-weight="400">CPU 70% / Memory 80%</text>
+<text x="55" y="709.59" fill="#16324F" font-family="Arial,Helvetica,sans-serif" font-size="13.5" font-weight="600">bidding-api</text>
+<text x="245" y="709.59" fill="#16324F" font-family="Arial,Helvetica,sans-serif" font-size="13.5" font-weight="400">3</text>
+<text x="330" y="709.59" fill="#16324F" font-family="Arial,Helvetica,sans-serif" font-size="13.5" font-weight="400">3–15</text>
+<text x="420" y="701.1525" fill="#16324F" font-family="Arial,Helvetica,sans-serif" font-size="13.5" font-weight="400">http 80 → 8080</text>
+<text x="420" y="718.0275" fill="#16324F" font-family="Arial,Helvetica,sans-serif" font-size="13.5" font-weight="400">grpc 81 → 8081</text>
+<text x="650" y="701.1525" fill="#16324F" font-family="Arial,Helvetica,sans-serif" font-size="13.5" font-weight="400">PG bid_db</text>
+<text x="650" y="718.0275" fill="#16324F" font-family="Arial,Helvetica,sans-serif" font-size="13.5" font-weight="400">Redis</text>
+<text x="905" y="709.59" fill="#16324F" font-family="Arial,Helvetica,sans-serif" font-size="13.5" font-weight="400">CPU 60% / Memory 75%</text>
+<text x="55" y="759.59" fill="#16324F" font-family="Arial,Helvetica,sans-serif" font-size="13.5" font-weight="600">catalog-api</text>
+<text x="245" y="759.59" fill="#16324F" font-family="Arial,Helvetica,sans-serif" font-size="13.5" font-weight="400">2</text>
+<text x="330" y="759.59" fill="#16324F" font-family="Arial,Helvetica,sans-serif" font-size="13.5" font-weight="400">2–6</text>
+<text x="420" y="751.1525" fill="#16324F" font-family="Arial,Helvetica,sans-serif" font-size="13.5" font-weight="400">http 80 → 8080</text>
+<text x="420" y="768.0275" fill="#16324F" font-family="Arial,Helvetica,sans-serif" font-size="13.5" font-weight="400">grpc 81 → 8081</text>
+<text x="650" y="759.59" fill="#16324F" font-family="Arial,Helvetica,sans-serif" font-size="13.5" font-weight="400">PG catalog_db</text>
+<text x="905" y="759.59" fill="#16324F" font-family="Arial,Helvetica,sans-serif" font-size="13.5" font-weight="400">CPU 70%</text>
+<text x="55" y="809.59" fill="#16324F" font-family="Arial,Helvetica,sans-serif" font-size="13.5" font-weight="600">payment-api</text>
+<text x="245" y="809.59" fill="#16324F" font-family="Arial,Helvetica,sans-serif" font-size="13.5" font-weight="400">2</text>
+<text x="330" y="809.59" fill="#16324F" font-family="Arial,Helvetica,sans-serif" font-size="13.5" font-weight="400">2–8</text>
+<text x="420" y="809.59" fill="#16324F" font-family="Arial,Helvetica,sans-serif" font-size="13.5" font-weight="400">http 80 → 8080</text>
+<text x="650" y="801.1525" fill="#16324F" font-family="Arial,Helvetica,sans-serif" font-size="13.5" font-weight="400">PG payment_db</text>
+<text x="650" y="818.0275" fill="#16324F" font-family="Arial,Helvetica,sans-serif" font-size="13.5" font-weight="400">Redis</text>
+<text x="905" y="809.59" fill="#16324F" font-family="Arial,Helvetica,sans-serif" font-size="13.5" font-weight="400">CPU 70%</text>
+<text x="55" y="859.59" fill="#16324F" font-family="Arial,Helvetica,sans-serif" font-size="13.5" font-weight="600">notification-api</text>
+<text x="245" y="859.59" fill="#16324F" font-family="Arial,Helvetica,sans-serif" font-size="13.5" font-weight="400">2</text>
+<text x="330" y="859.59" fill="#16324F" font-family="Arial,Helvetica,sans-serif" font-size="13.5" font-weight="400">2–6</text>
+<text x="420" y="859.59" fill="#16324F" font-family="Arial,Helvetica,sans-serif" font-size="13.5" font-weight="400">http 80 → 8080</text>
+<text x="650" y="851.1525" fill="#16324F" font-family="Arial,Helvetica,sans-serif" font-size="13.5" font-weight="400">PG notification_db</text>
+<text x="650" y="868.0275" fill="#16324F" font-family="Arial,Helvetica,sans-serif" font-size="13.5" font-weight="400">Redis</text>
+<text x="905" y="859.59" fill="#16324F" font-family="Arial,Helvetica,sans-serif" font-size="13.5" font-weight="400">CPU 70%</text>
+<text x="55" y="909.59" fill="#16324F" font-family="Arial,Helvetica,sans-serif" font-size="13.5" font-weight="600">search-api</text>
+<text x="245" y="909.59" fill="#16324F" font-family="Arial,Helvetica,sans-serif" font-size="13.5" font-weight="400">2</text>
+<text x="330" y="909.59" fill="#16324F" font-family="Arial,Helvetica,sans-serif" font-size="13.5" font-weight="400">2–8</text>
+<text x="420" y="909.59" fill="#16324F" font-family="Arial,Helvetica,sans-serif" font-size="13.5" font-weight="400">http 80 → 8080</text>
+<text x="650" y="901.1525" fill="#16324F" font-family="Arial,Helvetica,sans-serif" font-size="13.5" font-weight="400">Elasticsearch index</text>
+<text x="650" y="918.0275" fill="#16324F" font-family="Arial,Helvetica,sans-serif" font-size="13.5" font-weight="400">Redis</text>
+<text x="905" y="909.59" fill="#16324F" font-family="Arial,Helvetica,sans-serif" font-size="13.5" font-weight="400">CPU 70% / Memory 80%</text>
+<text x="55" y="959.59" fill="#16324F" font-family="Arial,Helvetica,sans-serif" font-size="13.5" font-weight="600">storage-api</text>
+<text x="245" y="959.59" fill="#16324F" font-family="Arial,Helvetica,sans-serif" font-size="13.5" font-weight="400">2</text>
+<text x="330" y="959.59" fill="#16324F" font-family="Arial,Helvetica,sans-serif" font-size="13.5" font-weight="400">2–6</text>
+<text x="420" y="959.59" fill="#16324F" font-family="Arial,Helvetica,sans-serif" font-size="13.5" font-weight="400">http 80 → 8080</text>
+<text x="650" y="951.1525" fill="#16324F" font-family="Arial,Helvetica,sans-serif" font-size="13.5" font-weight="400">PG storage_db</text>
+<text x="650" y="968.0275" fill="#16324F" font-family="Arial,Helvetica,sans-serif" font-size="13.5" font-weight="400">Blob Storage</text>
+<text x="905" y="959.59" fill="#16324F" font-family="Arial,Helvetica,sans-serif" font-size="13.5" font-weight="400">CPU 70% / Memory 80%</text>
+<text x="55" y="1009.59" fill="#16324F" font-family="Arial,Helvetica,sans-serif" font-size="13.5" font-weight="600">analytics-api</text>
+<text x="245" y="1009.59" fill="#16324F" font-family="Arial,Helvetica,sans-serif" font-size="13.5" font-weight="400">1</text>
+<text x="330" y="1009.59" fill="#16324F" font-family="Arial,Helvetica,sans-serif" font-size="13.5" font-weight="400">1–4</text>
+<text x="420" y="1009.59" fill="#16324F" font-family="Arial,Helvetica,sans-serif" font-size="13.5" font-weight="400">http 80 → 8080</text>
+<text x="650" y="1001.1525" fill="#16324F" font-family="Arial,Helvetica,sans-serif" font-size="13.5" font-weight="400">PG analytics_db</text>
+<text x="650" y="1018.0275" fill="#16324F" font-family="Arial,Helvetica,sans-serif" font-size="13.5" font-weight="400">Redis</text>
+<text x="905" y="1009.59" fill="#16324F" font-family="Arial,Helvetica,sans-serif" font-size="13.5" font-weight="400">CPU 70%</text>
+<text x="55" y="1059.59" fill="#16324F" font-family="Arial,Helvetica,sans-serif" font-size="13.5" font-weight="600">job-api</text>
+<text x="245" y="1059.59" fill="#16324F" font-family="Arial,Helvetica,sans-serif" font-size="13.5" font-weight="400">2</text>
+<text x="330" y="1059.59" fill="#16324F" font-family="Arial,Helvetica,sans-serif" font-size="13.5" font-weight="400">2–6</text>
+<text x="420" y="1051.1525" fill="#16324F" font-family="Arial,Helvetica,sans-serif" font-size="13.5" font-weight="400">http 80 → 8080</text>
+<text x="420" y="1068.0275" fill="#16324F" font-family="Arial,Helvetica,sans-serif" font-size="13.5" font-weight="400">grpc 81 → 8081</text>
+<text x="650" y="1059.59" fill="#16324F" font-family="Arial,Helvetica,sans-serif" font-size="13.5" font-weight="400">PG job_db</text>
+<text x="905" y="1059.59" fill="#16324F" font-family="Arial,Helvetica,sans-serif" font-size="13.5" font-weight="400">CPU 70% / Memory 80%</text>
+<text x="55" y="1109.59" fill="#16324F" font-family="Arial,Helvetica,sans-serif" font-size="13.5" font-weight="600">orchestration-api</text>
+<text x="245" y="1109.59" fill="#16324F" font-family="Arial,Helvetica,sans-serif" font-size="13.5" font-weight="400">2</text>
+<text x="330" y="1109.59" fill="#16324F" font-family="Arial,Helvetica,sans-serif" font-size="13.5" font-weight="400">2–6</text>
+<text x="420" y="1101.1525" fill="#16324F" font-family="Arial,Helvetica,sans-serif" font-size="13.5" font-weight="400">http 80 → 8080</text>
+<text x="420" y="1118.0275" fill="#16324F" font-family="Arial,Helvetica,sans-serif" font-size="13.5" font-weight="400">grpc 81 → 8081</text>
+<text x="650" y="1109.59" fill="#16324F" font-family="Arial,Helvetica,sans-serif" font-size="13.5" font-weight="400">PG orchestration_db</text>
+<text x="905" y="1109.59" fill="#16324F" font-family="Arial,Helvetica,sans-serif" font-size="13.5" font-weight="400">CPU 70% / Memory 80%</text>
+<text x="55" y="1156.92" fill="#53677D" font-family="Arial,Helvetica,sans-serif" font-size="13" font-weight="400">Initial = Deployment replicas; HPA = allowed replica range. Scale follows utilization of resource requests.</text>
+<text x="1200" y="416.46" fill="#16324F" font-family="Arial,Helvetica,sans-serif" font-size="19" font-weight="600">Selected backend connection paths</text>
+<text x="1228" y="475.78" fill="#16324F" font-family="Arial,Helvetica,sans-serif" font-size="17" font-weight="600">Backend workloads</text>
+<text x="1228" y="508.76" fill="#53677D" font-family="Arial,Helvetica,sans-serif" font-size="14" font-weight="400">Each service uses its own dependencies.</text>
+<image x="1278" y="586" width="42" height="42" xlink:href="data:image/svg+xml;base64,PHN2ZyBpZD0iZmM4OTAxMjctNzI4Yi00YWMwLWI1ZGEtODZjZGZjMTkxZTg2IiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxOCIgaGVpZ2h0PSIxOCIgdmlld0JveD0iMCAwIDE4IDE4Ij48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImEyOGRlZTIwLTRjNzEtNDZiNS1iOTU3LTgwNGM2N2RhNzI1YSIgeDE9IjIuNDQiIHkxPSIxMC42NyIgeDI9IjE1LjI3IiB5Mj0iMTAuNjciIGdyYWRpZW50VHJhbnNmb3JtPSJ0cmFuc2xhdGUoMC4xNCAtMC41KSByb3RhdGUoLTAuMDEpIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMDA1YmExIiAvPjxzdG9wIG9mZnNldD0iMC4wNyIgc3RvcC1jb2xvcj0iIzAwNjBhOSIgLz48c3RvcCBvZmZzZXQ9IjAuMzYiIHN0b3AtY29sb3I9IiMwMDcxYzgiIC8+PHN0b3Agb2Zmc2V0PSIwLjUyIiBzdG9wLWNvbG9yPSIjMDA3OGQ0IiAvPjxzdG9wIG9mZnNldD0iMC42NCIgc3RvcC1jb2xvcj0iIzAwNzRjZCIgLz48c3RvcCBvZmZzZXQ9IjAuODIiIHN0b3AtY29sb3I9IiMwMDZhYmIiIC8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMDA1YmExIiAvPjwvbGluZWFyR3JhZGllbnQ+PC9kZWZzPjx0aXRsZT5JY29uLWRhdGFiYXNlcy0xMzE8L3RpdGxlPjxwYXRoIGQ9Ik05LDUuMTRjLTMuNTQsMC02LjQxLTEtNi40MS0yLjMyVjE1LjE4YzAsMS4yNywyLjgyLDIuMyw2LjMyLDIuMzJIOWMzLjU0LDAsNi40MS0xLDYuNDEtMi4zMlYyLjgyQzE1LjQxLDQuMSwxMi41NCw1LjE0LDksNS4xNFoiIGZpbGw9InVybCgjYTI4ZGVlMjAtNGM3MS00NmI1LWI5NTctODA0YzY3ZGE3MjVhKSIgLz48cGF0aCBkPSJNMTUuNDEsMi44MmMwLDEuMjgtMi44NywyLjMyLTYuNDEsMi4zMnMtNi40MS0xLTYuNDEtMi4zMlM1LjQ2LjUsOSwuNXM2LjQxLDEsNi40MSwyLjMyIiBmaWxsPSIjZThlOGU4IiAvPjxwYXRoIGQ9Ik0xMy45MSwyLjYzYzAsLjgyLTIuMiwxLjQ4LTQuOTEsMS40OFM0LjA4LDMuNDUsNC4wOCwyLjY0LDYuMjgsMS4xNiw5LDEuMTZzNC45MS42Niw0LjkxLDEuNDciIGZpbGw9IiM1MGU2ZmYiIC8+PHBhdGggZD0iTTksM2ExMS42NSwxMS42NSwwLDAsMC0zLjkuNTdBMTEuNTMsMTEuNTMsMCwwLDAsOSw0LjExYTExLjQ3LDExLjQ3LDAsMCwwLDMuODktLjU4QTExLjkzLDExLjkzLDAsMCwwLDksM1oiIGZpbGw9IiMxOThhYjMiIC8+PHBhdGggZD0iTTEyLDljMCwuMDgsMCwuMjQsMCwuNDJhNS4xMiw1LjEyLDAsMCwwLS4wOC42M2MwLC4xMiwwLC4zLjA1LjQ2czAsLjI3LDAsLjM2YTEuNjgsMS42OCwwLDAsMS0uMjUuODYuNDMuNDMsMCwwLDAsMCwuMDdsLjEuMTJhMTAuNTUsMTAuNTUsMCwwLDAsMS4wNi0yLjM4aDBjLjI4LS45NS4zMS0xLjYzLjA5LTEuOTJhMi41OCwyLjU4LDAsMCwwLTIuNjgtLjg2LDMuMjksMy4yOSwwLDAsMSwuOTEuNjdBMi4yOCwyLjI4LDAsMCwxLDEyLDlabS0uMzEuMDhhMS4xNSwxLjE1LDAsMCwwLS43OS4wOWMtLjI5LjE4LS4yLjU1LDAsMWE3Ljc3LDcuNzcsMCwwLDAsLjM1Ljg1bC4wOS4xNmgwYy4wNS4wOC4wOC4xNS4xMS4ybC4wOC4xM2ExLjI4LDEuMjgsMCwwLDAsLjE4LS42NSwyLjg2LDIuODYsMCwwLDAsMC0uMzNjMC0uMTcsMC0uMzYtLjA1LS40OWE2LjEsNi4xLDAsMCwxLC4wOC0uNjlDMTEuNzEsOS4yNCwxMS43Miw5LjEzLDExLjczLDkuMDVabS0uMy40MWEuNC40LDAsMCwxLS4xOC4xaDBhLjMzLjMzLDAsMCwxLS4xNCwwQS4yMy4yMywwLDAsMSwxMSw5LjRoMGMwLS4wNy4xMS0uMTMuMjQtLjE1aC4xOXMuMDksMCwuMDkuMDhBLjIuMiwwLDAsMSwxMS40Myw5LjQ2Wm0tNC42OS44OWMwLS4wNywwLS4xMywwLS4xN2ExLDEsMCwwLDAsMC0uMTcsNS41NSw1LjU1LDAsMCwxLDAtMUE1LjIyLDUuMjIsMCwwLDEsNyw3Ljk0LDIuNDEsMi40MSwwLDAsMSw3LjU4LDcsNC43OCw0Ljc4LDAsMCwwLDYuMjMsNi44YTEuODcsMS44NywwLDAsMC0xLjEuM0EyLDIsMCwwLDAsNC41LDguOTIsMTIuMjcsMTIuMjcsMCwwLDAsNSwxMS4xNmMuMzQsMS4xNC43MywxLjg0LDEuMDcsMS45NWgwYy4xNS4wNS4zMSwwLC40Ny0uMjEuMjgtLjM0LjU0LS42My42OS0uOEExLjg4LDEuODgsMCwwLDEsNi43NCwxMC4zNVptLjI2LjRhMi4xOCwyLjE4LDAsMCwwLC4wNi41NiwxLjUsMS41LDAsMCwwLC4yNi40NCwxLjA3LDEuMDcsMCwwLDAsLjM1LjI1LDEuMDksMS4wOSwwLDAsMCwuMzkuMDhjMC0uMTcuMTQtLjM4LjIzLS42YTQuMzUsNC4zNSwwLDAsMCwuMjEtLjU5LDYuNjEsNi42MSwwLDAsMCwwLTEuMTFjMC0uMDksMC0uMTktLjA2LS4zYS40NS40NSwwLDAsMC0uMTItLjI3bDAsMEEuNjYuNjYsMCwwLDAsOCw5LjA4SDcuOGExLjU2LDEuNTYsMCwwLDAtLjQ4LjE0QTIsMiwwLDAsMCw3LDkuNDF2LjExYzAsLjIsMCwuNDEsMCwuNjF2MGEuODYuODYsMCwwLDEsMCwuMTVsMCwuMzlIN1ptLjY2LTEuMzQsMCwwYS40Ni40NiwwLDAsMSwuMjgsMCwuNi42LDAsMCwxLC4xOS4wNmMuMDksMCwuMS4xMS4wOS4xNGgwYS4zNy4zNywwLDAsMS0uMTIuMTNBLjMuMywwLDAsMSw4LDkuNzNoMGEuMzQuMzQsMCwwLDEtLjI4LS4yOFptLjc0LDNhLjIzLjIzLDAsMCwwLS4xMy4wNmwtLjE0LjE3Yy0uMTcuMjEtLjI0LjI4LS43My4zOGEuNTIuNTIsMCwwLDAtLjI2LjEuNTguNTgsMCwwLDAsLjI0LjExLDEuMTgsMS4xOCwwLDAsMCwuNzIsMEExLjcsMS43LDAsMCwwLDguNDUsMTNhLjYxLjYxLDAsMCwwLC4yLS4zMS4zNi4zNiwwLDAsMC0uMS0uMjhBLjE1LjE1LDAsMCwwLDguNCwxMi4zOVptNC42MSwwYTEuNjMsMS42MywwLDAsMS0xLjEzLDAsLjIyLjIyLDAsMCwwLS4xNCwwLC4zLjMsMCwwLDAtLjE3LjE0LDEuMDksMS4wOSwwLDAsMCwwLC4zMSwxLjgsMS44LDAsMCwwLDEuMS0uMSwxLjM2LDEuMzYsMCwwLDAsLjQ4LS4zNFptLTIuNC0yLjE0Yy0uMTQtLjQxLS4zNC0xLC4xOC0xLjM2YTEuMzUsMS4zNSwwLDAsMSwuODktLjE1QTMuMTgsMy4xOCwwLDAsMCwxMSw3LjY0bC0uMS0uMS0uMDYtLjA2aDBhLjM0LjM0LDAsMCwwLS4wNi0uMDZsMCwwLDAsMEEyLjM0LDIuMzQsMCwwLDAsMTAuMTEsNywyLjYzLDIuNjMsMCwwLDAsOSw2Ljc4YTEuNTIsMS41MiwwLDAsMC0uNy4xMUExLjc3LDEuNzcsMCwwLDAsOCw3YTIuMSwyLjEsMCwwLDAtLjc0LDEsNS44NCw1Ljg0LDAsMCwwLS4yMSwxLDEuNjYsMS42NiwwLDAsMSwxLS4yMy44NC44NCwwLDAsMSwuNzcuOTEsNy4yNiw3LjI2LDAsMCwxLDAsMS4yNywzLjg3LDMuODcsMCwwLDEtLjIzLjYzYy0uMDYuMTctLjE0LjM1LS4xOC40OWEuNS41LDAsMCwxLC4zOC4xNC42Ni42NiwwLDAsMSwuMTkuNTNIOWMwLC4wOCwwLC4xNiwwLC4yNGE2LjU1LDYuNTUsMCwwLDAsLjI0LDIuNDQuNTQuNTQsMCwwLDAsLjI0LjIxLjYuNiwwLDAsMCwuMzEuMSwxLjMsMS4zLDAsMCwwLDEtLjM0LDEuMDUsMS4wNSwwLDAsMCwuMjktLjY2Yy4wNy0uNDUuMjItMS43LjI0LTJoMGEuNzIuNzIsMCwwLDEsLjA5LS40NC42My42MywwLDAsMSwuMjctLjI0QTUuMzYsNS4zNiwwLDAsMSwxMC42MSwxMC4yNFoiIGZpbGw9IiNmMmYyZjIiIC8+PC9zdmc+"/>
+<text x="1338" y="590.78" fill="#16324F" font-family="Arial,Helvetica,sans-serif" font-size="17" font-weight="600">Private PostgreSQL</text>
+<text x="1338" y="630.01" fill="#53677D" font-family="Arial,Helvetica,sans-serif" font-size="14" font-weight="400">TCP 5432 • 10.40.16.0/24</text>
+<text x="1338" y="647.51" fill="#53677D" font-family="Arial,Helvetica,sans-serif" font-size="14" font-weight="400">10 logical databases / managed server</text>
+<image x="1278" y="756" width="42" height="42" xlink:href="data:image/svg+xml;base64,PHN2ZyBpZD0idXVpZC04ZTQ5ODc4ZS02ZjFlLTQ1ZGMtYjEzZi1kZTNmM2IwYTMwMjgiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgd2lkdGg9IjE4IiBoZWlnaHQ9IjE4IiB2aWV3Qm94PSIwIDAgMTggMTgiPjxkZWZzPjxsaW5lYXJHcmFkaWVudCBpZD0idXVpZC1lMjc1MjAwZi04MDQ3LTQ4M2QtOTE2NS0zMzU4ODFkYzA0OTIiIHgxPSIuNTYyIiB5MT0iMi42ODQiIHgyPSIxNy41NjEiIHkyPSIxOS40MzciIGdyYWRpZW50VHJhbnNmb3JtPSJ0cmFuc2xhdGUoMCAyMCkgc2NhbGUoMSAtMSkiIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiM3NTc1NzUiIC8+PHN0b3Agb2Zmc2V0PSIuOTE1IiBzdG9wLWNvbG9yPSIjYjBiMGIwIiAvPjwvbGluZWFyR3JhZGllbnQ+PGxpbmVhckdyYWRpZW50IGlkPSJ1dWlkLWE4NDY3OTg4LWZiODEtNDdhOS05MzAwLTRmYWM5ZGNiOTdhNCIgeDE9IjEzLjMyMSIgeTE9IjE1LjMzOSIgeDI9IjQuNTgxIiB5Mj0iNi41NjMiIGdyYWRpZW50VHJhbnNmb3JtPSJ0cmFuc2xhdGUoMCAyMCkgc2NhbGUoMSAtMSkiIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiMwMDc4ZDQiIC8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMDA1YmExIiAvPjwvbGluZWFyR3JhZGllbnQ+PC9kZWZzPjxwYXRoIGQ9Ik05LC41Yy4yNzYsMCwuNS4yMjQuNS41djFoMnYtMWMwLS4yNzYuMjI0LS41LjUtLjVzLjUuMjI0LjUuNXYxaDEuNWMxLjEwNSwwLDIsLjg5NSwyLDJ2MS41aDFjLjI3NiwwLC41LjIyNC41LjVzLS4yMjQuNS0uNS41aC0xdjJoMWMuMjc2LDAsLjUuMjI0LjUuNXMtLjIyNC41LS41LjVoLTF2MmgxYy4yNzYsMCwuNS4yMjQuNS41cy0uMjI0LjUtLjUuNWgtMXYxLjVjMCwxLjEwNS0uODk1LDItMiwyaC0xLjV2MWMwLC4yNzYtLjIyNC41LS41LjVzLS41LS4yMjQtLjUtLjV2LTFoLTJ2MWMwLC4yNzYtLjIyNC41LS41LjVzLS41LS4yMjQtLjUtLjV2LTFoLTJ2MWMwLC4yNzYtLjIyNC41LS41LjVzLS41LS4yMjQtLjUtLjV2LTFoLTEuNWMtMS4xMDUsMC0yLS44OTUtMi0ydi0xLjVoLTFjLS4yNzYsMC0uNS0uMjI0LS41LS41cy4yMjQtLjUuNS0uNWgxdi0yaC0xYy0uMjc2LDAtLjUtLjIyNC0uNS0uNXMuMjI0LS41LjUtLjVoMXYtMmgtMWMtLjI3NiwwLS41LS4yMjQtLjUtLjVzLjIyNC0uNS41LS41aDF2LTEuNWMwLTEuMTA1Ljg5NS0yLDItMmgxLjV2LTFjMC0uMjc2LjIyNC0uNS41LS41cy41LjIyNC41LjV2MWgydi0xYzAtLjI3Ni4yMjQtLjUuNS0uNVpNOC45ODQsM2gtMi45NjhjLS4wMDUsMC0uMDEsMC0uMDE2LDBzLS4wMTEsMC0uMDE2LDBoLTEuOTg0Yy0uNTUyLDAtMSwuNDQ4LTEsMXYxMGMwLC41NTIuNDQ4LDEsMSwxaDEuOTg0Yy4wMDUsMCwuMDEsMCwuMDE2LDBzLjAxMSwwLC4wMTYsMGgyLjk2OGMuMDA1LDAsLjAxLDAsLjAxNiwwcy4wMTEsMCwuMDE2LDBoMi45NjhjLjAwNSwwLC4wMSwwLC4wMTYsMCwuMDA1LDAsLjAxLDAsLjAxNiwwaDEuOTg0Yy41NTIsMCwxLS40NDgsMS0xdi0xLjk3OGMwLS4wMDcsMC0uMDE1LDAtLjAyMnMwLS4wMTUsMC0uMDIydi0yLjk1NWMwLS4wMDcsMC0uMDE1LDAtLjAyMnMwLS4wMTUsMC0uMDIydi0yLjk1NWMwLS4wMDcsMC0uMDE1LDAtLjAyMnMwLS4wMTUsMC0uMDIydi0xLjk3OGMwLS41NTItLjQ0OC0xLTEtMWgtMS45ODRjLS4wMDUsMC0uMDEsMC0uMDE2LDAtLjAwNSwwLS4wMTEsMC0uMDE2LDBoLTIuOTY4Yy0uMDA1LDAtLjAxLDAtLjAxNiwwcy0uMDExLDAtLjAxNiwwWiIgZmlsbD0idXJsKCN1dWlkLWUyNzUyMDBmLTgwNDctNDgzZC05MTY1LTMzNTg4MWRjMDQ5MikiIGZpbGwtcnVsZT0iZXZlbm9kZCIgLz48cmVjdCB4PSI0IiB5PSI0IiB3aWR0aD0iMTAiIGhlaWdodD0iMTAiIHJ4PSIuNSIgcnk9Ii41IiBmaWxsPSJ1cmwoI3V1aWQtYTg0Njc5ODgtZmI4MS00N2E5LTkzMDAtNGZhYzlkY2I5N2E0KSIgLz48cGF0aCBkPSJNMTIuMTI0LDkuMzFjLS40ODQuNTY3LTEuMDA3LDEuMjE0LTIuMDUzLDEuMjE0LS45MzQsMC0xLjI4Mi0uNzY1LTEuMzA3LTEuMzg3LjIwNS40MDIuNjA1LjcyOCwxLjIyOS43MTMsMS4yMDEtLjAzNiwyLjAyNC0xLjA0MywyLjAyNC0xLjk2MSwwLTEuMDk3LS44ODEtMS44ODktMi40MTEtMS44ODktMS4wOTQsMC0yLjQ1LjM4Ny0zLjM0MS45OTgtLjAxLjYzLjM2OCwxLjQ0OC41MDQsMS4zNTguNzcyLS41MTYsMS4zODUtLjg0OCwxLjk3OS0xLjAxNC0uODc5LjkxMS0yLjk4OSwzLjAyNi0zLjI0OCwzLjM5OC4wMjkuMzQyLjQ4NCwxLjI1OS43MDcsMS4yNTkuMDY4LDAsLjEyNi0uMDM2LjE5NC0uMDk5LjYzNi0uNjY0LDEuMTU1LTEuMjU5LDEuNjE2LTEuODMzLjA2NS44NDEuNTEsMS44NjksMS43NTQsMS44NjksMS4xMTQsMCwyLjIxOC0uNzQ3LDIuNzIxLTIuNDI5LjA1OC0uMjA3LS4yMTMtLjM2OS0uMzY4LS4xOThaTTEwLjg1NSw3Ljk1MmMwLC41MzEtLjU2Mi43OTItMS4wNzUuNzkyLS4yNzQsMC0uNDg1LS4wNjctLjY1Mi0uMTU0LjMwNy0uNDMxLjYxLS44NzQuOTM2LTEuMzQ3LjU3NS4wOS43OS4zODcuNzkuNzA5WiIgZmlsbD0iI2ZmZiIgLz48L3N2Zz4="/>
+<text x="1338" y="760.78" fill="#16324F" font-family="Arial,Helvetica,sans-serif" font-size="17" font-weight="600">Azure Managed Redis</text>
+<text x="1338" y="800.01" fill="#53677D" font-family="Arial,Helvetica,sans-serif" font-size="14" font-weight="400">TLS TCP 10000 • public endpoint</text>
+<text x="1338" y="817.51" fill="#53677D" font-family="Arial,Helvetica,sans-serif" font-size="14" font-weight="400">Cache and lock clients only</text>
+<text x="1278" y="930.78" fill="#16324F" font-family="Arial,Helvetica,sans-serif" font-size="17" font-weight="600">RabbitMQ in AKS</text>
+<text x="1278" y="970.01" fill="#53677D" font-family="Arial,Helvetica,sans-serif" font-size="14" font-weight="400">AMQP TCP 5672 • 1 pod</text>
+<text x="1278" y="987.51" fill="#53677D" font-family="Arial,Helvetica,sans-serif" font-size="14" font-weight="400">10Gi persistent volume</text>
+<text x="1278" y="1100.78" fill="#16324F" font-family="Arial,Helvetica,sans-serif" font-size="17" font-weight="600">Elasticsearch in AKS</text>
+<text x="1278" y="1140.01" fill="#53677D" font-family="Arial,Helvetica,sans-serif" font-size="14" font-weight="400">HTTP TCP 9200 • 1 pod</text>
+<text x="1278" y="1157.51" fill="#53677D" font-family="Arial,Helvetica,sans-serif" font-size="14" font-weight="400">20Gi persistent volume</text>
+<image x="1278" y="1266" width="42" height="42" xlink:href="data:image/svg+xml;base64,PHN2ZyBpZD0iZjJmMDQzNDktOGFlZS00NDEzLTg0YzktYTkwNTM2MTFiMzE5IiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxOCIgaGVpZ2h0PSIxOCIgdmlld0JveD0iMCAwIDE4IDE4Ij48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImFkNGM0Zjk2LTA5YWEtNGY5MS1iYTEwLTVjYjhhZDUzMGY3NCIgeDE9IjkiIHkxPSIxNS44MyIgeDI9IjkiIHkyPSI1Ljc5IiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjYjNiM2IzIiAvPjxzdG9wIG9mZnNldD0iMC4yNiIgc3RvcC1jb2xvcj0iI2MxYzFjMSIgLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNlNmU2ZTYiIC8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHRpdGxlPkljb24tc3RvcmFnZS04NjwvdGl0bGU+PHBhdGggZD0iTS41LDUuNzloMTdhMCwwLDAsMCwxLDAsMHY5LjQ4YS41Ny41NywwLDAsMS0uNTcuNTdIMS4wN2EuNTcuNTcsMCwwLDEtLjU3LS41N1Y1Ljc5QTAsMCwwLDAsMSwuNSw1Ljc5WiIgZmlsbD0idXJsKCNhZDRjNGY5Ni0wOWFhLTRmOTEtYmExMC01Y2I4YWQ1MzBmNzQpIiAvPjxwYXRoIGQ9Ik0xLjA3LDIuMTdIMTYuOTNhLjU3LjU3LDAsMCwxLC41Ny41N1Y1Ljc5YTAsMCwwLDAsMSwwLDBILjVhMCwwLDAsMCwxLDAsMFYyLjczQS41Ny41NywwLDAsMSwxLjA3LDIuMTdaIiBmaWxsPSIjMzdjMmIxIiAvPjxwYXRoIGQ9Ik0yLjgxLDYuODlIMTUuMThhLjI3LjI3LDAsMCwxLC4yNi4yN3YxLjRhLjI3LjI3LDAsMCwxLS4yNi4yN0gyLjgxYS4yNy4yNywwLDAsMS0uMjYtLjI3VjcuMTZBLjI3LjI3LDAsMCwxLDIuODEsNi44OVoiIGZpbGw9IiNmZmYiIC8+PHBhdGggZD0iTTIuODIsOS42OEgxNS4xOWEuMjcuMjcsMCwwLDEsLjI2LjI3djEuNDFhLjI3LjI3LDAsMCwxLS4yNi4yN0gyLjgyYS4yNy4yNywwLDAsMS0uMjYtLjI3VjEwQS4yNy4yNywwLDAsMSwyLjgyLDkuNjhaIiBmaWxsPSIjMzdjMmIxIiAvPjxwYXRoIGQ9Ik0yLjgyLDEyLjVIMTUuMTlhLjI3LjI3LDAsMCwxLC4yNi4yN3YxLjQxYS4yNy4yNywwLDAsMS0uMjYuMjdIMi44MmEuMjcuMjcsMCwwLDEtLjI2LS4yN1YxMi43N0EuMjcuMjcsMCwwLDEsMi44MiwxMi41WiIgZmlsbD0iIzI1ODI3NyIgLz48L3N2Zz4="/>
+<text x="1338" y="1270.78" fill="#16324F" font-family="Arial,Helvetica,sans-serif" font-size="17" font-weight="600">Azure Blob Storage</text>
+<text x="1338" y="1310.01" fill="#53677D" font-family="Arial,Helvetica,sans-serif" font-size="14" font-weight="400">HTTPS TCP 443 • Storage Service</text>
+<text x="1338" y="1327.51" fill="#53677D" font-family="Arial,Helvetica,sans-serif" font-size="14" font-weight="400">Workload identity authentication</text>
+<text x="55" y="1246.46" fill="#16324F" font-family="Arial,Helvetica,sans-serif" font-size="19" font-weight="600">Scheduling and rollout controls</text>
+<text x="55" y="1283.1" fill="#16324F" font-family="Arial,Helvetica,sans-serif" font-size="15" font-weight="400">Application scale envelope: 27 initial replicas; up to 93 at configured HPA maxima + fixed web replicas.</text>
+<text x="55" y="1322.1" fill="#16324F" font-family="Arial,Helvetica,sans-serif" font-size="15" font-weight="400">Backend pod resources: requests 200m CPU / 512Mi; limits 1000m CPU / 1Gi.</text>
+<text x="55" y="1361.1" fill="#16324F" font-family="Arial,Helvetica,sans-serif" font-size="15" font-weight="400">13 application PodDisruptionBudgets declare minAvailable: 1; rollout waits for migration Jobs.</text>
+<text x="55" y="1398.42" fill="#53677D" font-family="Arial,Helvetica,sans-serif" font-size="13" font-weight="400">The scale envelope excludes AKS system pods, operators, migration Jobs and the two infrastructure pods.</text>
+<text x="35" y="1469.26" fill="#53677D" font-family="Arial,Helvetica,sans-serif" font-size="14" font-weight="400">Port mappings above are declared Services. Active internal gRPC relationships: Auction ↔ Bidding; Auction → Catalog.</text>
+<text x="35" y="1497.92" fill="#53677D" font-family="Arial,Helvetica,sans-serif" font-size="13" font-weight="400">Source: rendered production Kustomize overlay, service configuration and Azure Bicep • 24 October 2026</text>
+</svg>

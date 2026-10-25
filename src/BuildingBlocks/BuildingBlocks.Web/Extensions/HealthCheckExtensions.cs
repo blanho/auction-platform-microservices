@@ -54,7 +54,7 @@ public static class HealthCheckExtensions
 
         if (!string.IsNullOrEmpty(elasticsearchUri))
         {
-            builder.AddElasticsearch(elasticsearchUri, name: "elasticsearch",
+            builder.AddElasticsearch(sp => sp.GetRequiredService<Elastic.Clients.Elasticsearch.ElasticsearchClient>(), name: "elasticsearch",
                 failureStatus: HealthStatus.Unhealthy,
                 tags: new[] { "db", "search", "ready" });
         }

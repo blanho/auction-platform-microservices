@@ -66,6 +66,8 @@ public static class ServiceCollectionExtensions
     {
         services.AddMassTransit(x =>
         {
+            x.AddConfigureEndpointsCallback((context, _, endpoint) =>
+                RabbitMqDeployment.ConfigureQuorumQueue(endpoint, context));
             x.AddConsumer<AggregateDailyStatsConsumer>();
             x.AddConsumer<AuditEventConsumer>();
             x.AddConsumer<AuctionCreatedAnalyticsConsumer>();
@@ -96,22 +98,12 @@ public static class ServiceCollectionExtensions
 
             x.UsingRabbitMq((context, cfg) =>
             {
-                var rabbitHost = configuration["RabbitMQ:Host"]
-                    ?? throw new InvalidOperationException("RabbitMQ:Host configuration is required");
-                var rabbitUser = configuration["RabbitMQ:Username"]
-                    ?? throw new InvalidOperationException("RabbitMQ:Username configuration is required");
-                var rabbitPass = configuration["RabbitMQ:Password"]
-                    ?? throw new InvalidOperationException("RabbitMQ:Password configuration is required");
-                var rabbitVHost = configuration["RabbitMQ:VirtualHost"] ?? "/";
 
-                cfg.Host(rabbitHost, rabbitVHost, h =>
-                {
-                    h.Username(rabbitUser);
-                    h.Password(rabbitPass);
-                });
+                cfg.ConfigureRabbitMqHost(configuration);
 
                 cfg.ReceiveEndpoint("analytics-aggregate-daily-stats", e =>
                 {
+                    RabbitMqDeployment.ConfigureQuorumQueue(e, context);
                     e.ConfigureRetryAndConcurrency(prefetchCount: 1, concurrentLimit: 1);
                     e.UseEntityFrameworkOutbox<AnalyticsDbContext>(context);
                     e.ConfigureConsumer<AggregateDailyStatsConsumer>(context);
@@ -136,6 +128,7 @@ public static class ServiceCollectionExtensions
     {
         cfg.ReceiveEndpoint("audit-event-queue", e =>
         {
+            RabbitMqDeployment.ConfigureQuorumQueue(e, context);
             e.ConfigureConsumer<AuditEventConsumer>(context);
             e.ConfigureRetryAndConcurrency(prefetchCount: AnalyticsDefaults.Messaging.StandardPrefetch, concurrentLimit: AnalyticsDefaults.Messaging.StandardConcurrency);
         });
@@ -145,6 +138,7 @@ public static class ServiceCollectionExtensions
     {
         cfg.ReceiveEndpoint("analytics-auction-events", e =>
         {
+            RabbitMqDeployment.ConfigureQuorumQueue(e, context);
             e.ConfigureConsumer<AuctionCreatedAnalyticsConsumer>(context);
             e.ConfigureConsumer<AuctionFinishedAnalyticsConsumer>(context);
             e.ConfigureConsumer<AuctionStartedAnalyticsConsumer>(context);
@@ -157,6 +151,7 @@ public static class ServiceCollectionExtensions
     {
         cfg.ReceiveEndpoint("analytics-bid-events", e =>
         {
+            RabbitMqDeployment.ConfigureQuorumQueue(e, context);
             e.ConfigureConsumer<BidPlacedBatchConsumer>(context, c =>
             {
                 c.Options<BatchOptions>(o => o
@@ -178,6 +173,7 @@ public static class ServiceCollectionExtensions
     {
         cfg.ReceiveEndpoint("analytics-payment-events", e =>
         {
+            RabbitMqDeployment.ConfigureQuorumQueue(e, context);
             e.ConfigureConsumer<PaymentCompletedAnalyticsConsumer>(context);
             e.ConfigureConsumer<OrderCreatedAnalyticsConsumer>(context);
             e.ConfigureConsumer<OrderShippedAnalyticsConsumer>(context);
@@ -190,6 +186,7 @@ public static class ServiceCollectionExtensions
     {
         cfg.ReceiveEndpoint("analytics-identity-events", e =>
         {
+            RabbitMqDeployment.ConfigureQuorumQueue(e, context);
             e.ConfigureConsumer<UserCreatedAnalyticsConsumer>(context);
             e.ConfigureRetryAndConcurrency(prefetchCount: AnalyticsDefaults.Messaging.StandardPrefetch, concurrentLimit: AnalyticsDefaults.Messaging.StandardConcurrency);
         });
