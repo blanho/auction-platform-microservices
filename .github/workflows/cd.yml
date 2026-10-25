@@ -80,7 +80,7 @@ jobs:
           ref: ${{ steps.revision.outputs.sha }}
 
       - name: Azure login with OIDC
-        uses: azure/login@v2
+        uses: azure/login@v3
         with:
           client-id: ${{ env.AZURE_CLIENT_ID }}
           tenant-id: ${{ env.AZURE_TENANT_ID }}
@@ -127,7 +127,7 @@ jobs:
           ref: ${{ steps.revision.outputs.sha }}
 
       - name: Azure login with OIDC
-        uses: azure/login@v2
+        uses: azure/login@v3
         with:
           client-id: ${{ env.AZURE_CLIENT_ID }}
           tenant-id: ${{ env.AZURE_TENANT_ID }}
