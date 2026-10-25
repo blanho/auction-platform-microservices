@@ -26,6 +26,10 @@ The system supports real-time bidding, authoritative auction closing, buy-now fl
 - [API Gateway Routes](#api-gateway-routes)
 - [Cloud and Deployment](#cloud-and-deployment)
   - [Deployment Topology](#deployment-topology)
+    - [Managed HA Configuration](#managed-ha-configuration)
+    - [Azure Deployment — Baseline](#azure-deployment--baseline)
+    - [Runtime Flows — Baseline](#runtime-flows--baseline)
+    - [Kubernetes Details — Baseline](#kubernetes-details--baseline)
 - [Observability](#observability)
 - [Testing](#testing)
 - [Code Quality](#code-quality)
@@ -54,7 +58,7 @@ The platform follows a **domain-driven microservices** architecture with strict 
 
 > System and workflow diagrams use **Mermaid** and render natively on GitHub.
 > To edit visually, paste any block into [Mermaid Live](https://mermaid.live).
-> The [cloud deployment diagram](#deployment-topology) uses Azure icons and includes an editable draw.io file.
+> The [cloud deployment diagrams](#deployment-topology) show deployment, runtime flows, and Kubernetes details using Azure icons, with an [editable draw.io file](docs/diagrams/auction-azure-architecture.drawio).
 
 ```mermaid
 graph TB
@@ -626,6 +630,11 @@ graph LR
 
 ### Deployment Topology
 
+All four diagrams from [docs/diagrams](docs/diagrams/README.md) are shown below.
+Click any preview to open the full-size SVG.
+
+#### Managed HA Configuration
+
 The managed-provider deployment option adds Azure SignalR, short-lived browse
 caching, replica spreading, TLS connections to RabbitMQ/Elasticsearch providers,
 and optional Front Door caching for frontend assets. These are repository
@@ -637,12 +646,11 @@ configurations; cloud capacity and failover have not yet been validated.
 [Capacity and failure tests](tests/load/README.md) ·
 [Editable draw.io file — page 04](docs/diagrams/auction-azure-architecture.drawio)
 
-<details>
-<summary>Earlier baseline diagrams — before the HA changes</summary>
-
 The following three diagrams preserve the 24 October baseline, including the
 single-pod RabbitMQ/Elasticsearch deployment. Use page 04 above for the new
 managed-provider configuration.
+
+#### Azure Deployment — Baseline
 
 [![Azure deployment architecture with AKS, private PostgreSQL, managed Redis, Blob Storage, Key Vault, and GitHub Actions](docs/diagrams/auction-azure-deployment.svg)](docs/diagrams/auction-azure-deployment.svg)
 
@@ -654,21 +662,13 @@ The editable file includes four pages: **Azure deployment**, **Runtime flows**,
 **Kubernetes details**, and **Managed HA configuration**. Open it in [draw.io](https://app.diagrams.net/) with
 **File → Open From → Device**.
 
-<details>
-<summary>View service runtime flows</summary>
+#### Runtime Flows — Baseline
 
 [![Service runtime flows for bid entry, gRPC queries, sale coordination, notifications, search, and file storage](docs/diagrams/auction-runtime-flows.svg)](docs/diagrams/auction-runtime-flows.svg)
 
-</details>
-
-<details>
-<summary>View Kubernetes replicas, autoscaling, ports, and data connections</summary>
+#### Kubernetes Details — Baseline
 
 [![Production Kubernetes deployment details for all 13 application Deployments, autoscaling ranges, Service port mappings, and backend connections](docs/diagrams/auction-kubernetes-details.svg)](docs/diagrams/auction-kubernetes-details.svg)
-
-</details>
-
-</details>
 
 ---
 
