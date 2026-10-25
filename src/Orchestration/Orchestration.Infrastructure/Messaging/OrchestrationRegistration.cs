@@ -1,3 +1,4 @@
+using BuildingBlocks.Infrastructure.Messaging;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -17,6 +18,8 @@ public static class OrchestrationRegistration
         services.AddScoped<SagaDeadlineDispatcher>();
         services.AddMassTransit(x =>
         {
+            x.AddConfigureEndpointsCallback((context, _, endpoint) =>
+                RabbitMqDeployment.ConfigureQuorumQueue(endpoint, context));
             x.SetKebabCaseEndpointNameFormatter();
             x.AddSagaStateMachine<BuyNowSagaStateMachine, BuyNowSagaState>().EntityFrameworkRepository(r =>
             {
@@ -44,12 +47,7 @@ public static class OrchestrationRegistration
             });
             x.UsingRabbitMq((context, cfg) =>
             {
-                cfg.Host(config["RabbitMQ:Host"] ?? "localhost", config.GetValue<ushort>("RabbitMQ:Port", 5672),
-                    config["RabbitMQ:VirtualHost"] ?? "/", h =>
-                    {
-                        h.Username(config["RabbitMQ:Username"] ?? "guest");
-                        h.Password(config["RabbitMQ:Password"] ?? "guest");
-                    });
+                cfg.ConfigureRabbitMqHost(config);
                 cfg.ConfigureEndpoints(context);
             });
         });

@@ -1,3 +1,4 @@
+using BuildingBlocks.Infrastructure.Messaging;
 using Notification.Domain.Constants;
 
 namespace Notification.Infrastructure.Messaging;
@@ -37,6 +38,7 @@ public static class ConsumerRegistrationExtensions
     {
         cfg.ReceiveEndpoint(endpointName, e =>
         {
+            RabbitMqDeployment.ConfigureQuorumQueue(e, context);
             e.ConfigureConsumer<TConsumer>(context);
             e.PrefetchCount = prefetchCount;
             e.UseDelayedRedelivery(r => r
@@ -57,6 +59,7 @@ public static class ConsumerRegistrationExtensions
     {
         cfg.ReceiveEndpoint(endpointName, e =>
         {
+            RabbitMqDeployment.ConfigureQuorumQueue(e, context);
             configureConsumers(e, context);
             e.PrefetchCount = prefetchCount;
             e.UseDelayedRedelivery(r => r

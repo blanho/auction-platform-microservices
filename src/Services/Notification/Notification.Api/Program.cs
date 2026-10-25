@@ -49,7 +49,14 @@ builder.Services.AddDistributedLocking(redisConnectionString);
 builder.Services.AddCQRS(typeof(CreateNotificationCommand).Assembly);
 builder.Services.AddCommonApiVersioning();
 builder.Services.AddCommonOpenApi();
-builder.Services.AddSignalR();
+var signalR = builder.Services.AddSignalR();
+if (builder.Configuration.GetValue<bool>("SignalR:UseAzure"))
+{
+    var connectionString = builder.Configuration.GetConnectionString("AzureSignalR");
+    if (string.IsNullOrWhiteSpace(connectionString))
+        throw new InvalidOperationException("ConnectionStrings:AzureSignalR is required when SignalR:UseAzure is enabled.");
+    signalR.AddAzureSignalR(connectionString);
+}
 builder.Services.AddScoped<INotificationHubService, NotificationHubService>();
 builder.Services.AddNotificationCors(builder.Configuration);
 builder.Services.AddJwtAuthentication(builder.Configuration, builder.Environment, options =>
@@ -94,7 +101,7 @@ builder.Services.AddNotificationMessaging(builder.Configuration);
 builder.Services.AddAuditServices(builder.Configuration, "notification-service");
 builder.Services.AddCustomHealthChecks(
     redisConnectionString: builder.Configuration.GetConnectionString("Redis"),
-    rabbitMqConnectionString: $"amqp://{builder.Configuration["RabbitMQ:Username"]}:{builder.Configuration["RabbitMQ:Password"]}@{builder.Configuration["RabbitMQ:Host"]}:5672",
+    rabbitMqConnectionString: BuildingBlocks.Infrastructure.Messaging.RabbitMqDeployment.HealthCheckUri(builder.Configuration),
     databaseConnectionString: builder.Configuration.GetConnectionString("DefaultConnection"),
     serviceName: "NotificationService");
 builder.Services.AddCarter();

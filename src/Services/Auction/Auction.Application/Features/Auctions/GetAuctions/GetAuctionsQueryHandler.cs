@@ -1,5 +1,4 @@
 using Auctions.Application.DTOs;
-using Auctions.Application.Services;
 using BuildingBlocks.Application.Abstractions;
 using Microsoft.Extensions.Logging;
 

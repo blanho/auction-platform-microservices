@@ -1,0 +1,88 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1800" height="1240" viewBox="0 0 1800 1240">
+<title>02 — Runtime flows</title>
+<rect width="100%" height="100%" fill="white"/>
+<defs>
+<marker id="arrow1677B8" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#1677B8"/></marker>
+<marker id="arrow7556A6" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#7556A6"/></marker>
+<marker id="arrow16847B" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#16847B"/></marker>
+</defs>
+<rect x="35" y="160" width="1730" height="230" fill="#F1F7FC" stroke="#A6C5DC" stroke-width="1.5"/>
+<rect x="65" y="245" width="275" height="80" fill="#FFFFFF" stroke="#B8C9D8" stroke-width="1"/>
+<rect x="390" y="245" width="275" height="80" fill="#FFFFFF" stroke="#B8C9D8" stroke-width="1"/>
+<rect x="715" y="245" width="275" height="80" fill="#FFFFFF" stroke="#B8C9D8" stroke-width="1"/>
+<rect x="1040" y="245" width="275" height="80" fill="#FFFFFF" stroke="#B8C9D8" stroke-width="1"/>
+<rect x="1365" y="245" width="275" height="80" fill="#FFFFFF" stroke="#B8C9D8" stroke-width="1"/>
+<rect x="35" y="430" width="1730" height="280" fill="#F6F2FA" stroke="#C9BBDE" stroke-width="1.5"/>
+<rect x="65" y="520" width="285" height="80" fill="#FFFFFF" stroke="#B8C9D8" stroke-width="1"/>
+<rect x="445" y="520" width="305" height="80" fill="#FFFFFF" stroke="#B8C9D8" stroke-width="1"/>
+<rect x="850" y="510" width="320" height="100" fill="#FFFFFF" stroke="#B8C9D8" stroke-width="1"/>
+<rect x="1280" y="480" width="415" height="75" fill="#FFFFFF" stroke="#B8C9D8" stroke-width="1"/>
+<rect x="1280" y="595" width="415" height="75" fill="#FFFFFF" stroke="#B8C9D8" stroke-width="1"/>
+<rect x="35" y="750" width="1730" height="315" fill="#EEF8F5" stroke="#A2C9BE" stroke-width="1.5"/>
+<rect x="65" y="865" width="275" height="80" fill="#FFFFFF" stroke="#B8C9D8" stroke-width="1"/>
+<rect x="435" y="810" width="290" height="75" fill="#FFFFFF" stroke="#B8C9D8" stroke-width="1"/>
+<rect x="825" y="810" width="300" height="75" fill="#FFFFFF" stroke="#B8C9D8" stroke-width="1"/>
+<rect x="435" y="950" width="290" height="75" fill="#FFFFFF" stroke="#B8C9D8" stroke-width="1"/>
+<rect x="825" y="950" width="300" height="75" fill="#FFFFFF" stroke="#B8C9D8" stroke-width="1"/>
+<rect x="1230" y="810" width="470" height="75" fill="#FFFFFF" stroke="#B8C9D8" stroke-width="1"/>
+<rect x="1230" y="950" width="470" height="75" fill="#FFFFFF" stroke="#B8C9D8" stroke-width="1"/>
+<polyline points="340,285 390,285" fill="none" stroke="#1677B8" stroke-width="2" stroke-dasharray="none" marker-end="url(#arrow1677B8)"/>
+<polyline points="665,285 715,285" fill="none" stroke="#1677B8" stroke-width="2" stroke-dasharray="none" marker-end="url(#arrow1677B8)"/>
+<polyline points="990,285 1040,285" fill="none" stroke="#1677B8" stroke-width="2" stroke-dasharray="none" marker-end="url(#arrow1677B8)" marker-start="url(#arrow1677B8)"/>
+<polyline points="1315,285 1365,285" fill="none" stroke="#1677B8" stroke-width="2" stroke-dasharray="none" marker-end="url(#arrow1677B8)"/>
+<polyline points="350,560 445,560" fill="none" stroke="#1677B8" stroke-width="2" stroke-dasharray="none" marker-end="url(#arrow1677B8)"/>
+<polyline points="750,560 850,560" fill="none" stroke="#1677B8" stroke-width="2" stroke-dasharray="none" marker-end="url(#arrow1677B8)" marker-start="url(#arrow1677B8)"/>
+<polyline points="600,520 600,466 1240,466 1240,517 1280,517" fill="none" stroke="#1677B8" stroke-width="2" stroke-dasharray="none" marker-end="url(#arrow1677B8)"/>
+<polyline points="600,600 600,645 1240,645 1240,632 1280,632" fill="none" stroke="#1677B8" stroke-width="2" stroke-dasharray="none" marker-end="url(#arrow1677B8)"/>
+<polyline points="340,885 380,885 380,847 435,847" fill="none" stroke="#1677B8" stroke-width="2" stroke-dasharray="none" marker-end="url(#arrow1677B8)"/>
+<polyline points="725,847 825,847" fill="none" stroke="#1677B8" stroke-width="2" stroke-dasharray="none" marker-end="url(#arrow1677B8)"/>
+<polyline points="340,925 380,925 380,987 435,987" fill="none" stroke="#1677B8" stroke-width="2" stroke-dasharray="none" marker-end="url(#arrow1677B8)"/>
+<polyline points="725,987 825,987" fill="none" stroke="#1677B8" stroke-width="2" stroke-dasharray="none" marker-end="url(#arrow1677B8)"/>
+<polyline points="1465,885 1465,950" fill="none" stroke="#1677B8" stroke-width="2" stroke-dasharray="none" marker-end="url(#arrow1677B8)"/>
+<text x="35" y="60.88" fill="#16324F" font-family="Arial,Helvetica,sans-serif" font-size="32" font-weight="600" text-anchor="start">Auction platform | Key runtime flows</text>
+<text x="35" y="105.44" fill="#53677D" font-family="Arial,Helvetica,sans-serif" font-size="16" font-weight="400" text-anchor="start">Service names repeat across lanes. These are selected interactions, not a complete endpoint or event inventory.</text>
+<text x="55" y="196.12" fill="#16324F" font-family="Arial,Helvetica,sans-serif" font-size="18" font-weight="600" text-anchor="start">01  •  Bid entry and internal gRPC relationships</text>
+<text x="83" y="277.78" fill="#16324F" font-family="Arial,Helvetica,sans-serif" font-size="17" font-weight="600" text-anchor="start">Browser</text>
+<text x="83" y="308.92" fill="#53677D" font-family="Arial,Helvetica,sans-serif" font-size="13" font-weight="400" text-anchor="start">Authenticated request</text>
+<text x="408" y="277.78" fill="#16324F" font-family="Arial,Helvetica,sans-serif" font-size="17" font-weight="600" text-anchor="start">YARP gateway</text>
+<text x="408" y="308.92" fill="#53677D" font-family="Arial,Helvetica,sans-serif" font-size="13" font-weight="400" text-anchor="start">REST routing</text>
+<text x="733" y="277.78" fill="#16324F" font-family="Arial,Helvetica,sans-serif" font-size="17" font-weight="600" text-anchor="start">Bidding</text>
+<text x="733" y="308.92" fill="#53677D" font-family="Arial,Helvetica,sans-serif" font-size="13" font-weight="400" text-anchor="start">Bid ordering + PostgreSQL lock</text>
+<text x="1058" y="277.78" fill="#16324F" font-family="Arial,Helvetica,sans-serif" font-size="17" font-weight="600" text-anchor="start">Auction</text>
+<text x="1058" y="308.92" fill="#53677D" font-family="Arial,Helvetica,sans-serif" font-size="13" font-weight="400" text-anchor="start">Snapshot-miss validation</text>
+<text x="1383" y="277.78" fill="#16324F" font-family="Arial,Helvetica,sans-serif" font-size="17" font-weight="600" text-anchor="start">Catalog</text>
+<text x="1383" y="308.92" fill="#53677D" font-family="Arial,Helvetica,sans-serif" font-size="13" font-weight="400" text-anchor="start">Catalog queries</text>
+<text x="65" y="360.26" fill="#53677D" font-family="Arial,Helvetica,sans-serif" font-size="14" font-weight="400" text-anchor="start">Bidding → Auction: validation fallback. Auction → Bidding: winner finalization. Catalog lookup is a separate gRPC use case.</text>
+<text x="55" y="466.12" fill="#16324F" font-family="Arial,Helvetica,sans-serif" font-size="18" font-weight="600" text-anchor="start">02  •  Sale coordination and durable messaging</text>
+<text x="83" y="552.78" fill="#16324F" font-family="Arial,Helvetica,sans-serif" font-size="17" font-weight="600" text-anchor="start">Auction</text>
+<text x="83" y="583.92" fill="#53677D" font-family="Arial,Helvetica,sans-serif" font-size="13" font-weight="400" text-anchor="start">Quartz close / buy-now flow</text>
+<text x="463" y="552.78" fill="#16324F" font-family="Arial,Helvetica,sans-serif" font-size="17" font-weight="600" text-anchor="start">RabbitMQ</text>
+<text x="463" y="583.92" fill="#53677D" font-family="Arial,Helvetica,sans-serif" font-size="13" font-weight="400" text-anchor="start">MassTransit events + commands</text>
+<text x="868" y="542.78" fill="#16324F" font-family="Arial,Helvetica,sans-serif" font-size="17" font-weight="600" text-anchor="start">Orchestration</text>
+<text x="868" y="575.795" fill="#53677D" font-family="Arial,Helvetica,sans-serif" font-size="13" font-weight="400" text-anchor="start">Saga state + recovery cases</text>
+<text x="868" y="592.045" fill="#53677D" font-family="Arial,Helvetica,sans-serif" font-size="13" font-weight="400" text-anchor="start">Own PostgreSQL database</text>
+<text x="1298" y="512.78" fill="#16324F" font-family="Arial,Helvetica,sans-serif" font-size="17" font-weight="600" text-anchor="start">Payment</text>
+<text x="1298" y="541.42" fill="#53677D" font-family="Arial,Helvetica,sans-serif" font-size="13" font-weight="400" text-anchor="start">Order / payment operations</text>
+<text x="1298" y="627.78" fill="#16324F" font-family="Arial,Helvetica,sans-serif" font-size="17" font-weight="600" text-anchor="start">Notification</text>
+<text x="1298" y="656.42" fill="#53677D" font-family="Arial,Helvetica,sans-serif" font-size="13" font-weight="400" text-anchor="start">Sale notification delivery</text>
+<text x="65" y="689.76" fill="#53677D" font-family="Arial,Helvetica,sans-serif" font-size="14" font-weight="400" text-anchor="start">Coordinator commands and acknowledgments travel through RabbitMQ; service database transactions use inbox/outbox patterns where configured.</text>
+<text x="55" y="786.12" fill="#16324F" font-family="Arial,Helvetica,sans-serif" font-size="18" font-weight="600" text-anchor="start">03  •  Projections, real-time updates and files</text>
+<text x="83" y="897.78" fill="#16324F" font-family="Arial,Helvetica,sans-serif" font-size="17" font-weight="600" text-anchor="start">RabbitMQ</text>
+<text x="83" y="928.92" fill="#53677D" font-family="Arial,Helvetica,sans-serif" font-size="13" font-weight="400" text-anchor="start">Committed domain events</text>
+<text x="453" y="842.78" fill="#16324F" font-family="Arial,Helvetica,sans-serif" font-size="17" font-weight="600" text-anchor="start">Search</text>
+<text x="453" y="871.42" fill="#53677D" font-family="Arial,Helvetica,sans-serif" font-size="13" font-weight="400" text-anchor="start">Updates search projection</text>
+<text x="843" y="842.78" fill="#16324F" font-family="Arial,Helvetica,sans-serif" font-size="17" font-weight="600" text-anchor="start">Elasticsearch</text>
+<text x="843" y="871.42" fill="#53677D" font-family="Arial,Helvetica,sans-serif" font-size="13" font-weight="400" text-anchor="start">Search index</text>
+<text x="453" y="982.78" fill="#16324F" font-family="Arial,Helvetica,sans-serif" font-size="17" font-weight="600" text-anchor="start">Notification</text>
+<text x="453" y="1011.42" fill="#53677D" font-family="Arial,Helvetica,sans-serif" font-size="13" font-weight="400" text-anchor="start">SignalR hub</text>
+<text x="843" y="982.78" fill="#16324F" font-family="Arial,Helvetica,sans-serif" font-size="17" font-weight="600" text-anchor="start">Browser</text>
+<text x="843" y="1011.42" fill="#53677D" font-family="Arial,Helvetica,sans-serif" font-size="13" font-weight="400" text-anchor="start">Live updates via YARP</text>
+<text x="1248" y="842.78" fill="#16324F" font-family="Arial,Helvetica,sans-serif" font-size="17" font-weight="600" text-anchor="start">Storage</text>
+<text x="1248" y="871.42" fill="#53677D" font-family="Arial,Helvetica,sans-serif" font-size="13" font-weight="400" text-anchor="start">Uploads and generated files</text>
+<image x="1246" y="966.5" width="42" height="42" xlink:href="data:image/svg+xml;base64,PHN2ZyBpZD0iZjJmMDQzNDktOGFlZS00NDEzLTg0YzktYTkwNTM2MTFiMzE5IiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxOCIgaGVpZ2h0PSIxOCIgdmlld0JveD0iMCAwIDE4IDE4Ij48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImFkNGM0Zjk2LTA5YWEtNGY5MS1iYTEwLTVjYjhhZDUzMGY3NCIgeDE9IjkiIHkxPSIxNS44MyIgeDI9IjkiIHkyPSI1Ljc5IiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjYjNiM2IzIiAvPjxzdG9wIG9mZnNldD0iMC4yNiIgc3RvcC1jb2xvcj0iI2MxYzFjMSIgLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNlNmU2ZTYiIC8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHRpdGxlPkljb24tc3RvcmFnZS04NjwvdGl0bGU+PHBhdGggZD0iTS41LDUuNzloMTdhMCwwLDAsMCwxLDAsMHY5LjQ4YS41Ny41NywwLDAsMS0uNTcuNTdIMS4wN2EuNTcuNTcsMCwwLDEtLjU3LS41N1Y1Ljc5QTAsMCwwLDAsMSwuNSw1Ljc5WiIgZmlsbD0idXJsKCNhZDRjNGY5Ni0wOWFhLTRmOTEtYmExMC01Y2I4YWQ1MzBmNzQpIiAvPjxwYXRoIGQ9Ik0xLjA3LDIuMTdIMTYuOTNhLjU3LjU3LDAsMCwxLC41Ny41N1Y1Ljc5YTAsMCwwLDAsMSwwLDBILjVhMCwwLDAsMCwxLDAsMFYyLjczQS41Ny41NywwLDAsMSwxLjA3LDIuMTdaIiBmaWxsPSIjMzdjMmIxIiAvPjxwYXRoIGQ9Ik0yLjgxLDYuODlIMTUuMThhLjI3LjI3LDAsMCwxLC4yNi4yN3YxLjRhLjI3LjI3LDAsMCwxLS4yNi4yN0gyLjgxYS4yNy4yNywwLDAsMS0uMjYtLjI3VjcuMTZBLjI3LjI3LDAsMCwxLDIuODEsNi44OVoiIGZpbGw9IiNmZmYiIC8+PHBhdGggZD0iTTIuODIsOS42OEgxNS4xOWEuMjcuMjcsMCwwLDEsLjI2LjI3djEuNDFhLjI3LjI3LDAsMCwxLS4yNi4yN0gyLjgyYS4yNy4yNywwLDAsMS0uMjYtLjI3VjEwQS4yNy4yNywwLDAsMSwyLjgyLDkuNjhaIiBmaWxsPSIjMzdjMmIxIiAvPjxwYXRoIGQ9Ik0yLjgyLDEyLjVIMTUuMTlhLjI3LjI3LDAsMCwxLC4yNi4yN3YxLjQxYS4yNy4yNywwLDAsMS0uMjYuMjdIMi44MmEuMjcuMjcsMCwwLDEtLjI2LS4yN1YxMi43N0EuMjcuMjcsMCwwLDEsMi44MiwxMi41WiIgZmlsbD0iIzI1ODI3NyIgLz48L3N2Zz4="/>
+<text x="1302" y="982.78" fill="#16324F" font-family="Arial,Helvetica,sans-serif" font-size="17" font-weight="600" text-anchor="start">Azure Blob Storage</text>
+<text x="1302" y="1011.42" fill="#53677D" font-family="Arial,Helvetica,sans-serif" font-size="13" font-weight="400" text-anchor="start">Workload identity</text>
+<text x="35" y="1111.44" fill="#53677D" font-family="Arial,Helvetica,sans-serif" font-size="16" font-weight="400" text-anchor="start">Other services: Identity owns authentication; Analytics consumes reporting events; Job owns general scheduled and operational jobs.</text>
+<text x="35" y="1161.44" fill="#53677D" font-family="Arial,Helvetica,sans-serif" font-size="16" font-weight="400" text-anchor="start">Real-time deployment gap: configure the browser production hub URL and a cross-replica SignalR delivery mechanism.</text>
+<text x="35" y="1216.92" fill="#53677D" font-family="Arial,Helvetica,sans-serif" font-size="13" font-weight="400" text-anchor="start">Source: service code, architecture guide, production Kubernetes overlay and Azure Bicep. No cloud resources were deployed.</text>
+</svg>

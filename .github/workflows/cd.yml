@@ -30,7 +30,12 @@ env:
   STORAGE_IDENTITY_CLIENT_ID: ${{ vars.STORAGE_IDENTITY_CLIENT_ID }}
   API_DOMAIN: ${{ vars.API_DOMAIN }}
   WEB_DOMAIN: ${{ vars.WEB_DOMAIN }}
+  FRONTEND_DOMAIN: ${{ vars.FRONTEND_DOMAIN }}
   CERT_MANAGER_EMAIL: ${{ vars.CERT_MANAGER_EMAIL }}
+  KUBERNETES_OVERLAY: ${{ vars.KUBERNETES_OVERLAY || 'production' }}
+  RABBITMQ_HOST: ${{ vars.RABBITMQ_HOST }}
+  RABBITMQ_VHOST: ${{ vars.RABBITMQ_VHOST }}
+  ELASTICSEARCH_HOST: ${{ vars.ELASTICSEARCH_HOST }}
 
 jobs:
   build-images:
@@ -155,6 +160,19 @@ jobs:
             --set crds.enabled=true \
             --wait \
             --timeout 5m
+
+      - name: Check managed dependency migration
+        if: env.KUBERNETES_OVERLAY == 'production-managed'
+        run: |
+          kubectl get statefulset rabbitmq elasticsearch -n auction-platform \
+            --ignore-not-found -o json > "$RUNNER_TEMP/legacy-dependencies.json"
+          python3 - "$RUNNER_TEMP/legacy-dependencies.json" <<'PY'
+          import json, sys
+          resources = json.load(open(sys.argv[1])).get('items', [])
+          active = [r['metadata']['name'] for r in resources if r['spec'].get('replicas', 1) > 0]
+          if active:
+              sys.exit('Complete the migration runbook and stop legacy dependencies before cutover: ' + ', '.join(active))
+          PY
 
       - name: Render production manifests
         env:

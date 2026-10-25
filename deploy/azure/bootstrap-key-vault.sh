@@ -7,6 +7,7 @@ required_variables=(
   POSTGRES_ADMIN_USER
   POSTGRES_ADMIN_PASSWORD
   REDIS_CONNECTION
+  AZURE_SIGNALR_CONNECTION
   ELASTICSEARCH_USERNAME
   ELASTICSEARCH_PASSWORD
   SENDGRID_API_KEY
@@ -65,6 +66,7 @@ set_secret auction-platform-storage-db-connection "$(postgres_connection storage
 set_secret auction-platform-job-db-connection "$(postgres_connection job_db)"
 set_secret auction-platform-orchestration-db-connection "$(postgres_connection orchestration_db)"
 set_secret auction-platform-redis-connection "$REDIS_CONNECTION"
+set_secret auction-platform-signalr-connection "$AZURE_SIGNALR_CONNECTION"
 set_secret auction-platform-elasticsearch-username "$ELASTICSEARCH_USERNAME"
 set_secret auction-platform-elasticsearch-password "$ELASTICSEARCH_PASSWORD"
 set_secret auction-platform-sendgrid-api-key "$SENDGRID_API_KEY"

@@ -1,3 +1,4 @@
+using BuildingBlocks.Infrastructure.Messaging;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Storage.Infrastructure.Configuration;
@@ -12,11 +13,10 @@ public static class MassTransitConfiguration
         this IServiceCollection services,
         IConfiguration configuration)
     {
-        var rabbitMqSettings = configuration.GetSection(RabbitMqSettings.SectionName).Get<RabbitMqSettings>()
-            ?? new RabbitMqSettings();
-
         services.AddMassTransit(x =>
         {
+            x.AddConfigureEndpointsCallback((context, _, endpoint) =>
+                RabbitMqDeployment.ConfigureQuorumQueue(endpoint, context));
             x.AddConsumer<ImageProcessingTriggerConsumer>();
             x.AddConsumer<ProcessImageConsumer>();
             x.AddConsumer<FinalizeFileUploadConsumer>();
@@ -33,15 +33,11 @@ public static class MassTransitConfiguration
 
             x.UsingRabbitMq((context, cfg) =>
             {
-                cfg.Host(rabbitMqSettings.Host, rabbitMqSettings.Port, rabbitMqSettings.VirtualHost, h =>
-                {
-                    h.Username(rabbitMqSettings.Username);
-                    h.Password(rabbitMqSettings.Password);
-                    h.Heartbeat(TimeSpan.FromSeconds(StorageDefaults.Messaging.HeartbeatSeconds));
-                });
+                cfg.ConfigureRabbitMqHost(configuration);
 
                 cfg.ReceiveEndpoint("storage-image-processing", e =>
                 {
+                    RabbitMqDeployment.ConfigureQuorumQueue(e, context);
                     e.ConfigureConsumer<ImageProcessingTriggerConsumer>(context);
                     e.UseMessageRetry(r => r.Exponential(
                         retryLimit: StorageDefaults.Messaging.StandardRetryLimit,

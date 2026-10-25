@@ -5,4 +5,5 @@ param environment = 'prod'
 param location = 'southeastasia'
 param postgresqlAdministratorLogin = 'auctionadmin'
 param deployManagedRedis = true
+param signalRAllowedOrigins = ['https://auction.example.com']
 param githubRepository = 'your-github-owner/auction-platform-microservices'

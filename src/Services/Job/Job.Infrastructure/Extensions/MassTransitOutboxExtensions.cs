@@ -17,6 +17,8 @@ public static class MassTransitOutboxExtensions
         services.AddScoped<Messaging.JobProgressStore>();
         services.AddMassTransit(x =>
         {
+            x.AddConfigureEndpointsCallback((context, _, endpoint) =>
+                RabbitMqDeployment.ConfigureQuorumQueue(endpoint, context));
             x.AddConsumer<ProcessJobItemConsumer>();
             x.AddConsumer<AuctionWorkflowFaultConsumer>();
             x.AddConsumer<ServiceJobFaultConsumer>();
@@ -41,25 +43,12 @@ public static class MassTransitOutboxExtensions
 
             x.UsingRabbitMq((context, cfg) =>
             {
-                var host = configuration["RabbitMQ:Host"]
-                    ?? throw new InvalidOperationException("RabbitMQ:Host configuration is required");
-                var username = configuration["RabbitMQ:Username"]
-                    ?? throw new InvalidOperationException("RabbitMQ:Username configuration is required");
-                var password = configuration["RabbitMQ:Password"]
-                    ?? throw new InvalidOperationException("RabbitMQ:Password configuration is required");
-                var virtualHost = configuration["RabbitMQ:VirtualHost"] ?? "/";
 
-                var port = configuration.GetValue<ushort?>("RabbitMQ:Port") ?? 5672;
-                cfg.Host(host, port, virtualHost, h =>
-                {
-                    h.Username(username);
-                    h.Password(password);
-                    h.RequestedConnectionTimeout(TimeSpan.FromSeconds(JobDefaults.Connection.RequestTimeoutSeconds));
-                    h.ContinuationTimeout(TimeSpan.FromSeconds(JobDefaults.Connection.ContinuationTimeoutSeconds));
-                });
+                cfg.ConfigureRabbitMqHost(configuration);
 
                 cfg.ReceiveEndpoint("job-requests", e =>
                 {
+                    RabbitMqDeployment.ConfigureQuorumQueue(e, context);
                     e.UseEntityFrameworkOutbox<JobDbContext>(context);
                     e.ConfigureConsumer<RequestJobConsumer>(context);
                     e.UseMessageRetry(r => r.Exponential(
@@ -71,6 +60,7 @@ public static class MassTransitOutboxExtensions
 
                 cfg.ReceiveEndpoint("job-item-results", e =>
                 {
+                    RabbitMqDeployment.ConfigureQuorumQueue(e, context);
                     e.UseEntityFrameworkOutbox<JobDbContext>(context);
                     e.ConfigureConsumer<ReportJobItemResultConsumer>(context);
                     e.UseMessageRetry(r => r.Exponential(
@@ -83,6 +73,7 @@ public static class MassTransitOutboxExtensions
 
                 cfg.ReceiveEndpoint("job-streaming-init", e =>
                 {
+                    RabbitMqDeployment.ConfigureQuorumQueue(e, context);
                     e.UseEntityFrameworkOutbox<JobDbContext>(context);
                     e.ConfigureConsumer<InitializeStreamingJobConsumer>(context);
                     e.UseMessageRetry(r => r.Exponential(
@@ -94,6 +85,7 @@ public static class MassTransitOutboxExtensions
 
                 cfg.ReceiveEndpoint("job-item-batches", e =>
                 {
+                    RabbitMqDeployment.ConfigureQuorumQueue(e, context);
                     e.UseEntityFrameworkOutbox<JobDbContext>(context);
                     e.ConfigureConsumer<AddJobItemsBatchConsumer>(context);
                     e.UseMessageRetry(r => r.Exponential(
@@ -107,6 +99,7 @@ public static class MassTransitOutboxExtensions
 
                 cfg.ReceiveEndpoint("job-finalize-init", e =>
                 {
+                    RabbitMqDeployment.ConfigureQuorumQueue(e, context);
                     e.UseEntityFrameworkOutbox<JobDbContext>(context);
                     e.ConfigureConsumer<FinalizeJobInitializationConsumer>(context);
                     e.UseMessageRetry(r => r.Exponential(
@@ -118,6 +111,7 @@ public static class MassTransitOutboxExtensions
 
                 cfg.ReceiveEndpoint("job-item-batch-results", e =>
                 {
+                    RabbitMqDeployment.ConfigureQuorumQueue(e, context);
                     e.UseEntityFrameworkOutbox<JobDbContext>(context);
                     e.ConfigureConsumer<ReportJobItemBatchResultConsumer>(context);
                     e.UseMessageRetry(r => r.Exponential(
@@ -130,6 +124,7 @@ public static class MassTransitOutboxExtensions
 
                 cfg.ReceiveEndpoint("job-batch-progress", e =>
                 {
+                    RabbitMqDeployment.ConfigureQuorumQueue(e, context);
                     e.UseEntityFrameworkOutbox<JobDbContext>(context);
                     e.ConfigureConsumer<ReportJobBatchProgressConsumer>(context);
                     e.UseMessageRetry(r => r.Exponential(
@@ -142,6 +137,7 @@ public static class MassTransitOutboxExtensions
 
                 cfg.ReceiveEndpoint("job-fail-by-correlation", e =>
                 {
+                    RabbitMqDeployment.ConfigureQuorumQueue(e, context);
                     e.UseEntityFrameworkOutbox<JobDbContext>(context);
                     e.ConfigureConsumer<FailJobByCorrelationConsumer>(context);
                     e.UseMessageRetry(r => r.Exponential(

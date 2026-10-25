@@ -62,6 +62,8 @@ internal static class ServiceCollectionExtensions
     {
         services.AddMassTransit(x =>
         {
+            x.AddConfigureEndpointsCallback((context, _, endpoint) =>
+                RabbitMqDeployment.ConfigureQuorumQueue(endpoint, context));
             x.AddEntityFrameworkOutbox<ApplicationDbContext>(o =>
             {
                 o.UsePostgres();
@@ -71,12 +73,7 @@ internal static class ServiceCollectionExtensions
 
             x.UsingRabbitMq((context, cfg) =>
             {
-                var rabbitConfig = configuration.GetSection("RabbitMq");
-                cfg.Host(rabbitConfig["Host"] ?? "localhost", "/", h =>
-                {
-                    h.Username(rabbitConfig["Username"] ?? "guest");
-                    h.Password(rabbitConfig["Password"] ?? "guest");
-                });
+                cfg.ConfigureRabbitMqHost(configuration);
 
                 cfg.UseDelayedRedelivery(r => r.Intervals(
                     TimeSpan.FromSeconds(5),

@@ -1,6 +1,21 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+KUBERNETES_OVERLAY="${KUBERNETES_OVERLAY:-production}"
+case "$KUBERNETES_OVERLAY" in
+  production) ;;
+  production-managed)
+    domain_pattern='^([A-Za-z0-9-]+\.)+[A-Za-z]{2,63}$'
+    if [[ ! "${RABBITMQ_HOST:-}" =~ $domain_pattern ]] ||
+       [[ ! "${ELASTICSEARCH_HOST:-}" =~ $domain_pattern ]] ||
+       [[ ! "${RABBITMQ_VHOST:-}" =~ ^[A-Za-z0-9_./-]+$ ]]; then
+      echo "Managed deployment requires valid RABBITMQ_HOST, ELASTICSEARCH_HOST and RABBITMQ_VHOST." >&2
+      exit 1
+    fi
+    ;;
+  *) echo "Unsupported KUBERNETES_OVERLAY: $KUBERNETES_OVERLAY" >&2; exit 1 ;;
+esac
+
 required_variables=(
   ACR_LOGIN_SERVER
   IMAGE_TAG
@@ -47,8 +62,10 @@ if [[ ! "$SECRETS_IDENTITY_CLIENT_ID" =~ ^[0-9a-fA-F-]{36}$ ]] ||
 fi
 
 domain_pattern='^([A-Za-z0-9-]+\.)+[A-Za-z]{2,63}$'
-if [[ ! "$API_DOMAIN" =~ $domain_pattern ]] || [[ ! "$WEB_DOMAIN" =~ $domain_pattern ]]; then
-  echo "API_DOMAIN and WEB_DOMAIN must be valid DNS host names." >&2
+FRONTEND_DOMAIN="${FRONTEND_DOMAIN:-$WEB_DOMAIN}"
+if [[ ! "$API_DOMAIN" =~ $domain_pattern ]] || [[ ! "$WEB_DOMAIN" =~ $domain_pattern ]] ||
+   [[ ! "$FRONTEND_DOMAIN" =~ $domain_pattern ]]; then
+  echo "API_DOMAIN, WEB_DOMAIN and FRONTEND_DOMAIN must be valid DNS host names." >&2
   exit 1
 fi
 
@@ -58,7 +75,7 @@ if [[ ! "$CERT_MANAGER_EMAIL" =~ ^[A-Za-z0-9._+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,63
 fi
 
 rendered_manifest="$(
-  kubectl kustomize deploy/kubernetes/overlays/production |
+  kubectl kustomize "deploy/kubernetes/overlays/$KUBERNETES_OVERLAY" |
   sed \
     -e "s|REPLACE_WITH_ACR_LOGIN_SERVER|${ACR_LOGIN_SERVER}|g" \
     -e "s|:v1\\.0\\.0|:${IMAGE_TAG}|g" \
@@ -66,10 +83,14 @@ rendered_manifest="$(
     -e "s|REPLACE_WITH_MANAGED_IDENTITY_CLIENT_ID|${SECRETS_IDENTITY_CLIENT_ID}|g" \
     -e "s|REPLACE_WITH_STORAGE_IDENTITY_CLIENT_ID|${STORAGE_IDENTITY_CLIENT_ID}|g" \
     -e "s|REPLACE_WITH_STORAGE_ACCOUNT|${STORAGE_ACCOUNT_NAME}|g" \
+    -e "s|REPLACE_WITH_RABBITMQ_HOST|${RABBITMQ_HOST:-}|g" \
+    -e "s|REPLACE_WITH_RABBITMQ_VHOST|${RABBITMQ_VHOST:-}|g" \
+    -e "s|REPLACE_WITH_ELASTICSEARCH_HOST|${ELASTICSEARCH_HOST:-}|g" \
     -e "s|api\\.auction-platform\\.com|${API_DOMAIN}|g" \
     -e "s|auction-platform\\.com|${WEB_DOMAIN}|g" \
     -e "s|REPLACE_WITH_API_DOMAIN|${API_DOMAIN}|g" \
     -e "s|REPLACE_WITH_WEB_DOMAIN|${WEB_DOMAIN}|g" \
+    -e "s|REPLACE_WITH_FRONTEND_DOMAIN|${FRONTEND_DOMAIN}|g" \
     -e "s|REPLACE_WITH_CERT_EMAIL|${CERT_MANAGER_EMAIL}|g"
 )"
 

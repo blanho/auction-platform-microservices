@@ -1,3 +1,4 @@
+using BuildingBlocks.Infrastructure.Messaging;
 using Elastic.Clients.Elasticsearch;
 using Elastic.Transport;
 using BuildingBlocks.Infrastructure.Extensions;
@@ -74,6 +75,8 @@ public static class ServiceExtensions
     {
         services.AddMassTransit(x =>
         {
+            x.AddConfigureEndpointsCallback((context, _, endpoint) =>
+                RabbitMqDeployment.ConfigureQuorumQueue(endpoint, context));
 
             x.AddConsumer<ReindexAuctionsConsumer>();
             x.AddConsumer<AuctionCreatedConsumer>();
@@ -85,19 +88,8 @@ public static class ServiceExtensions
 
             x.UsingRabbitMq((context, cfg) =>
             {
-                var rabbitHost = configuration["RabbitMQ:Host"]
-                    ?? throw new InvalidOperationException("RabbitMQ:Host configuration is required");
-                var rabbitUser = configuration["RabbitMQ:Username"]
-                    ?? throw new InvalidOperationException("RabbitMQ:Username configuration is required");
-                var rabbitPass = configuration["RabbitMQ:Password"]
-                    ?? throw new InvalidOperationException("RabbitMQ:Password configuration is required");
-                var rabbitVHost = configuration["RabbitMQ:VirtualHost"] ?? "/";
 
-                cfg.Host(rabbitHost, rabbitVHost, h =>
-                {
-                    h.Username(rabbitUser);
-                    h.Password(rabbitPass);
-                });
+                cfg.ConfigureRabbitMqHost(configuration);
 
                 cfg.UseMessageRetry(r => r.Exponential(
                     retryLimit: MessagingDefaults.GlobalRetryLimit,
@@ -107,6 +99,7 @@ public static class ServiceExtensions
 
                 cfg.ReceiveEndpoint("search-auction-created", e =>
                 {
+                    RabbitMqDeployment.ConfigureQuorumQueue(e, context);
                     e.ConfigureConsumer<AuctionCreatedConsumer>(context);
                     e.PrefetchCount = MessagingDefaults.PrefetchCountLow;
                     e.UseDelayedRedelivery(r => r.Intervals(
@@ -117,6 +110,7 @@ public static class ServiceExtensions
 
                 cfg.ReceiveEndpoint("search-auction-updated", e =>
                 {
+                    RabbitMqDeployment.ConfigureQuorumQueue(e, context);
                     e.ConfigureConsumer<AuctionUpdatedConsumer>(context);
                     e.PrefetchCount = MessagingDefaults.PrefetchCountMedium;
                     e.UseDelayedRedelivery(r => r.Intervals(
@@ -127,6 +121,7 @@ public static class ServiceExtensions
 
                 cfg.ReceiveEndpoint("search-auction-deleted", e =>
                 {
+                    RabbitMqDeployment.ConfigureQuorumQueue(e, context);
                     e.ConfigureConsumer<AuctionDeletedConsumer>(context);
                     e.UseDelayedRedelivery(r => r.Intervals(
                         TimeSpan.FromSeconds(MessagingDefaults.RedeliveryFastSeconds),
@@ -135,6 +130,7 @@ public static class ServiceExtensions
 
                 cfg.ReceiveEndpoint("search-auction-finished", e =>
                 {
+                    RabbitMqDeployment.ConfigureQuorumQueue(e, context);
                     e.ConfigureConsumer<AuctionFinishedConsumer>(context);
                     e.UseDelayedRedelivery(r => r.Intervals(
                         TimeSpan.FromSeconds(MessagingDefaults.RedeliveryFastSeconds),
@@ -143,6 +139,7 @@ public static class ServiceExtensions
 
                 cfg.ReceiveEndpoint("search-bid-updated", e =>
                 {
+                    RabbitMqDeployment.ConfigureQuorumQueue(e, context);
                     e.ConfigureConsumer<HighestBidUpdatedConsumer>(context);
                     e.PrefetchCount = MessagingDefaults.PrefetchCountHigh;
                     e.UseDelayedRedelivery(r => r.Intervals(
@@ -152,6 +149,7 @@ public static class ServiceExtensions
 
                 cfg.ReceiveEndpoint("search-bid-retracted", e =>
                 {
+                    RabbitMqDeployment.ConfigureQuorumQueue(e, context);
                     e.ConfigureConsumer<BidRetractedConsumer>(context);
                     e.PrefetchCount = MessagingDefaults.PrefetchCountMedium;
                     e.UseDelayedRedelivery(r => r.Intervals(
@@ -161,6 +159,7 @@ public static class ServiceExtensions
 
                 cfg.ReceiveEndpoint("search-reindex-auctions", e =>
                 {
+                    RabbitMqDeployment.ConfigureQuorumQueue(e, context);
                     e.PrefetchCount = 1;
                     e.ConcurrentMessageLimit = 1;
                     e.UseInMemoryOutbox(context);

@@ -61,7 +61,7 @@ builder.Services.AddJwtAuthentication(builder.Configuration, builder.Environment
 builder.Services.AddRbacAuthorization();
 builder.Services.AddCoreAuthorization();
 builder.Services.AddCustomHealthChecks(
-    rabbitMqConnectionString: $"amqp://{builder.Configuration["RabbitMQ:Username"]}:{builder.Configuration["RabbitMQ:Password"]}@{builder.Configuration["RabbitMQ:Host"]}:5672",
+    rabbitMqConnectionString: BuildingBlocks.Infrastructure.Messaging.RabbitMqDeployment.HealthCheckUri(builder.Configuration),
     databaseConnectionString: builder.Configuration.GetConnectionString("DefaultConnection"),
     serviceName: "StorageService");
 builder.Services.AddControllers()

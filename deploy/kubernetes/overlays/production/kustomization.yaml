@@ -15,6 +15,47 @@ labels:
     includeSelectors: true
 
 patches:
+  - target:
+      kind: Deployment
+    patch: |-
+      - op: add
+        path: /spec/template/spec/topologySpreadConstraints
+        value:
+          - maxSkew: 1
+            topologyKey: topology.kubernetes.io/zone
+            whenUnsatisfiable: DoNotSchedule
+            labelSelector:
+              matchLabels:
+                environment: production
+            matchLabelKeys: [app]
+          - maxSkew: 1
+            topologyKey: kubernetes.io/hostname
+            whenUnsatisfiable: DoNotSchedule
+            labelSelector:
+              matchLabels:
+                environment: production
+            matchLabelKeys: [app]
+  - target:
+      kind: Deployment
+      name: analytics-api
+    patch: |-
+      - op: replace
+        path: /spec/replicas
+        value: 2
+  - target:
+      kind: HorizontalPodAutoscaler
+      name: analytics-api-hpa
+    patch: |-
+      - op: replace
+        path: /spec/minReplicas
+        value: 2
+  - target:
+      kind: ConfigMap
+      name: auction-platform-config
+    patch: |-
+      - op: add
+        path: /data/SignalR__UseAzure
+        value: "true"
   - patch: |-
       $patch: delete
       apiVersion: v1
@@ -141,10 +182,10 @@ patches:
         value: https://REPLACE_WITH_STORAGE_ACCOUNT.blob.core.windows.net
       - op: add
         path: /data/Cors__AllowedOrigins__0
-        value: https://REPLACE_WITH_WEB_DOMAIN
+        value: https://REPLACE_WITH_FRONTEND_DOMAIN
       - op: add
         path: /data/FrontendUrl
-        value: https://REPLACE_WITH_WEB_DOMAIN
+        value: https://REPLACE_WITH_FRONTEND_DOMAIN
     target:
       kind: ConfigMap
       name: auction-platform-config

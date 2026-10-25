@@ -42,7 +42,7 @@ builder.Services.AddRbacAuthorization();
 builder.Services.AddCoreAuthorization();
 builder.Services.AddCustomHealthChecks(
     redisConnectionString: builder.Configuration.GetConnectionString("Redis"),
-    rabbitMqConnectionString: $"amqp://{builder.Configuration["RabbitMQ:Username"]}:{builder.Configuration["RabbitMQ:Password"]}@{builder.Configuration["RabbitMQ:Host"]}:5672",
+    rabbitMqConnectionString: BuildingBlocks.Infrastructure.Messaging.RabbitMqDeployment.HealthCheckUri(builder.Configuration),
     databaseConnectionString: builder.Configuration.GetConnectionString("DefaultConnection"),
     serviceName: "PaymentService");
 

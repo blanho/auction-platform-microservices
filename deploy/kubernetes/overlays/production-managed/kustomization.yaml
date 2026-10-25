@@ -1,0 +1,59 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: auction-platform
+resources:
+  - ../production
+  - provider-egress.yaml
+patches:
+  - target:
+      kind: StatefulSet
+      name: rabbitmq|elasticsearch
+    patch: |-
+      $patch: delete
+      apiVersion: apps/v1
+      kind: StatefulSet
+      metadata:
+        name: unused
+  - target:
+      kind: Service
+      name: rabbitmq|elasticsearch
+    patch: |-
+      $patch: delete
+      apiVersion: v1
+      kind: Service
+      metadata:
+        name: unused
+  - target:
+      kind: ConfigMap
+      name: auction-platform-config
+    patch: |-
+      - op: replace
+        path: /data/RabbitMQ__Host
+        value: REPLACE_WITH_RABBITMQ_HOST
+      - op: replace
+        path: /data/RabbitMQ__Port
+        value: "5671"
+      - op: add
+        path: /data/RabbitMQ__VirtualHost
+        value: REPLACE_WITH_RABBITMQ_VHOST
+      - op: add
+        path: /data/RabbitMQ__UseTls
+        value: "true"
+      - op: add
+        path: /data/RabbitMQ__UseQuorumQueues
+        value: "true"
+      - op: replace
+        path: /data/RABBITMQ_HOST
+        value: REPLACE_WITH_RABBITMQ_HOST
+      - op: replace
+        path: /data/RABBITMQ_PORT
+        value: "5671"
+      - op: replace
+        path: /data/Elasticsearch__Url
+        value: https://REPLACE_WITH_ELASTICSEARCH_HOST:443
+      - op: add
+        path: /data/Elasticsearch__NumberOfReplicas
+        value: "1"
+      - op: replace
+        path: /data/Logging__Elasticsearch__Enabled
+        value: "false"

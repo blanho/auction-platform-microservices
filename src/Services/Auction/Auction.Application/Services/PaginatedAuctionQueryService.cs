@@ -1,15 +1,7 @@
 using Auctions.Application.DTOs;
 using AutoMapper;
-using Auctions.Domain.Entities;
 
 namespace Auctions.Application.Services;
-
-public interface IPaginatedAuctionQueryService
-{
-    Task<PaginatedResult<AuctionDto>> GetPagedAuctionsAsync(
-        AuctionFilterDto queryParams,
-        CancellationToken cancellationToken);
-}
 
 public class PaginatedAuctionQueryService : IPaginatedAuctionQueryService
 {
