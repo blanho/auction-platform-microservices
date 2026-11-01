@@ -1,7 +1,7 @@
 using BuildingBlocks.Application.Abstractions.Messaging;
 using BuildingBlocks.Application.Authorization;
 using IdentityService.Contracts.Events;
-using NotificationService.Contracts.Events;
+using Auctions.Infrastructure.Messaging;
 
 namespace Auctions.Infrastructure.Messaging.Consumers;
 
@@ -38,10 +38,9 @@ public class UserRoleChangedConsumer : IConsumer<UserRoleChangedEvent>
             message.Username,
             string.Join(", ", message.Roles));
 
-        var hadSellerRole = message.Roles.Contains(Roles.Seller);
-        var hasAdminRole = message.Roles.Contains(Roles.Admin);
+        var canSell = message.Roles.Contains(Roles.Seller) || message.Roles.Contains(Roles.Admin);
 
-        if (hadSellerRole || hasAdminRole)
+        if (canSell)
         {
             _logger.LogInformation(
                 "User {UserId} role changed - Seller/Admin role retained or granted",
@@ -49,14 +48,14 @@ public class UserRoleChangedConsumer : IConsumer<UserRoleChangedEvent>
             return;
         }
 
-        await CancelActiveAuctionsForUser(userId, message, context.CancellationToken);
+        await CancelActiveAuctionsForUserAsync(userId, message, context.CancellationToken);
     }
 
-    private async Task CancelActiveAuctionsForUser(Guid userId, UserRoleChangedEvent message, CancellationToken cancellationToken)
+    private async Task CancelActiveAuctionsForUserAsync(Guid userId, UserRoleChangedEvent message, CancellationToken cancellationToken)
     {
         var activeAuctions = await _readRepository.GetActiveAuctionsBySellerIdAsync(userId, cancellationToken);
 
-        if (!activeAuctions.Any())
+        if (activeAuctions.Count == 0)
         {
             _logger.LogInformation("User {UserId} lost Seller role but has no active auctions", message.UserId);
             return;
@@ -67,12 +66,12 @@ public class UserRoleChangedConsumer : IConsumer<UserRoleChangedEvent>
             message.UserId,
             activeAuctions.Count);
 
-        var affectedBidderAuctions = new Dictionary<string, List<string>>();
+        var notifications = new AuctionCancellationNotifications();
         var cancelledCount = 0;
 
         foreach (var auction in activeAuctions)
         {
-            CollectAffectedBidder(auction, affectedBidderAuctions);
+            notifications.CollectAffectedBidder(auction);
             auction.Cancel("Seller privileges revoked");
             await _writeRepository.UpdateAsync(auction, cancellationToken);
             cancelledCount++;
@@ -81,41 +80,10 @@ public class UserRoleChangedConsumer : IConsumer<UserRoleChangedEvent>
         }
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
-        await NotifyAffectedBidders(affectedBidderAuctions, "Seller account privileges changed", cancellationToken);
+        await notifications.PublishAsync(_eventPublisher, "Seller account privileges changed", cancellationToken);
 
         _logger.LogWarning(
             "Cancelled {Count} active auctions for user {UserId} due to role change. Affected bidders: {BidderCount}",
-            cancelledCount, message.UserId, affectedBidderAuctions.Count);
-    }
-
-    private static void CollectAffectedBidder(Auction auction, Dictionary<string, List<string>> affectedBidderAuctions)
-    {
-        if (!auction.CurrentHighBid.HasValue || string.IsNullOrEmpty(auction.WinnerUsername))
-            return;
-
-        var auctionTitle = auction.Item?.Title ?? "Unknown";
-        if (!affectedBidderAuctions.TryGetValue(auction.WinnerUsername, out var titles))
-        {
-            titles = new List<string>();
-            affectedBidderAuctions[auction.WinnerUsername] = titles;
-        }
-        titles.Add(auctionTitle);
-    }
-
-    private async Task NotifyAffectedBidders(Dictionary<string, List<string>> affectedBidderAuctions, string reason, CancellationToken cancellationToken)
-    {
-        foreach (var (bidderUsername, auctionTitles) in affectedBidderAuctions)
-        {
-            foreach (var auctionTitle in auctionTitles)
-            {
-                await _eventPublisher.PublishAsync(new AuctionCancelledNotificationEvent
-                {
-                    RecipientUsername = bidderUsername,
-                    AuctionTitle = auctionTitle,
-                    Reason = reason,
-                    RefundExpected = true
-                }, cancellationToken);
-            }
-        }
+            cancelledCount, message.UserId, notifications.BidderCount);
     }
 }

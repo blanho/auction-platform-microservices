@@ -2,10 +2,9 @@ using System.Text.Json;
 using System.Diagnostics;
 using AuctionService.Contracts.Commands;
 using AuctionService.Contracts.Events;
-using Auctions.Application.DTOs;
+using Auctions.Application.Features.Auctions.ExportAuctions;
 using Auctions.Application.Enums;
 using Auctions.Application.Interfaces;
-using Auctions.Domain.Entities;
 using Auctions.Domain.Enums;
 using Auctions.Infrastructure.Services;
 using JobService.Contracts.Commands;
@@ -39,7 +38,11 @@ public class ExportAuctionsConsumer : IConsumer<ProcessAuctionExportCommand>
     {
         var message = context.Message;
         var receiptKey = $"ExportAuctionsConsumer:{message.CorrelationId}";
-        if (await _workflow.ExistsAsync(receiptKey, context.CancellationToken)) return;
+        if (await _workflow.ExistsAsync(receiptKey, context.CancellationToken))
+        {
+            return;
+        }
+
         var stopwatch = Stopwatch.StartNew();
         var correlationId = message.CorrelationId.ToString();
 
@@ -47,26 +50,10 @@ public class ExportAuctionsConsumer : IConsumer<ProcessAuctionExportCommand>
             "Processing auction export {CorrelationId} in {Format} format",
             correlationId, message.Format);
 
-        if (message.ParentJobId is null)
-            await context.Publish(new RequestJobCommand
-            {
-                JobType = nameof(JobType.DataExport),
-                CorrelationId = correlationId,
-                RequestedBy = message.RequestedBy,
-                PayloadJson = JsonSerializer.Serialize(new
-                {
-                    message.Format,
-                    message.StatusFilter,
-                    message.SellerFilter,
-                    message.StartDate,
-                    message.EndDate
-                }),
-                TotalItems = 1,
-                MaxRetryCount = 0
-            });
+        await PublishJobRequestAsync(context, correlationId);
 
         var format = ParseExportFormat(message.Format);
-        var exporter = ResolveExporter(format);
+        var exporter = _exporters.FirstOrDefault(candidate => candidate.Format == format);
 
         if (exporter is null)
         {
@@ -74,14 +61,9 @@ public class ExportAuctionsConsumer : IConsumer<ProcessAuctionExportCommand>
                 "Unsupported export format {Format} for {CorrelationId}",
                 message.Format, correlationId);
 
-            if (message.ParentJobId is null)
-                await context.Publish(new FailJobByCorrelationCommand
-                {
-                    CorrelationId = correlationId,
-                    ErrorMessage = $"Unsupported export format: {message.Format}"
-                });
+            await ReportUnsupportedFormatAsync(context, correlationId);
 
-            await PublishCompletionEvent(context, message, new ExportCompletion { Duration = stopwatch.Elapsed });
+            await PublishCompletionEventAsync(context, message, new ExportCompletion { Duration = stopwatch.Elapsed });
             return;
         }
 
@@ -90,7 +72,7 @@ public class ExportAuctionsConsumer : IConsumer<ProcessAuctionExportCommand>
             statusFilter, message.SellerFilter, message.StartDate, message.EndDate,
             context.CancellationToken);
 
-        var exportRows = MapToExportRows(auctions);
+        var exportRows = ExportAuctionMapper.ToRows(auctions);
         var content = exporter.Export(exportRows);
 
         var fileName = $"auctions-export-{message.CorrelationId}{exporter.FileExtension}";
@@ -98,22 +80,21 @@ public class ExportAuctionsConsumer : IConsumer<ProcessAuctionExportCommand>
         stopwatch.Stop();
 
         var storedReport = await _storageClient.StoreReportAsync(
-            content, fileName, exporter.ContentType, message.RequestedBy, context.CancellationToken, message.CorrelationId, exportRows.Count);
+            content: content,
+            fileName: fileName,
+            contentType: exporter.ContentType,
+            ownerId: message.RequestedBy,
+            cancellationToken: context.CancellationToken,
+            requestId: message.CorrelationId,
+            recordCount: exportRows.Count);
 
-        if (message.ParentJobId is null)
-            await context.Publish(new ReportJobBatchProgressCommand
-            {
-                CorrelationId = correlationId,
-                BatchId = "export:complete",
-                CompletedCount = 1,
-                FailedCount = 0
-            });
+        await PublishProgressAsync(context, correlationId);
 
         _logger.LogInformation(
             "Export {CorrelationId} completed: {RecordCount} auctions, {Size} bytes in {Duration}ms",
             correlationId, exportRows.Count, content.Length, stopwatch.ElapsedMilliseconds);
 
-        await PublishCompletionEvent(context, message, new ExportCompletion
+        await PublishCompletionEventAsync(context, message, new ExportCompletion
         {
             Duration = stopwatch.Elapsed,
             TotalRecords = storedReport.TotalRecords ?? exportRows.Count,
@@ -121,6 +102,70 @@ public class ExportAuctionsConsumer : IConsumer<ProcessAuctionExportCommand>
             ContentType = storedReport.ContentType ?? exporter.ContentType,
             FileSizeBytes = storedReport.FileSizeBytes ?? content.Length,
             DownloadUrl = storedReport.DownloadUrl
+        });
+    }
+
+    private static async Task PublishJobRequestAsync(
+        ConsumeContext<ProcessAuctionExportCommand> context,
+        string correlationId)
+    {
+        var message = context.Message;
+        if (message.ParentJobId is not null)
+        {
+            return;
+        }
+
+        await context.Publish(new RequestJobCommand
+        {
+            JobType = nameof(JobType.DataExport),
+            CorrelationId = correlationId,
+            RequestedBy = message.RequestedBy,
+            PayloadJson = JsonSerializer.Serialize(new
+            {
+                message.Format,
+                message.StatusFilter,
+                message.SellerFilter,
+                message.StartDate,
+                message.EndDate
+            }),
+            TotalItems = 1,
+            MaxRetryCount = 0
+        });
+    }
+
+    private static async Task ReportUnsupportedFormatAsync(
+        ConsumeContext<ProcessAuctionExportCommand> context,
+        string correlationId)
+    {
+        var message = context.Message;
+        if (message.ParentJobId is not null)
+        {
+            return;
+        }
+
+        await context.Publish(new FailJobByCorrelationCommand
+        {
+            CorrelationId = correlationId,
+            ErrorMessage = $"Unsupported export format: {message.Format}"
+        });
+    }
+
+    private static async Task PublishProgressAsync(
+        ConsumeContext<ProcessAuctionExportCommand> context,
+        string correlationId)
+    {
+        var message = context.Message;
+        if (message.ParentJobId is not null)
+        {
+            return;
+        }
+
+        await context.Publish(new ReportJobBatchProgressCommand
+        {
+            CorrelationId = correlationId,
+            BatchId = "export:complete",
+            CompletedCount = 1,
+            FailedCount = 0
         });
     }
 
@@ -143,29 +188,7 @@ public class ExportAuctionsConsumer : IConsumer<ProcessAuctionExportCommand>
             : null;
     }
 
-    private IReportExporter? ResolveExporter(ExportFormat format)
-    {
-        return _exporters.FirstOrDefault(e => e.Format == format);
-    }
-
-    private static List<ExportAuctionRow> MapToExportRows(List<Auction> auctions)
-    {
-        return auctions.Select(a => new ExportAuctionRow(
-            AuctionId: a.Id,
-            Title: a.Item.Title,
-            Seller: a.SellerUsername,
-            Status: a.Status.ToString(),
-            Currency: a.Currency,
-            ReservePrice: a.ReservePrice,
-            CurrentHighBid: a.CurrentHighBid,
-            SoldAmount: a.SoldAmount,
-            CreatedAt: a.CreatedAt,
-            AuctionEnd: a.AuctionEnd,
-            Category: a.Item.CategoryName,
-            Condition: a.Item.Condition)).ToList();
-    }
-
-    private async Task PublishCompletionEvent(
+    private async Task PublishCompletionEventAsync(
         ConsumeContext<ProcessAuctionExportCommand> context,
         ProcessAuctionExportCommand message,
         ExportCompletion completion)
@@ -173,15 +196,19 @@ public class ExportAuctionsConsumer : IConsumer<ProcessAuctionExportCommand>
         await _workflow.CompleteAsync($"ExportAuctionsConsumer:{message.CorrelationId}", message.CorrelationId,
             completion.TotalRecords, 0, [], 1, context.CancellationToken);
         if (message.ParentJobId.HasValue && message.ParentJobItemId.HasValue)
+        {
+            var hasDownload = !string.IsNullOrEmpty(completion.DownloadUrl);
             await context.Publish(new ReportJobItemResultCommand
             {
                 JobId = message.ParentJobId.Value,
                 JobItemId = message.ParentJobItemId.Value,
                 Attempt = message.Attempt,
-                IsSuccess = !string.IsNullOrEmpty(completion.DownloadUrl),
+                IsSuccess = hasDownload,
                 IsFinalFailure = true,
-                ErrorMessage = !string.IsNullOrEmpty(completion.DownloadUrl) ? null : "Auction workflow completed with errors."
+                ErrorMessage = hasDownload ? null : "Auction workflow completed with errors."
             });
+        }
+
         await context.Publish(new AuctionExportCompletedEvent
         {
             CorrelationId = message.CorrelationId,

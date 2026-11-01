@@ -39,76 +39,62 @@ public class GenerateOrderReportConsumer : IConsumer<GenerateOrderReportCommand>
             correlationId, message.ReportType, message.Format);
 
         if (!message.ParentJobId.HasValue)
-            await PublishJobStarted(context, message);
+            await PublishJobStartedAsync(context, message);
 
-        var reportType = ParseReportType(message.ReportType);
-        var format = ParseReportFormat(message.Format);
-        var statusFilter = ParseStatusFilter(message.StatusFilter);
-
-        if (reportType is null || format is null ||
-            (!string.IsNullOrWhiteSpace(message.StatusFilter) && statusFilter is null) ||
-            (message.StartDate.HasValue && message.EndDate.HasValue && message.EndDate <= message.StartDate))
+        var report = ParseReportRequest(message);
+        if (report is null)
         {
             _logger.LogWarning(
                 "Invalid report type or format for {CorrelationId}: Type={ReportType}, Format={Format}",
                 correlationId, message.ReportType, message.Format);
 
-            await PublishJobFailed(context, "Invalid report type, format, status filter, or date range.");
+            await PublishJobFailedAsync(context, "Invalid report type, format, status filter, or date range.");
             return;
         }
 
-        var parameters = new OrderReportParameters(
-            StatusFilter: statusFilter,
-            BuyerIdFilter: message.BuyerIdFilter,
-            SellerIdFilter: message.SellerIdFilter,
-            StartDate: message.StartDate,
-            EndDate: message.EndDate,
-            Culture: message.Culture ?? "en-US");
-
         var result = await _reportGenerator.GenerateReportAsync(
-            reportType.Value, format.Value, parameters, context.CancellationToken);
+            report.Type, report.Format, report.Parameters, context.CancellationToken);
 
         stopwatch.Stop();
 
-        if (result.Success)
-        {
-            var downloadUrl = await _reportStorageClient.StoreAsync(
-                result, message.RequestedBy, context.CancellationToken);
-
-            _logger.LogInformation(
-                "Order report generation completed {CorrelationId} - Records: {TotalRecords}, Size: {FileSizeBytes} bytes, Duration: {Duration}ms",
-                correlationId, result.TotalRecords, result.FileSizeBytes, stopwatch.ElapsedMilliseconds);
-
-            if (message.ParentJobId.HasValue && message.ParentJobItemId.HasValue)
-                await context.Publish(new ReportJobItemResultCommand
-                {
-                    JobId = message.ParentJobId.Value,
-                    JobItemId = message.ParentJobItemId.Value,
-                    Attempt = message.Attempt,
-                    IsSuccess = true
-                });
-            else
-                await context.Publish(new ReportJobBatchProgressCommand
-                {
-                    CorrelationId = correlationId,
-                    BatchId = "report:complete",
-                    CompletedCount = 1,
-                    FailedCount = 0
-                });
-
-            await PublishCompletionEvent(context, message, stopwatch.Elapsed, result, downloadUrl);
-        }
-        else
+        if (!result.Success)
         {
             _logger.LogError(
                 "Order report generation failed {CorrelationId}: {ErrorMessage}",
                 correlationId, result.ErrorMessage);
 
-            await PublishJobFailed(context, result.ErrorMessage ?? "Report generation failed");
+            await PublishJobFailedAsync(context, result.ErrorMessage ?? "Report generation failed");
+            return;
         }
+
+        var downloadUrl = await _reportStorageClient.StoreAsync(
+            result, message.RequestedBy, context.CancellationToken);
+
+        _logger.LogInformation(
+            "Order report generation completed {CorrelationId} - Records: {TotalRecords}, Size: {FileSizeBytes} bytes, Duration: {Duration}ms",
+            correlationId, result.TotalRecords, result.FileSizeBytes, stopwatch.ElapsedMilliseconds);
+
+        if (message.ParentJobId.HasValue && message.ParentJobItemId.HasValue)
+            await context.Publish(new ReportJobItemResultCommand
+            {
+                JobId = message.ParentJobId.Value,
+                JobItemId = message.ParentJobItemId.Value,
+                Attempt = message.Attempt,
+                IsSuccess = true
+            });
+        else
+            await context.Publish(new ReportJobBatchProgressCommand
+            {
+                CorrelationId = correlationId,
+                BatchId = "report:complete",
+                CompletedCount = 1,
+                FailedCount = 0
+            });
+
+        await PublishCompletionEventAsync(context, message, stopwatch.Elapsed, result, downloadUrl);
     }
 
-    private async Task PublishJobStarted(ConsumeContext<GenerateOrderReportCommand> context, GenerateOrderReportCommand message)
+    private async Task PublishJobStartedAsync(ConsumeContext<GenerateOrderReportCommand> context, GenerateOrderReportCommand message)
     {
         await context.Publish(new RequestJobCommand
         {
@@ -130,7 +116,7 @@ public class GenerateOrderReportConsumer : IConsumer<GenerateOrderReportCommand>
         });
     }
 
-    private static async Task PublishCompletionEvent(
+    private static async Task PublishCompletionEventAsync(
         ConsumeContext<GenerateOrderReportCommand> context,
         GenerateOrderReportCommand message,
         TimeSpan duration,
@@ -153,7 +139,7 @@ public class GenerateOrderReportConsumer : IConsumer<GenerateOrderReportCommand>
         });
     }
 
-    private static async Task PublishJobFailed(ConsumeContext<GenerateOrderReportCommand> context, string errorMessage)
+    private static async Task PublishJobFailedAsync(ConsumeContext<GenerateOrderReportCommand> context, string errorMessage)
     {
         var message = context.Message;
         if (message.ParentJobId.HasValue && message.ParentJobItemId.HasValue)
@@ -174,20 +160,30 @@ public class GenerateOrderReportConsumer : IConsumer<GenerateOrderReportCommand>
             });
     }
 
-    private static ReportType? ParseReportType(string value)
+    private static ReportRequest? ParseReportRequest(GenerateOrderReportCommand message)
     {
-        return Enum.TryParse<ReportType>(value, ignoreCase: true, out var result) && Enum.IsDefined(result) ? result : null;
-    }
-
-    private static ReportFormat? ParseReportFormat(string value)
-    {
-        return Enum.TryParse<ReportFormat>(value, ignoreCase: true, out var result) && Enum.IsDefined(result) ? result : null;
-    }
-
-    private static OrderStatus? ParseStatusFilter(string? value)
-    {
-        if (string.IsNullOrWhiteSpace(value))
+        var type = ParseDefinedEnum<ReportType>(message.ReportType);
+        var format = ParseDefinedEnum<ReportFormat>(message.Format);
+        var status = ParseDefinedEnum<OrderStatus>(message.StatusFilter);
+        if (type is null || format is null
+            || (!string.IsNullOrWhiteSpace(message.StatusFilter) && status is null)
+            || (message.StartDate.HasValue && message.EndDate.HasValue && message.EndDate <= message.StartDate))
+        {
             return null;
-        return Enum.TryParse<OrderStatus>(value, ignoreCase: true, out var result) && Enum.IsDefined(result) ? result : null;
+        }
+
+        var parameters = new OrderReportParameters(
+            StatusFilter: status,
+            BuyerIdFilter: message.BuyerIdFilter,
+            SellerIdFilter: message.SellerIdFilter,
+            StartDate: message.StartDate,
+            EndDate: message.EndDate,
+            Culture: message.Culture ?? "en-US");
+        return new ReportRequest(type.Value, format.Value, parameters);
     }
+
+    private static T? ParseDefinedEnum<T>(string? value) where T : struct, Enum =>
+        Enum.TryParse<T>(value, ignoreCase: true, out var parsed) && Enum.IsDefined(parsed) ? parsed : null;
+
+    private sealed record ReportRequest(ReportType Type, ReportFormat Format, OrderReportParameters Parameters);
 }

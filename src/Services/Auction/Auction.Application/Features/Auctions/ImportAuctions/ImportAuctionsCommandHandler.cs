@@ -4,13 +4,12 @@ using Auctions.Application.Interfaces;
 using Auctions.Domain.Constants;
 using Auctions.Domain.Entities;
 using BuildingBlocks.Application.Abstractions;
-using BuildingBlocks.Domain.Constants;
+using BuildingBlocks.Application.Localization;
 
 namespace Auctions.Application.Features.Auctions.ImportAuctions;
 
 public class ImportAuctionsCommandHandler : ICommandHandler<ImportAuctionsCommand, ImportAuctionsResult>
 {
-
     private readonly IAuctionBulkRepository _bulkRepository;
     private readonly IImportCheckpointRepository _checkpointRepository;
     private readonly ISanitizationService _sanitizationService;
@@ -59,7 +58,7 @@ public class ImportAuctionsCommandHandler : ICommandHandler<ImportAuctionsComman
 
         if (validationResult.ValidRows.Count == 0)
         {
-            await CleanupCheckpointAsync(request.CorrelationId, cancellationToken);
+            await _checkpointRepository.DeleteCheckpointAsync(request.CorrelationId, cancellationToken);
 
             return Result<ImportAuctionsResult>.Success(new ImportAuctionsResult(
                 CorrelationId: request.CorrelationId,
@@ -68,8 +67,7 @@ public class ImportAuctionsCommandHandler : ICommandHandler<ImportAuctionsComman
                 FailedCount: failedRowCount,
                 SkippedDuplicateCount: 0,
                 Duration: stopwatch.Elapsed,
-                Errors: validationResult.Errors.Select(error => error with
-                { ErrorMessage = BuildingBlocks.Application.Localization.UserMessageLocalizer.Translate(error.ErrorMessage) }).ToList()));
+                Errors: LocalizeErrors(validationResult.Errors)));
         }
 
         var rowsToProcess = ResumeFromCheckpoint(validationResult.ValidRows, checkpoint);
@@ -85,7 +83,7 @@ public class ImportAuctionsCommandHandler : ICommandHandler<ImportAuctionsComman
 
         var totalSucceeded = priorSucceeded + batchSucceeded;
 
-        await CleanupCheckpointAsync(request.CorrelationId, cancellationToken);
+        await _checkpointRepository.DeleteCheckpointAsync(request.CorrelationId, cancellationToken);
 
         stopwatch.Stop();
 
@@ -100,9 +98,14 @@ public class ImportAuctionsCommandHandler : ICommandHandler<ImportAuctionsComman
             FailedCount: failedRowCount,
             SkippedDuplicateCount: skippedDuplicateCount,
             Duration: stopwatch.Elapsed,
-            Errors: validationResult.Errors.Select(error => error with
-            { ErrorMessage = BuildingBlocks.Application.Localization.UserMessageLocalizer.Translate(error.ErrorMessage) }).ToList()));
+            Errors: LocalizeErrors(validationResult.Errors)));
     }
+
+    private static List<ImportRowError> LocalizeErrors(IReadOnlyList<ImportRowError> errors) =>
+        errors.Select(error => error with
+        {
+            ErrorMessage = UserMessageLocalizer.Translate(error.ErrorMessage)
+        }).ToList();
 
     private static IReadOnlyList<ValidatedRow> ResumeFromCheckpoint(
         IReadOnlyList<ValidatedRow> validRows,
@@ -130,7 +133,9 @@ public class ImportAuctionsCommandHandler : ICommandHandler<ImportAuctionsComman
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            var auctions = MapToEntities(batch, batchContext.SellerId, batchContext.SellerUsername, batchContext.Currency);
+            var auctions = batch.Select(row => ImportAuctionMapper.ToAuction(
+                row.Row, batchContext.SellerId, batchContext.SellerUsername, batchContext.Currency, _sanitizationService))
+                .ToList();
             await _bulkRepository.BulkInsertAsync(auctions, cancellationToken);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
@@ -155,11 +160,6 @@ public class ImportAuctionsCommandHandler : ICommandHandler<ImportAuctionsComman
         return totalInserted;
     }
 
-    private async Task CleanupCheckpointAsync(string correlationId, CancellationToken cancellationToken)
-    {
-        await _checkpointRepository.DeleteCheckpointAsync(correlationId, cancellationToken);
-    }
-
     private static RowValidationResult ValidateAllRows(IReadOnlyList<ImportAuctionRow> rows)
     {
         var validRows = new List<ValidatedRow>();
@@ -169,7 +169,7 @@ public class ImportAuctionsCommandHandler : ICommandHandler<ImportAuctionsComman
         {
             var rowNumber = i + 1;
             var row = rows[i];
-            var rowErrors = ValidateSingleRow(row, rowNumber);
+            var rowErrors = ImportAuctionRowValidator.Validate(row, rowNumber, DateTimeOffset.UtcNow);
 
             if (rowErrors.Count == 0)
             {
@@ -182,83 +182,6 @@ public class ImportAuctionsCommandHandler : ICommandHandler<ImportAuctionsComman
         }
 
         return new RowValidationResult(validRows, errors);
-    }
-
-    private static List<ImportRowError> ValidateSingleRow(ImportAuctionRow row, int rowNumber)
-    {
-        var errors = new List<ImportRowError>();
-
-        if (string.IsNullOrWhiteSpace(row.Title))
-            errors.Add(new ImportRowError(rowNumber, nameof(row.Title), "Title is required."));
-        else if (row.Title.Length > ValidationConstants.StringLength.Medium)
-            errors.Add(new ImportRowError(rowNumber, nameof(row.Title),
-                $"Title must not exceed {ValidationConstants.StringLength.Medium} characters."));
-
-        if (string.IsNullOrWhiteSpace(row.Description))
-            errors.Add(new ImportRowError(rowNumber, nameof(row.Description), "Description is required."));
-
-        if (row.ReservePrice < 0)
-            errors.Add(new ImportRowError(rowNumber, nameof(row.ReservePrice),
-                "Reserve price must be non-negative."));
-
-        if (row.BuyNowPrice.HasValue && row.BuyNowPrice.Value <= row.ReservePrice)
-            errors.Add(new ImportRowError(rowNumber, nameof(row.BuyNowPrice),
-                "Buy now price must exceed reserve price."));
-
-        if (row.AuctionEnd <= DateTimeOffset.UtcNow)
-            errors.Add(new ImportRowError(rowNumber, nameof(row.AuctionEnd),
-                "Auction end date must be in the future."));
-
-        if (row.YearManufactured.HasValue && (row.YearManufactured < 1900 || row.YearManufactured > DateTime.UtcNow.Year + 1))
-            errors.Add(new ImportRowError(rowNumber, nameof(row.YearManufactured),
-                $"Year must be between 1900 and {DateTime.UtcNow.Year + 1}."));
-
-        return errors;
-    }
-
-    private List<Auction> MapToEntities(
-        IReadOnlyList<ValidatedRow> rows,
-        Guid sellerId,
-        string sellerUsername,
-        string currency)
-    {
-        var auctions = new List<Auction>(rows.Count);
-
-        foreach (var row in rows.Select(validatedRow => validatedRow.Row))
-        {
-
-            var item = Item.Create(new CreateItemParams
-            {
-                Title = _sanitizationService.SanitizeText(row.Title),
-                Description = _sanitizationService.SanitizeHtml(row.Description),
-                Condition = row.Condition,
-                YearManufactured = row.YearManufactured,
-                CategoryId = row.CategoryId,
-                BrandId = row.BrandId
-            });
-
-            if (row.Attributes != null)
-            {
-                foreach (var attr in row.Attributes)
-                {
-                    item.SetAttribute(attr.Key, attr.Value);
-                }
-            }
-
-            var auction = Auction.Create(new CreateAuctionParams(
-                SellerId: sellerId,
-                SellerUsername: sellerUsername,
-                Item: item,
-                ReservePrice: row.ReservePrice,
-                AuctionEnd: row.AuctionEnd,
-                Currency: currency,
-                BuyNowPrice: row.BuyNowPrice,
-                IsFeatured: false));
-
-            auctions.Add(auction);
-        }
-
-        return auctions;
     }
 
     private sealed record ImportBatchContext(Guid SellerId, string SellerUsername, string Currency,

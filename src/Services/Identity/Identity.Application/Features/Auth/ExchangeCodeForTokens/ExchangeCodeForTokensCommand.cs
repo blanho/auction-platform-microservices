@@ -1,0 +1,39 @@
+namespace Identity.Application.Features.Auth.ExchangeCodeForTokens;
+
+using Identity.Application.DTOs;
+using Identity.Application.Interfaces;
+using BuildingBlocks.Application.Abstractions;
+using MediatR;
+using Microsoft.AspNetCore.Identity;
+
+public record ExchangeCodeForTokensCommand(string Code, string IpAddress) : ICommand<LoginResponse>;
+
+public class ExchangeCodeForTokensCommandHandler(
+    IUserService userService,
+    IAuthorizationCodeStore authorizationCodeStore,
+    IAuthHelper authHelper,
+    ILogger<ExchangeCodeForTokensCommandHandler> logger) : ICommandHandler<ExchangeCodeForTokensCommand, LoginResponse>
+{
+    public async Task<Result<LoginResponse>> Handle(ExchangeCodeForTokensCommand command, CancellationToken cancellationToken)
+    {
+        var code = command.Code;
+        var ipAddress = command.IpAddress;
+
+        if (string.IsNullOrEmpty(code))
+            return Result.Failure<LoginResponse>(IdentityErrors.Auth.InvalidAuthCode);
+
+        var userId = await authorizationCodeStore.RedeemAsync(code, cancellationToken);
+
+        if (string.IsNullOrEmpty(userId))
+        {
+            logger.LogWarning("Invalid or expired authorization code attempt");
+            return Result.Failure<LoginResponse>(IdentityErrors.Auth.InvalidAuthCode);
+        }
+
+        var (user, _) = await userService.GetByIdWithRolesAsync(userId, cancellationToken);
+        if (user == null)
+            return Result.Failure<LoginResponse>(IdentityErrors.User.NotFound);
+
+        return await authHelper.GenerateLoginResponseAsync(user, ipAddress);
+    }
+}

@@ -4,7 +4,7 @@ using Elastic.Clients.Elasticsearch;
 using JobService.Contracts.Commands;
 using Microsoft.Extensions.Options;
 using Search.Infrastructure.Configuration;
-using Search.Infrastructure.Consumers;
+using Search.Infrastructure.Messaging.Consumers;
 using SearchService.Contracts.Commands;
 using Xunit;
 

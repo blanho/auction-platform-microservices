@@ -17,8 +17,7 @@ public static class AuthenticationExtensions
             return services;
 
         var secretKey = configuration["Identity:SecretKey"];
-        var isLocalDevelopment = environment.IsDevelopment() ||
-            environment.EnvironmentName == GatewayConstants.LocalEnvironment;
+        var isLocalDevelopment = IsLocalDevelopment(environment);
         services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(options =>
             {
@@ -28,35 +27,8 @@ public static class AuthenticationExtensions
                 }
 
                 options.RequireHttpsMetadata = !isLocalDevelopment;
-                options.TokenValidationParameters = new TokenValidationParameters
-                {
-                    ValidateIssuer = true,
-                    ValidIssuer = identityAuthority,
-                    ValidateAudience = true,
-                    ValidAudience = GatewayConstants.DefaultAudience,
-                    ValidateLifetime = true,
-                    ValidateIssuerSigningKey = !string.IsNullOrEmpty(secretKey),
-                    IssuerSigningKey = !string.IsNullOrEmpty(secretKey)
-                        ? new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey))
-                        : null,
-                    ClockSkew = TimeSpan.FromMinutes(1),
-                    NameClaimType = GatewayConstants.NameClaim,
-                    RoleClaimType = GatewayConstants.RoleClaim
-                };
-
-                options.Events = new JwtBearerEvents
-                {
-                    OnMessageReceived = context =>
-                    {
-                        var accessToken = context.Request.Query["access_token"];
-                        if (!string.IsNullOrEmpty(accessToken) &&
-                            context.HttpContext.Request.Path.StartsWithSegments("/hubs"))
-                        {
-                            context.Token = accessToken;
-                        }
-                        return Task.CompletedTask;
-                    }
-                };
+                options.TokenValidationParameters = CreateTokenValidationParameters(identityAuthority, secretKey);
+                options.Events = new JwtBearerEvents { OnMessageReceived = ReadHubAccessTokenAsync };
             });
 
         return services;
@@ -74,8 +46,7 @@ public static class AuthenticationExtensions
 
             options.AddPolicy("AllowAll", policy =>
             {
-                if (environment.IsDevelopment() ||
-                    environment.EnvironmentName == GatewayConstants.LocalEnvironment)
+                if (IsLocalDevelopment(environment))
                 {
                     policy.SetIsOriginAllowed(_ => true)
                           .AllowAnyMethod()
@@ -100,4 +71,35 @@ public static class AuthenticationExtensions
 
         return services;
     }
+    private static bool IsLocalDevelopment(IWebHostEnvironment environment) =>
+        environment.IsDevelopment() || environment.EnvironmentName == GatewayConstants.LocalEnvironment;
+
+    private static TokenValidationParameters CreateTokenValidationParameters(string authority, string secretKey)
+    {
+        var hasSigningKey = !string.IsNullOrEmpty(secretKey);
+        return new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidIssuer = authority,
+            ValidateAudience = true,
+            ValidAudience = GatewayConstants.DefaultAudience,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = hasSigningKey,
+            IssuerSigningKey = hasSigningKey ? new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey)) : null,
+            ClockSkew = TimeSpan.FromMinutes(1),
+            NameClaimType = GatewayConstants.NameClaim,
+            RoleClaimType = GatewayConstants.RoleClaim
+        };
+    }
+
+    private static Task ReadHubAccessTokenAsync(MessageReceivedContext context)
+    {
+        var accessToken = context.Request.Query["access_token"];
+        if (!string.IsNullOrEmpty(accessToken) && context.Request.Path.StartsWithSegments("/hubs"))
+        {
+            context.Token = accessToken;
+        }
+        return Task.CompletedTask;
+    }
+
 }

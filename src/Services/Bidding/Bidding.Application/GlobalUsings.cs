@@ -22,7 +22,7 @@ global using BidService.Contracts.Constants;
 global using MediatR;
 
 global using AutoMapper;
-global using Bidding.Application.Extensions.Mappings;
+global using Bidding.Application.Mappings;
 
 global using FluentValidation;
 

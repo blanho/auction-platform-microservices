@@ -1,7 +1,6 @@
 using BuildingBlocks.Application.Abstractions.Messaging;
-using Auctions.Domain.Enums;
 using IdentityService.Contracts.Events;
-using NotificationService.Contracts.Events;
+using Auctions.Infrastructure.Messaging;
 
 namespace Auctions.Infrastructure.Messaging.Consumers;
 
@@ -40,35 +39,25 @@ public class UserSuspendedConsumer : IConsumer<UserSuspendedEvent>
             Guid.Parse(message.UserId),
             context.CancellationToken);
 
-        if (!activeAuctions.Any())
+        if (activeAuctions.Count == 0)
         {
             _logger.LogInformation("No active auctions found for suspended user {UserId}", message.UserId);
             return;
         }
 
         var cancelledCount = 0;
-        var affectedBidderAuctions = new Dictionary<string, List<string>>();
+        var notifications = new AuctionCancellationNotifications();
 
         foreach (var auction in activeAuctions)
         {
             var hadBids = auction.CurrentHighBid.HasValue;
-            var currentWinner = auction.WinnerUsername;
             var auctionTitle = auction.Item?.Title ?? "Auction";
 
+            notifications.CollectAffectedBidder(auction, fallbackTitle: "Auction");
             auction.Cancel($"Seller account suspended: {message.Reason}");
             await _writeRepository.UpdateAsync(auction, context.CancellationToken);
 
             cancelledCount++;
-
-            if (hadBids && !string.IsNullOrEmpty(currentWinner))
-            {
-                if (!affectedBidderAuctions.TryGetValue(currentWinner, out var titles))
-                {
-                    titles = new List<string>();
-                    affectedBidderAuctions[currentWinner] = titles;
-                }
-                titles.Add(auctionTitle);
-            }
 
             _logger.LogWarning(
                 "Cancelled auction {AuctionId} ({Title}) - Had bids: {HadBids}",
@@ -79,24 +68,12 @@ public class UserSuspendedConsumer : IConsumer<UserSuspendedEvent>
 
         await _unitOfWork.SaveChangesAsync(context.CancellationToken);
 
-        foreach (var (bidderUsername, auctionTitles) in affectedBidderAuctions)
-        {
-            foreach (var auctionTitle in auctionTitles)
-            {
-                await _eventPublisher.PublishAsync(new AuctionCancelledNotificationEvent
-                {
-                    RecipientUsername = bidderUsername,
-                    AuctionTitle = auctionTitle,
-                    Reason = "Seller account suspended",
-                    RefundExpected = true
-                }, context.CancellationToken);
-            }
-        }
+        await notifications.PublishAsync(_eventPublisher, "Seller account suspended", context.CancellationToken);
 
         _logger.LogWarning(
             "Cancelled {Count} active auctions for suspended user {UserId}. Affected bidders: {BidderCount}",
             cancelledCount,
             message.UserId,
-            affectedBidderAuctions.Count);
+            notifications.BidderCount);
     }
 }

@@ -60,7 +60,7 @@ public class AuctionActivationJob : BaseJob
                     pendingChanges = 0;
                 }
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is not OperationCanceledException)
             {
                 failedCount++;
                 Logger.LogError(ex, "Failed to activate auction {AuctionId}", auction.Id);

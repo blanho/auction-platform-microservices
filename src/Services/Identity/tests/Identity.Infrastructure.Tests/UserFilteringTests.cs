@@ -1,5 +1,5 @@
 using AutoMapper;
-using Identity.Application.Features.Users.Queries.GetUsers;
+using Identity.Application.Features.Users.GetUsers;
 using Identity.Application.Filtering;
 using Identity.Application.Services;
 using Identity.Application.DTOs;

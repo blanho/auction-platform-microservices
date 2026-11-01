@@ -116,9 +116,7 @@ public class UserService : IUserService
         if (user == null)
             return null;
 
-        var dto = _mapper.Map<AdminUserDto>(user);
-        dto.Roles = roles.ToList();
-        return dto;
+        return MapUserWithRoles(user, roles);
     }
 
     public async Task<AdminStatsResponse> GetStatsAsync(CancellationToken cancellationToken = default)
@@ -212,7 +210,12 @@ public class UserService : IUserService
     {
         var result = await ApplyUserStatusChangeAsync(
             userId,
-            user => { user.IsSuspended = true; user.SuspensionReason = reason; user.SuspendedAt = DateTimeOffset.UtcNow; },
+            user =>
+            {
+                user.IsSuspended = true;
+                user.SuspensionReason = reason;
+                user.SuspendedAt = DateTimeOffset.UtcNow;
+            },
             IdentityErrors.User.SuspendFailed,
             (user, _) => new UserSuspendedDomainEvent { UserId = user.Id, Username = user.UserName!, Reason = reason },
             new Dictionary<string, object> { [AuditMetadataKeys.ActionLower] = IdentityDefaults.Audit.Suspend, [AuditMetadataKeys.ReasonLower] = reason },
@@ -230,7 +233,12 @@ public class UserService : IUserService
     {
         var result = await ApplyUserStatusChangeAsync(
             userId,
-            user => { user.IsSuspended = false; user.SuspensionReason = null; user.SuspendedAt = null; },
+            user =>
+            {
+                user.IsSuspended = false;
+                user.SuspensionReason = null;
+                user.SuspendedAt = null;
+            },
             IdentityErrors.User.UnsuspendFailed,
             (user, _) => new UserReactivatedDomainEvent { UserId = user.Id, Username = user.UserName! },
             new Dictionary<string, object> { [AuditMetadataKeys.ActionLower] = IdentityDefaults.Audit.Unsuspend },
@@ -295,9 +303,7 @@ public class UserService : IUserService
             auditMetadata,
             cancellationToken);
 
-        var dto = _mapper.Map<AdminUserDto>(user);
-        dto.Roles = roles.ToList();
-        return Result.Success(dto);
+        return Result.Success(MapUserWithRoles(user, roles));
     }
 
     public async Task<Result<AdminUserDto>> UpdateUserRolesAsync(
@@ -338,9 +344,7 @@ public class UserService : IUserService
             cancellationToken);
 
         _logger.LogInformation("User {UserId} roles updated to: {Roles}", userId, string.Join(", ", rolesList));
-        var dto = _mapper.Map<AdminUserDto>(user);
-        dto.Roles = rolesList;
-        return Result.Success(dto);
+        return Result.Success(MapUserWithRoles(user, rolesList));
     }
 
     public async Task<Result> DeleteUserAsync(
@@ -461,16 +465,15 @@ public class UserService : IUserService
             .ToDictionaryAsync(r => r.Id, r => r.Name!, cancellationToken);
     }
 
-    private List<AdminUserDto> MapUsersToDto(List<ApplicationUser> users, Dictionary<string, string> rolesDictionary)
+    private AdminUserDto MapUserWithRoles(ApplicationUser user, IEnumerable<string> roles)
     {
-        return users.Select(user =>
-        {
-            var dto = _mapper.Map<AdminUserDto>(user);
-            dto.Roles = user.UserRoles
-                .Select(ur => rolesDictionary.GetValueOrDefault(ur.RoleId))
-                .OfType<string>()
-                .ToList();
-            return dto;
-        }).ToList();
+        var dto = _mapper.Map<AdminUserDto>(user);
+        dto.Roles = roles.ToList();
+        return dto;
     }
+
+    private List<AdminUserDto> MapUsersToDto(List<ApplicationUser> users, Dictionary<string, string> rolesDictionary) =>
+        users.Select(user => MapUserWithRoles(user, user.UserRoles
+            .Select(role => rolesDictionary.GetValueOrDefault(role.RoleId))
+            .OfType<string>())).ToList();
 }

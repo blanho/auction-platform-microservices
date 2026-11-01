@@ -7,9 +7,9 @@ using BuildingBlocks.Web.Authorization;
 using BuildingBlocks.Web.Helpers;
 using Identity.Application.DTOs;
 using Identity.Application.Errors;
-using Identity.Application.Features.Profile.Queries.GetProfile;
-using Identity.Application.Features.Profile.Commands.UpdateProfile;
-using Identity.Application.Features.Profile.Commands.ChangePassword;
+using Identity.Application.Features.Profile.GetProfile;
+using Identity.Application.Features.Profile.UpdateProfile;
+using Identity.Application.Features.Profile.ChangePassword;
 
 namespace Identity.Api.Endpoints.Profile;
 

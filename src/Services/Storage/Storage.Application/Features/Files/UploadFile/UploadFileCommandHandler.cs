@@ -1,3 +1,4 @@
+using Storage.Application.Mappings;
 using BuildingBlocks.Application.Abstractions.Auditing;
 using BuildingBlocks.Application.Abstractions.Storage;
 using BuildingBlocks.Application.CQRS.Commands;
@@ -31,7 +32,7 @@ public class UploadFileCommandHandler(
                 request.ReportRequestId.Value, cancellationToken);
             if (existing is not null)
             {
-                return Result.Success(MapToDto(existing));
+                return Result.Success(existing.ToSummaryDto());
             }
         }
 
@@ -97,7 +98,7 @@ public class UploadFileCommandHandler(
 
         logger.LogInformation("File uploaded: {FileId} ({FileName})", storedFile.Id, storedFile.FileName);
 
-        return Result.Success(MapToDto(storedFile));
+        return Result.Success(storedFile.ToSummaryDto());
     }
 
     private async Task RollbackUncommittedBlobAsync(UploadFileCommand request, StoredFile storedFile)
@@ -142,7 +143,4 @@ public class UploadFileCommandHandler(
         }
     }
 
-    private static StoredFileDto MapToDto(StoredFile file) =>
-        new(file.Id, file.FileName, file.ContentType, file.FileSize,
-            file.Url, file.CreatedAt);
 }

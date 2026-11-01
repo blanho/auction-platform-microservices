@@ -9,7 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 using BuildingBlocks.Application.Abstractions;
 using Search.Domain.Models;
 using Search.Domain.Constants;
-using Search.Infrastructure.Extensions.Mappings;
+using Search.Infrastructure.Mappings;
 using Microsoft.Extensions.Logging;
 
 using Elastic.Clients.Elasticsearch;
@@ -62,38 +62,10 @@ public class AuctionSearchService : IAuctionSearchService
         CancellationToken ct = default)
     {
         ct.ThrowIfCancellationRequested();
-        var requestedSize = QueryParameters.Create(1, request.PageSize ?? _options.DefaultPageSize).PageSize;
-        var paging = QueryParameters.Create(request.Page, Math.Min(requestedSize, _options.MaxPageSize));
-        if ((long)paging.Skip + paging.Take > _options.MaxResultWindow)
-            throw new ArgumentException(UserMessageLocalizer.FormatInvariant(
-                "Search pagination cannot exceed {0} results.",
-                [_options.MaxResultWindow.ToString(CultureInfo.InvariantCulture)]));
+        var paging = CreatePaging(request);
 
-        var response = await _client.SearchAsync<AuctionDocument>(s => s
-            .Index(_indexName)
-            .From(paging.Skip)
-            .Size(paging.Take)
-            .Query(BuildQuery(request))
-            .Highlight(h => h
-                .PreTags(new[] { SearchDefaults.HighlightPreTag })
-                .PostTags(new[] { SearchDefaults.HighlightPostTag })
-                .Fields(f => f
-                    .Add(new Field(ElasticsearchFields.Title), hf => { })
-                    .Add(new Field(ElasticsearchFields.Description), hf => { })))
-            .Sort(BuildSortOptions(request.SortBy, request.SortDirection))
-            .TrackTotalHits(new TrackHits(true))
-            .Aggregations(agg => agg
-                .Add(AggregationNames.Categories, a => a
-                    .Terms(t => t.Field(ElasticsearchFields.CategoryName).Size(SearchDefaults.MaxCategoryAggregations)))
-                .Add(AggregationNames.Brands, a => a
-                    .Terms(t => t.Field(ElasticsearchFields.BrandName).Size(SearchDefaults.MaxBrandAggregations)))
-                .Add(AggregationNames.Conditions, a => a
-                    .Terms(t => t.Field(ElasticsearchFields.Condition).Size(SearchDefaults.MaxConditionAggregations)))
-                .Add(AggregationNames.Statuses, a => a
-                    .Terms(t => t.Field(ElasticsearchFields.Status).Size(SearchDefaults.MaxStatusAggregations)))
-                .Add(AggregationNames.PriceStats, a => a
-                    .Stats(s => s.Field(ElasticsearchFields.CurrentPrice)))),
-        ct);
+        var response = await _client.SearchAsync<AuctionDocument>(
+            search => ConfigureSearchRequest(search, request, paging), ct);
         ct.ThrowIfCancellationRequested();
 
         if (!response.IsValidResponse)
@@ -117,6 +89,46 @@ public class AuctionSearchService : IAuctionSearchService
         };
 
     }
+
+    private QueryParameters CreatePaging(AuctionSearchRequest request)
+    {
+        var requestedSize = QueryParameters.Create(1, request.PageSize ?? _options.DefaultPageSize).PageSize;
+        var paging = QueryParameters.Create(request.Page, Math.Min(requestedSize, _options.MaxPageSize));
+        if ((long)paging.Skip + paging.Take > _options.MaxResultWindow)
+            throw new ArgumentException(UserMessageLocalizer.FormatInvariant(
+                "Search pagination cannot exceed {0} results.",
+                [_options.MaxResultWindow.ToString(CultureInfo.InvariantCulture)]));
+
+        return paging;
+    }
+
+    private void ConfigureSearchRequest(
+        SearchRequestDescriptor<AuctionDocument> search,
+        AuctionSearchRequest request,
+        QueryParameters paging) => search
+            .Index(_indexName)
+            .From(paging.Skip)
+            .Size(paging.Take)
+            .Query(BuildQuery(request))
+            .Highlight(h => h
+                .PreTags(new[] { SearchDefaults.HighlightPreTag })
+                .PostTags(new[] { SearchDefaults.HighlightPostTag })
+                .Fields(f => f
+                    .Add(new Field(ElasticsearchFields.Title), hf => { })
+                    .Add(new Field(ElasticsearchFields.Description), hf => { })))
+            .Sort(BuildSortOptions(request.SortBy, request.SortDirection))
+            .TrackTotalHits(new TrackHits(true))
+            .Aggregations(agg => agg
+                .Add(AggregationNames.Categories, a => a
+                    .Terms(t => t.Field(ElasticsearchFields.CategoryName).Size(SearchDefaults.MaxCategoryAggregations)))
+                .Add(AggregationNames.Brands, a => a
+                    .Terms(t => t.Field(ElasticsearchFields.BrandName).Size(SearchDefaults.MaxBrandAggregations)))
+                .Add(AggregationNames.Conditions, a => a
+                    .Terms(t => t.Field(ElasticsearchFields.Condition).Size(SearchDefaults.MaxConditionAggregations)))
+                .Add(AggregationNames.Statuses, a => a
+                    .Terms(t => t.Field(ElasticsearchFields.Status).Size(SearchDefaults.MaxStatusAggregations)))
+                .Add(AggregationNames.PriceStats, a => a
+                    .Stats(s => s.Field(ElasticsearchFields.CurrentPrice))));
 
     public async Task<AuctionSearchResult?> GetByIdAsync(
         Guid auctionId,

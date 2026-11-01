@@ -29,7 +29,6 @@
     <ProjectReference Include="..\Notification.Application\Notification.Application.csproj" />
     <ProjectReference Include="..\Notification.Domain\Notification.Domain.csproj" />
     <ProjectReference Include="..\..\..\BuildingBlocks\BuildingBlocks.Infrastructure\BuildingBlocks.Infrastructure.csproj" />
-    <ProjectReference Include="..\..\..\BuildingBlocks\BuildingBlocks.Web\BuildingBlocks.Web.csproj" />
     <ProjectReference Include="..\Notification.Contracts\NotificationService.Contracts.csproj" />
     <ProjectReference Include="..\..\Identity\Identity.Contracts\IdentityService.Contracts.csproj" />
     <ProjectReference Include="..\..\Job\Job.Contracts\JobService.Contracts.csproj" />

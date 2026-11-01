@@ -1,3 +1,4 @@
+using Jobs.Domain.Entities;
 using SearchService.Contracts.Commands;
 using AnalyticsService.Contracts.Commands;
 using System.Security.Cryptography;
@@ -23,8 +24,19 @@ public class ProcessJobItemConsumer(JobDbContext db) : IConsumer<ProcessJobItemC
         var item = await db.JobItems.SingleOrDefaultAsync(x => !x.IsDeleted && x.Id == message.JobItemId, context.CancellationToken);
         var job = await db.Jobs.SingleOrDefaultAsync(x => !x.IsDeleted && x.Id == message.JobId, context.CancellationToken);
         if (item is null || job is null || item.JobId != job.Id || item.Status != JobItemStatus.Processing ||
-            job.Status != JobStatus.Processing || item.RetryCount != message.Attempt) return;
+            job.Status != JobStatus.Processing || item.RetryCount != message.Attempt)
+        {
+            return;
+        }
 
+        await DispatchAsync(context, job, item);
+    }
+
+    private static async Task DispatchAsync(
+        ConsumeContext<ProcessJobItemCommand> context,
+        Job job,
+        JobItem item)
+    {
         var correlation = new Guid(SHA256.HashData(Encoding.UTF8.GetBytes($"{item.Id}:{item.RetryCount}"))[..16]);
         try
         {

@@ -80,7 +80,7 @@ public class AuctionEndingSoonNotificationJob : BaseJob
                     await eventPublisher.PublishAsync(endingSoonEvent, cancellationToken);
                     notificationsSent++;
                 }
-                catch (Exception ex)
+                catch (Exception ex) when (ex is not OperationCanceledException)
                 {
                     Logger.LogError(ex,
                         "Failed to send ending soon notification for auction {AuctionId}",

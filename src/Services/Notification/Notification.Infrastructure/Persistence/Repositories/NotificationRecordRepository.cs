@@ -1,3 +1,4 @@
+using Notification.Domain.Enums;
 using System.Linq.Expressions;
 using BuildingBlocks.Application.Abstractions;
 using BuildingBlocks.Application.Filtering;

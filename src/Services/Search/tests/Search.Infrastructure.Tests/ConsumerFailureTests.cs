@@ -7,7 +7,7 @@ using BuildingBlocks.Application.Abstractions.Providers;
 using MassTransit;
 using Microsoft.Extensions.Logging.Abstractions;
 using Search.Application.Interfaces;
-using Search.Infrastructure.Consumers;
+using Search.Infrastructure.Messaging.Consumers;
 using Xunit;
 
 namespace Search.Infrastructure.Tests;

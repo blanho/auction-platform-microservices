@@ -27,7 +27,9 @@ public class UpdateBrandCommandHandler : ICommandHandler<UpdateBrandCommand, Bra
     {
         var brand = await _brandRepository.GetByIdAsync(request.Id, cancellationToken);
         if (brand is null)
+        {
             return Result.Failure<BrandDto>(CatalogErrors.Brand.NotFound);
+        }
 
         string? slug = null;
         if (request.Name is not null)
@@ -35,10 +37,18 @@ public class UpdateBrandCommandHandler : ICommandHandler<UpdateBrandCommand, Bra
             slug = SlugHelper.GenerateSlug(request.Name);
             var slugExists = await _brandRepository.SlugExistsAsync(slug, excludeId: request.Id, cancellationToken: cancellationToken);
             if (slugExists)
+            {
                 return Result.Failure<BrandDto>(CatalogErrors.Brand.SlugAlreadyExists);
+            }
         }
 
-        brand.Update(request.Name, slug, request.Description, request.DisplayOrder, request.IsActive, request.IsFeatured);
+        brand.Update(
+            name: request.Name,
+            slug: slug,
+            description: request.Description,
+            displayOrder: request.DisplayOrder,
+            isActive: request.IsActive,
+            isFeatured: request.IsFeatured);
         await _brandRepository.UpdateAsync(brand, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 

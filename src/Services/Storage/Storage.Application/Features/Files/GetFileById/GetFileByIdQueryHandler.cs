@@ -1,3 +1,4 @@
+using Storage.Application.Mappings;
 using BuildingBlocks.Application.CQRS.Queries;
 using Storage.Application.Errors;
 using Storage.Application.Interfaces;
@@ -23,18 +24,7 @@ public class GetFileByIdQueryHandler(
             return Result.Failure<StoredFileDto>(StorageErrors.FileNotFound(request.FileId));
         }
 
-        return Result.Success(MapToDto(file));
+        return Result.Success(file.ToDetailsDto());
     }
 
-    private static StoredFileDto MapToDto(StoredFile file)
-    {
-        ProcessedImageDto? image = null;
-        if (file.Metadata.TryGetValue(StorageDefaults.Images.WidthKey, out var widthText) &&
-            file.Metadata.TryGetValue(StorageDefaults.Images.HeightKey, out var heightText) &&
-            file.Metadata.TryGetValue(StorageDefaults.Images.ThumbnailKey, out var thumbnail) &&
-            int.TryParse(widthText, out var width) && int.TryParse(heightText, out var height))
-            image = new ProcessedImageDto(width, height, thumbnail);
-        return new(file.Id, file.FileName, file.ContentType, file.FileSize,
-            file.Url, file.CreatedAt, file.Checksum, image);
-    }
 }

@@ -1,3 +1,4 @@
+using Storage.Application.Mappings;
 using BuildingBlocks.Application.Abstractions.Auditing;
 using BuildingBlocks.Application.Abstractions.Storage;
 using BuildingBlocks.Application.CQRS.Commands;
@@ -39,8 +40,7 @@ public class ConfirmPresignedUploadCommandHandler(
             return Result.Failure<StoredFileDto>(StorageErrors.FileNotFoundInStorage);
 
         if (storedFile.Status == FileStatus.Ready)
-            return Result.Success(new StoredFileDto(storedFile.Id, storedFile.FileName,
-                storedFile.ContentType, storedFile.FileSize, storedFile.Url, storedFile.CreatedAt));
+            return Result.Success(storedFile.ToSummaryDto());
         if (storedFile.Status != FileStatus.Pending || !storedFile.UploadExpiresAt.HasValue || storedFile.UploadExpiresAt <= DateTimeOffset.UtcNow)
             return Result.Failure<StoredFileDto>(StorageErrors.FileNotFoundInStorage);
 
@@ -72,8 +72,6 @@ public class ConfirmPresignedUploadCommandHandler(
         logger.LogInformation("Presigned upload confirmed: {FileId} ({FileName})",
             storedFile.Id, storedFile.FileName);
 
-        return Result.Success(new StoredFileDto(
-            storedFile.Id, storedFile.FileName, storedFile.ContentType,
-            storedFile.FileSize, storedFile.Url, storedFile.CreatedAt));
+        return Result.Success(storedFile.ToSummaryDto());
     }
 }

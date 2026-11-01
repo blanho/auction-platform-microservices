@@ -1,5 +1,4 @@
 using Auctions.Application.DTOs;
-using Auctions.Domain.Enums;
 using BuildingBlocks.Application.Abstractions.Auditing;
 using Microsoft.Extensions.Logging;
 
@@ -45,7 +44,10 @@ public class BulkUpdateAuctionsCommandHandler : ICommandHandler<BulkUpdateAuctio
                 continue;
             }
 
-            if (TryApplyStatusChange(auction, request.Activate))
+            var statusChanged = request.Activate
+                ? auction.TryActivate(_dateTime.UtcNow)
+                : auction.TryDeactivate();
+            if (statusChanged)
             {
                 await _writeRepository.UpdateAsync(auction, cancellationToken);
                 auditEntries.Add((auctionId, AuctionAuditData.FromAuction(auction)));
@@ -65,25 +67,4 @@ public class BulkUpdateAuctionsCommandHandler : ICommandHandler<BulkUpdateAuctio
         return Result.Success(updatedCount);
     }
 
-    private bool TryApplyStatusChange(Auction auction, bool activate)
-    {
-        if (activate)
-        {
-            if ((auction.Status == Status.Inactive || auction.Status == Status.Scheduled) && auction.AuctionEnd > _dateTime.UtcNow)
-            {
-                auction.ChangeStatus(Status.Live);
-                return true;
-            }
-        }
-        else
-        {
-            if (auction.Status == Status.Live || auction.Status == Status.Scheduled)
-            {
-                auction.ChangeStatus(Status.Inactive);
-                return true;
-            }
-        }
-
-        return false;
-    }
 }

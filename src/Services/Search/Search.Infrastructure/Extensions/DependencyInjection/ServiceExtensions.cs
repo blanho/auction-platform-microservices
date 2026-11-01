@@ -3,7 +3,7 @@ using Elastic.Clients.Elasticsearch;
 using Elastic.Transport;
 using BuildingBlocks.Infrastructure.Extensions;
 using Search.Infrastructure.Configuration;
-using Search.Infrastructure.Consumers;
+using Search.Infrastructure.Messaging.Consumers;
 using Search.Infrastructure.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;

@@ -6,7 +6,7 @@ global using Analytics.Domain.Entities;
 global using Analytics.Application.Interfaces;
 global using Analytics.Application.DTOs;
 global using Analytics.Infrastructure.Persistence;
-global using Analytics.Application.Mappers;
+global using Analytics.Application.Mappings;
 global using MassTransit;
 global using Microsoft.EntityFrameworkCore;
 global using Analytics.Api.Extensions.DependencyInjection;

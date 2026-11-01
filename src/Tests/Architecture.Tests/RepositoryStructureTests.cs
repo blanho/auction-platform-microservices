@@ -114,6 +114,18 @@ public sealed class RepositoryStructureTests
     }
 
     [Fact]
+    public void InfrastructureProjects_DoNotReferenceWebOrApiLayers()
+    {
+        var violations = GetProjects("*.Infrastructure.csproj")
+            .SelectMany(project => GetProjectReferences(project)
+                .Where(reference => ContainsAny(reference, "BuildingBlocks.Web", ".Api"))
+                .Select(reference => $"{Relative(project)} -> {reference}"))
+            .ToList();
+
+        Assert.True(violations.Count == 0, FormatViolations(violations));
+    }
+
+    [Fact]
     public void SourceFolders_UseEstablishedNamingConventions()
     {
         var violations = new List<string>();

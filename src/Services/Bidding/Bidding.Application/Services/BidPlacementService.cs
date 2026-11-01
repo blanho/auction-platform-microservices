@@ -44,10 +44,10 @@ namespace Bidding.Application.Services
             _logger.LogInformation("Placing bid for auction {AuctionId} by bidder {Bidder} (IsAutoBid: {IsAutoBid})",
                 dto.AuctionId, bidderUsername, isAutoBid);
 
-            return await ProcessBidWithLock(dto, bidderId, bidderUsername, isAutoBid, cancellationToken);
+            return await ProcessBidWithLockAsync(dto, bidderId, bidderUsername, isAutoBid, cancellationToken);
         }
 
-        private async Task<BidDto> ProcessBidWithLock(
+        private async Task<BidDto> ProcessBidWithLockAsync(
             PlaceBidDto dto,
             Guid bidderId,
             string bidderUsername,
@@ -66,10 +66,10 @@ namespace Bidding.Application.Services
                 return CreateRejectedBid(dto, bidderId, bidderUsername, "Another bid is being processed. Please try again.");
             }
 
-            return await ExecuteBidWithinAuctionLock(dto, bidderId, bidderUsername, isAutoBid, ct);
+            return await ExecuteBidWithinAuctionLockAsync(dto, bidderId, bidderUsername, isAutoBid, ct);
         }
 
-        private async Task<BidDto> ExecuteBidWithinAuctionLock(
+        private async Task<BidDto> ExecuteBidWithinAuctionLockAsync(
             PlaceBidDto dto,
             Guid bidderId,
             string bidderUsername,
@@ -78,28 +78,35 @@ namespace Bidding.Application.Services
         {
             return await _auctionBidLock.ExecuteAsync(
                 dto.AuctionId,
-                async lockCt =>
-                {
-                    var validation = await _auctionValidator.ValidateAsync(dto, bidderId, bidderUsername, lockCt);
-                    if (!validation.IsValid)
-                        return CreateRejectedBid(dto, bidderId, bidderUsername, validation.ErrorMessage);
-
-                    var highestBid = await _repository.GetHighestBidForAuctionAsync(dto.AuctionId, lockCt);
-                    var currentHighBid = highestBid?.Amount ?? 0;
-
-                    if (!IsValidBidIncrement(dto.Amount, currentHighBid, out var incrementError))
-                        return CreateBidTooLow(dto, bidderId, bidderUsername, incrementError);
-
-                    var bid = await CreateAndSaveBid(dto, bidderId, bidderUsername, isAutoBid, highestBid, validation.ReservePrice, lockCt);
-                    if (bid.Status == BidStatus.Rejected.ToString())
-                        return bid;
-
-                    _logger.LogInformation("Bid {BidId} placed for auction {AuctionId} with status {Status}",
-                        bid.Id, dto.AuctionId, bid.Status);
-
-                    return bid;
-                },
+                lockCt => ProcessValidatedBidAsync(dto, bidderId, bidderUsername, isAutoBid, lockCt),
                 ct);
+        }
+
+        private async Task<BidDto> ProcessValidatedBidAsync(
+            PlaceBidDto dto,
+            Guid bidderId,
+            string bidderUsername,
+            bool isAutoBid,
+            CancellationToken cancellationToken)
+        {
+            var validation = await _auctionValidator.ValidateAsync(dto, bidderId, bidderUsername, cancellationToken);
+            if (!validation.IsValid)
+                return CreateRejectedBid(dto, bidderId, bidderUsername, validation.ErrorMessage);
+
+            var highestBid = await _repository.GetHighestBidForAuctionAsync(dto.AuctionId, cancellationToken);
+            var currentHighBid = highestBid?.Amount ?? 0;
+
+            if (!IsValidBidIncrement(dto.Amount, currentHighBid, out var incrementError))
+                return CreateBidTooLow(dto, bidderId, bidderUsername, incrementError);
+
+            var bid = await CreateAndSaveBidAsync(dto, bidderId, bidderUsername, isAutoBid, highestBid, validation.ReservePrice, cancellationToken);
+            if (bid.Status == BidStatus.Rejected.ToString())
+                return bid;
+
+            _logger.LogInformation("Bid {BidId} placed for auction {AuctionId} with status {Status}",
+                bid.Id, dto.AuctionId, bid.Status);
+
+            return bid;
         }
 
         private bool IsValidBidIncrement(decimal amount, decimal currentHighBid, out string errorMessage)
@@ -160,7 +167,7 @@ namespace Bidding.Application.Services
             return bid;
         }
 
-        private async Task<BidDto?> SaveBidWithRaceConditionHandling(
+        private async Task<BidDto?> SaveBidWithRaceConditionHandlingAsync(
             Bid bid,
             PlaceBidDto dto,
             Guid bidderId,
@@ -223,11 +230,11 @@ namespace Bidding.Application.Services
             };
         }
 
-        private async Task<BidDto> CreateAndSaveBid(PlaceBidDto dto, Guid bidderId, string bidderUsername, bool isAutoBid, Bid? highestBid, decimal reservePrice, CancellationToken ct)
+        private async Task<BidDto> CreateAndSaveBidAsync(PlaceBidDto dto, Guid bidderId, string bidderUsername, bool isAutoBid, Bid? highestBid, decimal reservePrice, CancellationToken ct)
         {
             var bid = CreateBid(dto, bidderId, bidderUsername, highestBid, isAutoBid, reservePrice);
 
-            var raceConditionResult = await SaveBidWithRaceConditionHandling(bid, dto, bidderId, bidderUsername, ct);
+            var raceConditionResult = await SaveBidWithRaceConditionHandlingAsync(bid, dto, bidderId, bidderUsername, ct);
             if (raceConditionResult != null)
                 return raceConditionResult;
 

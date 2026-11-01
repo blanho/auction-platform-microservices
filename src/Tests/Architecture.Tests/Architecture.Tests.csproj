@@ -9,7 +9,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\BuildingBlocks\BuildingBlocks.Web\BuildingBlocks.Web.csproj" />
-    <ProjectReference Include="..\..\Services\Auction\Auction.Application\Auction.Application.csproj" />
+    <ProjectReference Include="../../BuildingBlocks/BuildingBlocks.Application/BuildingBlocks.Application.csproj" />
   </ItemGroup>
 </Project>

@@ -12,7 +12,6 @@
     <ProjectReference Include="..\Bidding.Domain\Bidding.Domain.csproj" />
     <ProjectReference Include="..\Bidding.Application\Bidding.Application.csproj" />
     <ProjectReference Include="..\..\..\BuildingBlocks\BuildingBlocks.Infrastructure\BuildingBlocks.Infrastructure.csproj" />
-    <ProjectReference Include="..\..\..\BuildingBlocks\BuildingBlocks.Web\BuildingBlocks.Web.csproj" />
     <ProjectReference Include="..\..\Auction\Auction.Contracts\AuctionService.Contracts.csproj" />
   </ItemGroup>
 

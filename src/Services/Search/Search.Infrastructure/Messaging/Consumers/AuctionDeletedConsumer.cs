@@ -5,7 +5,7 @@ using Search.Application.Interfaces;
 using AuctionService.Contracts.Events;
 using Search.Infrastructure.Services;
 
-namespace Search.Infrastructure.Consumers;
+namespace Search.Infrastructure.Messaging.Consumers;
 
 public class AuctionDeletedConsumer : IConsumer<AuctionDeletedEvent>
 {

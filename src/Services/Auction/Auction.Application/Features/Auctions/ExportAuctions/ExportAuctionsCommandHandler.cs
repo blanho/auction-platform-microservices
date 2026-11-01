@@ -1,5 +1,4 @@
 using Auctions.Application.Errors;
-using Auctions.Domain.Entities;
 using BuildingBlocks.Application.Abstractions;
 
 namespace Auctions.Application.Features.Auctions.ExportAuctions;
@@ -31,7 +30,7 @@ public class ExportAuctionsCommandHandler : ICommandHandler<ExportAuctionsComman
             "Exporting auctions in {Format} format with filters: Status={Status}, Seller={Seller}",
             request.Format, request.StatusFilter, request.SellerFilter);
 
-        var exporter = ResolveExporter(request.Format);
+        var exporter = _exporters.FirstOrDefault(candidate => candidate.Format == request.Format);
         if (exporter is null)
         {
             return Result.Failure<ExportAuctionsResult>(
@@ -45,7 +44,7 @@ public class ExportAuctionsCommandHandler : ICommandHandler<ExportAuctionsComman
             request.EndDate,
             cancellationToken);
 
-        var exportRows = MapToExportRows(auctions);
+        var exportRows = ExportAuctionMapper.ToRows(auctions);
         var content = exporter.Export(exportRows);
 
         var timestamp = _dateTime.UtcNow.ToString("yyyyMMdd-HHmmss");
@@ -63,25 +62,4 @@ public class ExportAuctionsCommandHandler : ICommandHandler<ExportAuctionsComman
             Format: request.Format));
     }
 
-    private IReportExporter? ResolveExporter(ExportFormat format)
-    {
-        return _exporters.FirstOrDefault(e => e.Format == format);
-    }
-
-    private static List<ExportAuctionRow> MapToExportRows(List<Auction> auctions)
-    {
-        return auctions.Select(a => new ExportAuctionRow(
-            AuctionId: a.Id,
-            Title: a.Item.Title,
-            Seller: a.SellerUsername,
-            Status: a.Status.ToString(),
-            Currency: a.Currency,
-            ReservePrice: a.ReservePrice,
-            CurrentHighBid: a.CurrentHighBid,
-            SoldAmount: a.SoldAmount,
-            CreatedAt: a.CreatedAt,
-            AuctionEnd: a.AuctionEnd,
-            Category: a.Item.CategoryName,
-            Condition: a.Item.Condition)).ToList();
-    }
 }

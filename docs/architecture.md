@@ -188,8 +188,34 @@ API endpoints are grouped by the same business area:
 ```
 
 Infrastructure keeps persistence, messaging, external clients, and background
-jobs separated. Message contracts use one public contract per file under
+jobs separated. Infrastructure projects must not reference `BuildingBlocks.Web`
+or service API projects; HTTP middleware and host composition belong in `.Api`.
+Message contracts use one public contract per file under
 `Commands/`, `Events/`, `Enums/`, or `Grpc/`.
+
+Use the following locations when the service needs the corresponding concern:
+
+| Concern | Location |
+| --- | --- |
+| DTO mapping profiles and mapping extensions | `{Layer}/Mappings/` |
+| Database context and entity configurations | `Infrastructure/Persistence/` and `Persistence/Configurations/` |
+| Repository implementations | `Infrastructure/Persistence/Repositories/` |
+| EF migrations and the context model snapshot | `Infrastructure/Persistence/Migrations/` |
+| Integration-message consumers | `Infrastructure/Messaging/Consumers/` |
+| Protocol buffer definitions | `Contracts/Grpc/` |
+| Domain enums | `Domain/Enums/` |
+
+`{Layer}` refers to the appropriate service project, such as
+`Auction.Application`. Avoid parallel `Mappers` and `Mappings` directories or
+placing mapping extensions under `Extensions/Mappings`. Keep migrations together;
+moving an existing migration must preserve its migration ID and schema operations.
+
+Use specialized directories where they describe the service accurately:
+Search keeps Elasticsearch documents in `Domain/Documents`, Notification has
+delivery adapters in `Infrastructure/Senders`, and Storage has image processing in
+`Infrastructure/Processing`. Create folders only when they contain code. The
+Gateway and Orchestration retain their host and saga layouts rather than adding
+unused service layers.
 
 Tests follow the service boundary and layer under test:
 
@@ -198,12 +224,36 @@ Tests follow the service boundary and layer under test:
 └── tests/
     ├── {Service}.Domain.Tests/
     ├── {Service}.Application.Tests/
-    └── {Service}.Infrastructure.Tests/      # when infrastructure behavior is tested
+    ├── {Service}.Infrastructure.Tests/      # when infrastructure behavior is tested
+    └── {Service}.Api.Tests/                 # when HTTP/API behavior is tested
 ```
 
 Every service keeps Domain and Application test projects in the solution. Tests
 for repository-wide dependency and folder rules remain in
 `src/Tests/Architecture.Tests`.
+
+Shared library behavior belongs in `src/Tests/BuildingBlocks.{Layer}.Tests`,
+with references limited to the layer under test and its dependencies. Keep
+database and broker tests in service Infrastructure test projects, rather than
+Application test projects. Shared provider fixtures live in `src/Tests/TestSupport`.
+Application tests reference Application and its dependencies; they must not
+reference Infrastructure, API projects, or `BuildingBlocks.Web`. API tests
+reference the API project rather than compiling linked copies of its source.
+General-purpose test doubles such as `TestSupport/TestProxy.cs` remain separate
+from database fixtures so unit tests do not need a database provider dependency.
+Root `tests/load` contains whole-platform load scenarios; root `scripts` contains
+build/test automation. See [Backend testing](testing.md) for commands and CI rules.
+
+Use `Features/{Area}/{Operation}` consistently across services, without extra
+`Commands` and `Queries` directory levels. Command/query suffixes identify the
+operation type. Keep code shared across operations outside `Features`: scoped implementations
+belong in application-level `Services`, abstractions in `Interfaces`, stateless
+utilities in `Helpers`, and shared request/response data in `DTOs`. Do not add
+`Helpers` or `Shared` folders inside feature areas.
+
+Identity follows the same layout: `Services/AuthHelper.cs` and
+`Services/UserHelper.cs` implement `Interfaces/IAuthHelper.cs` and
+`Interfaces/IUserHelper.cs`. Its feature folders contain operation-specific code.
 
 ### Public Namespace Migrations
 

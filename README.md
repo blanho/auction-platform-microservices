@@ -385,11 +385,20 @@ auction-platform-microservices/
 │   ├── Gateway/
 │   │   └── Gateway.Api/               # YARP config, JWT middleware, rate limiting
 │   │
-│   └── Orchestration/
-│       ├── Orchestration.Contracts/   # Commands and acknowledgements
-│       ├── Orchestration.Sagas/       # Sale state machines
-│       ├── Orchestration.Infrastructure/ # PostgreSQL saga storage, outbox, deadlines
-│       └── Orchestration.Api/         # Worker host and Admin recovery API
+│   ├── Orchestration/
+│   │   ├── Orchestration.Contracts/   # Commands and acknowledgements
+│   │   ├── Orchestration.Sagas/       # Sale state machines
+│   │   ├── Orchestration.Infrastructure/ # PostgreSQL saga storage, outbox, deadlines
+│   │   ├── Orchestration.Api/         # Worker host and Admin recovery API
+│   │   └── tests/                    # Saga and infrastructure tests
+│   │
+│   └── Tests/
+│       ├── Architecture.Tests/        # Repository and dependency rules
+│       ├── BuildingBlocks.Domain.Tests/
+│       ├── BuildingBlocks.Application.Tests/
+│       ├── BuildingBlocks.Infrastructure.Tests/
+│       ├── BuildingBlocks.Web.Tests/
+│       └── TestSupport/               # Shared PostgreSQL/broker fixtures
 │
 ├── web/                               # React 19 SPA
 │   └── src/
@@ -400,6 +409,10 @@ auction-platform-microservices/
 │       └── i18n/                      # Translations (en, vi)
 │
 ├── docs/                              # Architecture and onboarding documentation
+├── scripts/                           # Backend test runner and result verification
+│   └── tests/                         # Tests for automation scripts
+├── tests/
+│   └── load/                          # Whole-platform load scenarios
 │
 └── deploy/
     ├── docker/
@@ -408,8 +421,8 @@ auction-platform-microservices/
     ├── config/
     │   └── appsettings.Production.template.json
     ├── kubernetes/
-        ├── base/                      # Kustomize base manifests
-        └── overlays/                  # dev / staging / production
+    │   ├── base/                      # Kustomize base manifests
+    │   └── overlays/                  # dev / staging / production / production-managed
     └── azure/                         # Bicep, Key Vault bootstrap, AKS render script
 ```
 
@@ -424,7 +437,9 @@ Services/{Name}/
 ├── {Name}.Api/             # Minimal API Endpoints (Carter), gRPC, DI Configuration
 └── tests/
     ├── {Name}.Domain.Tests/
-    └── {Name}.Application.Tests/
+    ├── {Name}.Application.Tests/
+    ├── {Name}.Infrastructure.Tests/   # When persistence/integration behavior is tested
+    └── {Name}.Api.Tests/              # When HTTP/API behavior is tested
 ```
 
 ---
@@ -697,7 +712,7 @@ managed observability integration only when the project needs it.
 
 ## Testing
 
-The backend has 32 test projects covering service behavior, architecture rules,
+The backend has service and shared-library test projects covering behavior, architecture rules,
 PostgreSQL persistence, bid/finalization serialization, and RabbitMQ-backed sale
 workflow recovery. Start disposable PostgreSQL and RabbitMQ before running the
 backend tests so provider-backed coverage can execute.
@@ -712,10 +727,18 @@ late acknowledgements, and wallet rollback after audit failure or cancellation.
 docker compose -p auction-reliability-tests -f deploy/docker/docker-compose.tests.yml up -d --wait
 export BACKEND_TEST_POSTGRES='Host=localhost;Port=15432;Database=postgres;Username=auction_test;Password=auction_test'
 export BACKEND_TEST_RABBIT_PORT=15673
+export BACKEND_TEST_ELASTICSEARCH='http://localhost:19200'
 dotnet restore auction.sln
-dotnet test auction.sln -c Release --no-restore
+dotnet build auction.sln -c Release --no-restore
+bash scripts/run-backend-tests.sh
 docker compose -p auction-reliability-tests -f deploy/docker/docker-compose.tests.yml down -v
 ```
+
+The runner checks every test project's TRX results and rejects unexpected skips
+or missing results. For a local run without disposable providers, build first
+and use `bash scripts/run-backend-tests.sh --allow-skips`; this is partial
+coverage. Elasticsearch coverage is optional until `BACKEND_TEST_ELASTICSEARCH`
+is configured. See [Backend testing](docs/testing.md) for test locations and details.
 
 Frontend behavioral tests cover live auction updates and reconnects, subscription
 enable/disable and pending-join cleanup, bid rejection, buy-now polling and outcomes,

@@ -1,4 +1,4 @@
-namespace Notification.Domain.Entities;
+namespace Notification.Domain.Enums;
 
 public enum NotificationRecordStatus
 {

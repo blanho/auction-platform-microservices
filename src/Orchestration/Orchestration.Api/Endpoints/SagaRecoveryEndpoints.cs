@@ -52,53 +52,15 @@ public static class SagaRecoveryEndpoints
         {
             return Results.Conflict();
         }
-        if (workflow == SagaConstants.Workflows.BuyNow)
+        var rejection = workflow switch
         {
-            var saga = await dbContext.BuyNowSagas.FindAsync([correlationId], cancellationToken);
-            if (saga?.CurrentState != SagaConstants.States.ManualInterventionRequired)
-            {
-                return Results.Conflict();
-            }
-            await publisher.Publish(new RetryBuyNowSaga { CorrelationId = correlationId, AuctionId = recoveryCase.AuctionId }, cancellationToken);
-        }
-        else if (workflow == SagaConstants.Workflows.AuctionCompletion)
+            SagaConstants.Workflows.BuyNow => await RetryBuyNowAsync(recoveryCase, dbContext, publisher, cancellationToken),
+            SagaConstants.Workflows.AuctionCompletion => await RetryAuctionCompletionAsync(recoveryCase, dbContext, publisher, cancellationToken),
+            _ => Results.BadRequest()
+        };
+        if (rejection is not null)
         {
-            var saga = await dbContext.AuctionCompletionSagas.FindAsync([correlationId], cancellationToken);
-            if (saga is null)
-            {
-                return Results.NotFound();
-            }
-            if (step == SagaConstants.RecoverySteps.Notifications && saga.OrderId.HasValue)
-            {
-                await publisher.Publish(new SendAuctionCompletionNotifications
-                {
-                    CorrelationId = saga.CorrelationId,
-                    AuctionId = saga.AuctionId,
-                    OrderId = saga.OrderId.Value,
-                    SellerId = saga.SellerId,
-                    SellerUsername = saga.SellerUsername,
-                    WinnerId = saga.WinnerId,
-                    WinnerUsername = saga.WinnerUsername,
-                    ItemTitle = saga.ItemTitle,
-                    Amount = saga.WinningBidAmount
-                }, cancellationToken);
-            }
-            else if (saga.CurrentState == SagaConstants.States.ManualInterventionRequired)
-            {
-                await publisher.Publish(new RetryAuctionCompletionSaga
-                {
-                    CorrelationId = correlationId,
-                    AuctionId = recoveryCase.AuctionId
-                }, cancellationToken);
-            }
-            else
-            {
-                return Results.Conflict();
-            }
-        }
-        else
-        {
-            return Results.BadRequest();
+            return rejection;
         }
 
         recoveryCase.LastRetriedAt = DateTimeOffset.UtcNow;
@@ -107,5 +69,64 @@ public static class SagaRecoveryEndpoints
         await dbContext.SaveChangesAsync(cancellationToken);
         await transaction.CommitAsync(cancellationToken);
         return Results.Accepted();
+    }
+
+    private static async Task<IResult?> RetryBuyNowAsync(
+        SagaRecoveryCase recoveryCase,
+        OrchestrationDbContext dbContext,
+        IPublishEndpoint publisher,
+        CancellationToken cancellationToken)
+    {
+        var correlationId = recoveryCase.CorrelationId;
+        var saga = await dbContext.BuyNowSagas.FindAsync([correlationId], cancellationToken);
+        if (saga?.CurrentState != SagaConstants.States.ManualInterventionRequired)
+        {
+            return Results.Conflict();
+        }
+        await publisher.Publish(new RetryBuyNowSaga { CorrelationId = correlationId, AuctionId = recoveryCase.AuctionId }, cancellationToken);
+        return null;
+    }
+
+    private static async Task<IResult?> RetryAuctionCompletionAsync(
+        SagaRecoveryCase recoveryCase,
+        OrchestrationDbContext dbContext,
+        IPublishEndpoint publisher,
+        CancellationToken cancellationToken)
+    {
+        var correlationId = recoveryCase.CorrelationId;
+        var step = recoveryCase.Step;
+        var saga = await dbContext.AuctionCompletionSagas.FindAsync([correlationId], cancellationToken);
+        if (saga is null)
+        {
+            return Results.NotFound();
+        }
+        if (step == SagaConstants.RecoverySteps.Notifications && saga.OrderId.HasValue)
+        {
+            await publisher.Publish(new SendAuctionCompletionNotifications
+            {
+                CorrelationId = saga.CorrelationId,
+                AuctionId = saga.AuctionId,
+                OrderId = saga.OrderId.Value,
+                SellerId = saga.SellerId,
+                SellerUsername = saga.SellerUsername,
+                WinnerId = saga.WinnerId,
+                WinnerUsername = saga.WinnerUsername,
+                ItemTitle = saga.ItemTitle,
+                Amount = saga.WinningBidAmount
+            }, cancellationToken);
+        }
+        else if (saga.CurrentState == SagaConstants.States.ManualInterventionRequired)
+        {
+            await publisher.Publish(new RetryAuctionCompletionSaga
+            {
+                CorrelationId = correlationId,
+                AuctionId = recoveryCase.AuctionId
+            }, cancellationToken);
+        }
+        else
+        {
+            return Results.Conflict();
+        }
+        return null;
     }
 }

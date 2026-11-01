@@ -3,7 +3,7 @@ using Analytics.Infrastructure.Messaging.Consumers;
 using Analytics.Infrastructure.Persistence;
 using Analytics.Application.Interfaces;
 using Analytics.Application.Features.Reports.GetReports;
-using Analytics.Infrastructure.Repositories;
+using Analytics.Infrastructure.Persistence.Repositories;
 using Analytics.Application.Validators;
 using Analytics.Domain.Constants;
 using BuildingBlocks.Application.Abstractions.Messaging;

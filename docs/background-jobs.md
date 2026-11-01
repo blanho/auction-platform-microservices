@@ -366,7 +366,7 @@ Set `BACKEND_TEST_POSTGRES` to a disposable PostgreSQL connection string and
 remove their own databases/index; do not point them at production infrastructure.
 
 ```bash
-dotnet test src/Services/Analytics/tests/Analytics.Application.Tests/Analytics.Application.Tests.csproj
+dotnet test src/Services/Analytics/tests/Analytics.Infrastructure.Tests/Analytics.Infrastructure.Tests.csproj
 dotnet test src/Services/Search/tests/Search.Infrastructure.Tests/Search.Infrastructure.Tests.csproj
 dotnet test src/Services/Job/tests/Job.Infrastructure.Tests/Job.Infrastructure.Tests.csproj
 ```

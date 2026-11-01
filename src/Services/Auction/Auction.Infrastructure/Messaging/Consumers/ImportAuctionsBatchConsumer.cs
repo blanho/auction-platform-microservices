@@ -5,8 +5,6 @@ using AuctionService.Contracts.Commands;
 using AuctionService.Contracts.Events;
 using Auctions.Application.Features.Auctions.ImportAuctions;
 using Auctions.Domain.Constants;
-using Auctions.Domain.Entities;
-using BuildingBlocks.Domain.Constants;
 using JobService.Contracts.Commands;
 using JobService.Contracts.Enums;
 
@@ -39,7 +37,11 @@ public class ImportAuctionsBatchConsumer : IConsumer<ProcessAuctionImportBatchCo
         var message = context.Message;
         using var culture = new RequestCultureScope(message.Culture);
         var receiptKey = $"ImportAuctionsBatchConsumer:{message.CorrelationId}:{message.BatchNumber}";
-        if (await _workflow.ExistsAsync(receiptKey, context.CancellationToken)) return;
+        if (await _workflow.ExistsAsync(receiptKey, context.CancellationToken))
+        {
+            return;
+        }
+
         var correlationId = message.CorrelationId.ToString();
         var stopwatch = Stopwatch.StartNew();
 
@@ -48,7 +50,9 @@ public class ImportAuctionsBatchConsumer : IConsumer<ProcessAuctionImportBatchCo
             message.BatchNumber, message.TotalBatches, correlationId, message.Rows.Count);
 
         if (message.BatchNumber < 1 || message.BatchNumber > message.TotalBatches || message.TotalRows <= 0)
+        {
             throw new ArgumentException("Invalid import batch metadata.");
+        }
 
         await context.Publish(new RequestJobCommand
         {
@@ -76,14 +80,16 @@ public class ImportAuctionsBatchConsumer : IConsumer<ProcessAuctionImportBatchCo
         {
             context.CancellationToken.ThrowIfCancellationRequested();
 
-            var auctions = MapToEntities(chunk, message.SellerId, message.SellerUsername, message.Currency);
+            var auctions = chunk.Select(validatedRow => ImportAuctionMapper.ToAuction(
+                validatedRow.Row, message.SellerId, message.SellerUsername, message.Currency, _sanitizationService))
+                .ToList();
             await _bulkRepository.BulkInsertAsync(auctions, context.CancellationToken);
             await _unitOfWork.SaveChangesAsync(context.CancellationToken);
 
             insertedCount += auctions.Count;
         }
 
-        await ReportProgress(context, correlationId, insertedCount, failedRowCount);
+        await ReportProgressAsync(context, correlationId, insertedCount, failedRowCount);
         stopwatch.Stop();
 
         _logger.LogInformation(
@@ -91,10 +97,14 @@ public class ImportAuctionsBatchConsumer : IConsumer<ProcessAuctionImportBatchCo
             message.BatchNumber, message.TotalBatches, correlationId,
             insertedCount, failedRowCount, stopwatch.ElapsedMilliseconds);
 
+        var localizedErrors = validationResult.Errors.Select(error => new ImportRowErrorPayload
+        {
+            RowNumber = error.RowNumber,
+            Field = error.Field,
+            ErrorMessage = UserMessageLocalizer.Translate(error.ErrorMessage)
+        }).ToList();
         var totals = await _workflow.CompleteAsync(receiptKey, message.CorrelationId,
-            insertedCount, failedRowCount, validationResult.Errors.Select(e => new ImportRowErrorPayload
-            { RowNumber = e.RowNumber, Field = e.Field, ErrorMessage = UserMessageLocalizer.Translate(e.ErrorMessage) }).ToList(),
-            message.TotalBatches, context.CancellationToken);
+            insertedCount, failedRowCount, localizedErrors, message.TotalBatches, context.CancellationToken);
         if (totals is not null)
         {
             await context.Publish(new AuctionImportCompletedEvent
@@ -115,14 +125,15 @@ public class ImportAuctionsBatchConsumer : IConsumer<ProcessAuctionImportBatchCo
     private static RowValidationResult ValidateRows(List<ImportAuctionItemPayload> rows)
     {
         var validRows = new List<ValidatedRow>();
-        var errors = new List<RowError>();
+        var errors = new List<ImportRowError>();
 
         foreach (var row in rows)
         {
-            var rowErrors = ValidateRow(row);
+            var importRow = ImportAuctionMapper.ToRow(row);
+            var rowErrors = ImportAuctionRowValidator.Validate(importRow, row.RowNumber, DateTimeOffset.UtcNow);
             if (rowErrors.Count == 0)
             {
-                validRows.Add(new ValidatedRow(row.RowNumber, row));
+                validRows.Add(new ValidatedRow(row.RowNumber, importRow));
             }
             else
             {
@@ -133,81 +144,7 @@ public class ImportAuctionsBatchConsumer : IConsumer<ProcessAuctionImportBatchCo
         return new RowValidationResult(validRows, errors);
     }
 
-    private static List<RowError> ValidateRow(ImportAuctionItemPayload row)
-    {
-        var errors = new List<RowError>();
-
-        if (string.IsNullOrWhiteSpace(row.Title))
-            errors.Add(new RowError(row.RowNumber, nameof(row.Title), "Title is required."));
-        else if (row.Title.Length > ValidationConstants.StringLength.Medium)
-            errors.Add(new RowError(row.RowNumber, nameof(row.Title),
-                $"Title must not exceed {ValidationConstants.StringLength.Medium} characters."));
-
-        if (string.IsNullOrWhiteSpace(row.Description))
-            errors.Add(new RowError(row.RowNumber, nameof(row.Description), "Description is required."));
-
-        if (row.ReservePrice < 0)
-            errors.Add(new RowError(row.RowNumber, nameof(row.ReservePrice), "Reserve price must be non-negative."));
-
-        if (row.BuyNowPrice.HasValue && row.BuyNowPrice.Value <= row.ReservePrice)
-            errors.Add(new RowError(row.RowNumber, nameof(row.BuyNowPrice), "Buy now price must exceed reserve price."));
-
-        if (row.AuctionEnd <= DateTimeOffset.UtcNow)
-            errors.Add(new RowError(row.RowNumber, nameof(row.AuctionEnd), "Auction end date must be in the future."));
-
-        if (row.YearManufactured.HasValue && (row.YearManufactured < 1900 || row.YearManufactured > DateTime.UtcNow.Year + 1))
-            errors.Add(new RowError(row.RowNumber, nameof(row.YearManufactured),
-                $"Year must be between 1900 and {DateTime.UtcNow.Year + 1}."));
-
-        return errors;
-    }
-
-    private List<Auction> MapToEntities(
-        IReadOnlyList<ValidatedRow> rows,
-        Guid sellerId,
-        string sellerUsername,
-        string currency)
-    {
-        var auctions = new List<Auction>(rows.Count);
-
-        foreach (var row in rows.Select(validatedRow => validatedRow.Payload))
-        {
-
-            var item = Item.Create(new CreateItemParams
-            {
-                Title = _sanitizationService.SanitizeText(row.Title),
-                Description = _sanitizationService.SanitizeHtml(row.Description),
-                Condition = row.Condition,
-                YearManufactured = row.YearManufactured,
-                CategoryId = row.CategoryId,
-                BrandId = row.BrandId
-            });
-
-            if (row.Attributes != null)
-            {
-                foreach (var attr in row.Attributes)
-                {
-                    item.SetAttribute(attr.Key, attr.Value);
-                }
-            }
-
-            var auction = Auction.Create(new CreateAuctionParams(
-                SellerId: sellerId,
-                SellerUsername: sellerUsername,
-                Item: item,
-                ReservePrice: row.ReservePrice,
-                AuctionEnd: row.AuctionEnd,
-                Currency: currency,
-                BuyNowPrice: row.BuyNowPrice,
-                IsFeatured: false));
-
-            auctions.Add(auction);
-        }
-
-        return auctions;
-    }
-
-    private static async Task ReportProgress(
+    private static async Task ReportProgressAsync(
         ConsumeContext<ProcessAuctionImportBatchCommand> context,
         string correlationId,
         int completedCount,
@@ -222,9 +159,8 @@ public class ImportAuctionsBatchConsumer : IConsumer<ProcessAuctionImportBatchCo
         });
     }
 
-    private sealed record ValidatedRow(int RowNumber, ImportAuctionItemPayload Payload);
-    private sealed record RowError(int RowNumber, string Field, string ErrorMessage);
+    private sealed record ValidatedRow(int RowNumber, ImportAuctionRow Row);
     private sealed record RowValidationResult(
         IReadOnlyList<ValidatedRow> ValidRows,
-        IReadOnlyList<RowError> Errors);
+        IReadOnlyList<ImportRowError> Errors);
 }

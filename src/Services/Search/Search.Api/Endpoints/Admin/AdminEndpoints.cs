@@ -5,10 +5,10 @@ using BuildingBlocks.Web.Authorization;
 using BuildingBlocks.Application.Localization;
 using BuildingBlocks.Web.Helpers;
 using BuildingBlocks.Web.Constants;
-using Search.Application.Features.Admin.Commands.EnsureIndex;
-using Search.Application.Features.Admin.Commands.RecreateIndex;
-using Search.Application.Features.Admin.Queries.GetHealth;
-using Search.Application.Features.Admin.Queries.GetIndexStats;
+using Search.Application.Features.Admin.EnsureIndex;
+using Search.Application.Features.Admin.RecreateIndex;
+using Search.Application.Features.Admin.GetHealth;
+using Search.Application.Features.Admin.GetIndexStats;
 
 namespace Search.Api.Endpoints.Admin;
 

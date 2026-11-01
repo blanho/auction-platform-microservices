@@ -5,7 +5,6 @@ using BuildingBlocks.Infrastructure.Extensions;
 using System.Linq.Expressions;
 using Auctions.Application.DTOs;
 using Auctions.Domain.Entities;
-using Auctions.Infrastructure.Persistence;
 using BuildingBlocks.Application.Abstractions.Auditing;
 using BuildingBlocks.Application.Paging;
 using Auctions.Domain.Enums;
@@ -64,47 +63,8 @@ namespace Auctions.Infrastructure.Persistence.Repositories
             AuctionFilterDto filter,
             CancellationToken cancellationToken = default)
         {
-            var filterParams = filter.Filter;
-
-            var query = ActiveAuctionsWithItemDetails
-                .AsNoTracking()
-                .AsSplitQuery()
-                .AsQueryable();
-
-            if (!string.IsNullOrEmpty(filterParams.Status) && Enum.TryParse<Status>(filterParams.Status, true, out var statusEnum))
-            {
-                query = query.Where(x => x.Status == statusEnum);
-            }
-
-            if (!string.IsNullOrEmpty(filterParams.Seller))
-            {
-                query = query.Where(x => x.SellerUsername == filterParams.Seller);
-            }
-
-            if (!string.IsNullOrEmpty(filterParams.Winner))
-            {
-                query = query.Where(x => x.WinnerUsername == filterParams.Winner);
-            }
-
-            if (!string.IsNullOrEmpty(filterParams.SearchTerm))
-            {
-                var term = $"%{filterParams.SearchTerm}%";
-                query = query.Where(x =>
-                    x.Item != null && (
-                        EF.Functions.ILike(x.Item.Title, term) ||
-                        (x.Item.Description != null && EF.Functions.ILike(x.Item.Description, term))
-                    ));
-            }
-
-            if (!string.IsNullOrEmpty(filterParams.Category))
-            {
-                query = query.Where(x => x.Item != null && x.Item.CategoryName == filterParams.Category);
-            }
-
-            if (filterParams.IsFeatured.HasValue)
-            {
-                query = query.Where(x => x.IsFeatured == filterParams.IsFeatured.Value);
-            }
+            var query = ApplyBrowseFilters(
+                ActiveAuctionsWithItemDetails.AsNoTracking().AsSplitQuery(), filter.Filter);
 
             var totalCount = await query.CountAsync(cancellationToken);
 
@@ -115,6 +75,46 @@ namespace Auctions.Infrastructure.Persistence.Repositories
                 .ToListAsync(cancellationToken);
 
             return new PaginatedResult<Auction>(items, totalCount, filter.Page, filter.PageSize);
+        }
+
+        private static IQueryable<Auction> ApplyBrowseFilters(IQueryable<Auction> query, AuctionFilter filter)
+        {
+            if (!string.IsNullOrEmpty(filter.Status) && Enum.TryParse<Status>(filter.Status, true, out var statusEnum))
+            {
+                query = query.Where(x => x.Status == statusEnum);
+            }
+
+            if (!string.IsNullOrEmpty(filter.Seller))
+            {
+                query = query.Where(x => x.SellerUsername == filter.Seller);
+            }
+
+            if (!string.IsNullOrEmpty(filter.Winner))
+            {
+                query = query.Where(x => x.WinnerUsername == filter.Winner);
+            }
+
+            if (!string.IsNullOrEmpty(filter.SearchTerm))
+            {
+                var term = $"%{filter.SearchTerm}%";
+                query = query.Where(x =>
+                    x.Item != null && (
+                        EF.Functions.ILike(x.Item.Title, term) ||
+                        (x.Item.Description != null && EF.Functions.ILike(x.Item.Description, term))
+                    ));
+            }
+
+            if (!string.IsNullOrEmpty(filter.Category))
+            {
+                query = query.Where(x => x.Item != null && x.Item.CategoryName == filter.Category);
+            }
+
+            if (filter.IsFeatured.HasValue)
+            {
+                query = query.Where(x => x.IsFeatured == filter.IsFeatured.Value);
+            }
+
+            return query;
         }
 
         public async Task<List<Auction>> GetFinishedAuctionsAsync(CancellationToken cancellationToken = default)

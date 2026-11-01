@@ -27,21 +27,36 @@ public class UpdateCategoryCommandHandler : ICommandHandler<UpdateCategoryComman
     {
         var category = await _categoryRepository.GetByIdAsync(request.Id, cancellationToken);
         if (category is null)
+        {
             return Result.Failure<CategoryDto>(CatalogErrors.Category.NotFound);
+        }
 
         if (category.IsActive && !request.IsActive && await _categoryRepository.HasChildrenAsync(request.Id, cancellationToken))
+        {
             return Result.Failure<CategoryDto>(CatalogErrors.Category.HasChildren);
+        }
 
         var hierarchyError = await ValidateParentHierarchyAsync(request, cancellationToken);
         if (hierarchyError is not null)
+        {
             return Result.Failure<CategoryDto>(hierarchyError);
+        }
 
         var slug = SlugHelper.GenerateSlug(request.Slug ?? request.Name);
         var slugExists = await _categoryRepository.SlugExistsAsync(slug, excludeId: request.Id, cancellationToken: cancellationToken);
         if (slugExists)
+        {
             return Result.Failure<CategoryDto>(CatalogErrors.Category.SlugAlreadyExists);
+        }
 
-        category.Update(request.Name, slug, request.Icon, request.Description, request.DisplayOrder, request.IsActive, request.ParentCategoryId);
+        category.Update(
+            name: request.Name,
+            slug: slug,
+            icon: request.Icon,
+            description: request.Description,
+            displayOrder: request.DisplayOrder,
+            isActive: request.IsActive,
+            parentCategoryId: request.ParentCategoryId);
         await _categoryRepository.UpdateAsync(category, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
@@ -59,14 +74,20 @@ public class UpdateCategoryCommandHandler : ICommandHandler<UpdateCategoryComman
         while (parentId.HasValue)
         {
             if (!visited.Add(parentId.Value))
+            {
                 return CatalogErrors.Category.CannotBeOwnParent;
+            }
 
             var parent = await _categoryRepository.GetByIdAsync(parentId.Value, cancellationToken);
             if (parent is null)
+            {
                 return CatalogErrors.Category.ParentNotFound;
+            }
 
             if (request.IsActive && !parent.IsActive)
+            {
                 return CatalogErrors.Category.ParentInactive;
+            }
 
             parentId = parent.ParentCategoryId;
         }
