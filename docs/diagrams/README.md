@@ -1,5 +1,11 @@
 # Auction architecture diagrams
 
+The README uses [the system overview](auction-system-overview.svg), a compact,
+native SVG with large labels and grouped service connections. Edit that SVG
+directly to maintain the overview. Its fixed light background keeps labels
+readable in both light and dark README themes. Service-level relationships
+remain in the [Architecture Guide](../architecture.md).
+
 Open `auction-azure-architecture.drawio` in [draw.io](https://app.diagrams.net/)
 using **File → Open From → Device**, or open it with the draw.io desktop app.
 The file has four editable pages. Pages 1–3 preserve the 24 October baseline;
@@ -18,6 +24,7 @@ page 4 shows the new managed-provider configuration:
 
 Quick previews:
 
+- [System overview — README](auction-system-overview.svg)
 - [Managed HA configuration — current option](auction-managed-ha.svg)
 - [Azure deployment](auction-azure-deployment.svg)
 - [Runtime flows](auction-runtime-flows.svg)
@@ -28,7 +35,7 @@ boundaries. Double-click into a group to edit its contents; select the outer
 group to move a section together. Azure icons are embedded SVG assets, so the
 diagram does not depend on remote image URLs.
 
-The SVG files are previews for sharing and documentation.
+The Azure and Kubernetes SVG files are previews for sharing and documentation.
 After changing the draw.io file, use **File → Export as → SVG** to refresh
 the previews, selecting the relevant page and a white background.
 

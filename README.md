@@ -56,84 +56,18 @@ The platform follows a **domain-driven microservices** architecture with strict 
 
 ## System Architecture Diagram
 
-> System and workflow diagrams use **Mermaid** and render natively on GitHub.
-> To edit visually, paste any block into [Mermaid Live](https://mermaid.live).
-> The [cloud deployment diagrams](#deployment-topology) show deployment, runtime flows, and Kubernetes details using Azure icons, with an [editable draw.io file](docs/diagrams/auction-azure-architecture.drawio).
+The overview groups the services and shows the main request, data, and messaging paths.
+Click the diagram to open the full-size SVG.
 
-```mermaid
-graph TB
-    subgraph Clients
-        Browser["Browser / Mobile"]
-    end
+[![Auction platform overview: React web app to YARP gateway and ten domain services, with service-owned data, RabbitMQ messaging, and durable orchestration.](docs/diagrams/auction-system-overview.svg)](docs/diagrams/auction-system-overview.svg)
 
-    subgraph Frontend
-        SPA["React 19 SPA<br/>TypeScript / MUI / TanStack Query<br/>SignalR / i18next"]
-    end
+For service responsibilities, see the [Service Map](#service-map). For detailed
+interactions, external integrations, and observability, see the
+[Architecture Guide](docs/architecture.md). The [cloud deployment diagrams](#deployment-topology)
+show Azure and Kubernetes details, with an
+[editable draw.io file](docs/diagrams/auction-azure-architecture.drawio).
 
-    subgraph Gateway
-        GW["YARP Reverse Proxy<br/>JWT Auth / Rate Limiting<br/>CORS / Security Headers"]
-    end
-
-    subgraph Services["Microservices (.NET 9)"]
-        direction TB
-        IDN["Identity Service"]
-        AUC["Auction Service"]
-        BID["Bidding Service"]
-        PAY["Payment Service"]
-        NOT["Notification Service<br/>(SignalR Hub)"]
-        SRC["Search Service"]
-        STR["Storage Service"]
-        ANA["Analytics Service"]
-        JOB["Job Service"]
-        CAT["Catalog Service"]
-    end
-
-    subgraph Data["Data Stores"]
-        PG[("PostgreSQL 16<br/>Per-service databases")]
-        RD[("Redis 7<br/>Cache / Distributed Lock")]
-        ES[("Elasticsearch 8<br/>Full-text Index")]
-    end
-
-    subgraph Messaging
-        RMQ[("RabbitMQ 3.13<br/>Message Broker")]
-    end
-
-    subgraph Observability
-        SEQ["Seq — Log Aggregation"]
-        OTEL["OpenTelemetry — Tracing"]
-        PROM["Prometheus — Metrics"]
-    end
-
-    subgraph External["External Services"]
-        STRIPE["Stripe"]
-        SENDGRID["SendGrid"]
-        TWILIO["Twilio"]
-        FIREBASE["Firebase"]
-        AZURE["Azure Blob Storage"]
-        OAUTH["Google / Facebook OAuth"]
-    end
-
-    Browser -->|HTTPS| SPA
-    SPA -->|REST / WebSocket| GW
-    GW -->|HTTP| IDN & AUC & BID & PAY & NOT & SRC & STR & ANA & JOB & CAT
-    GW -->|WebSocket| NOT
-
-    AUC <-->|gRPC| BID
-    AUC -->|gRPC| CAT
-    IDN & AUC & BID & PAY & NOT & SRC & STR & ANA & JOB & CAT <-->|AMQP| RMQ
-
-    IDN & AUC & BID & PAY & NOT & STR & ANA & JOB & CAT --> PG
-    AUC & BID & NOT --> RD
-    SRC --> ES
-
-    PAY --> STRIPE
-    NOT --> SENDGRID & TWILIO & FIREBASE
-    STR --> AZURE
-    IDN --> OAUTH
-
-    IDN & AUC & BID & PAY & NOT & SRC & STR & ANA & JOB --> SEQ
-    IDN & AUC & BID & PAY & NOT & SRC & STR & ANA & JOB --> OTEL
-```
+Workflow diagrams below use Mermaid and can be edited in [Mermaid Live](https://mermaid.live).
 
 ---
 
