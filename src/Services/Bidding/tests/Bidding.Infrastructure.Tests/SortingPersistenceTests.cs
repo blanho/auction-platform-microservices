@@ -2,7 +2,7 @@ using Bidding.Application.Filtering;
 using Bidding.Domain.Entities;
 using Bidding.Domain.Enums;
 using Bidding.Infrastructure.Persistence;
-using Bidding.Infrastructure.Repositories;
+using Bidding.Infrastructure.Persistence.Repositories;
 using Microsoft.EntityFrameworkCore;
 using TestSupport;
 using Xunit;

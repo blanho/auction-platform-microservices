@@ -1,24 +1,32 @@
-# Default owners for everything
-* @your-team/backend-team
+# Repository owner; replace scoped entries with real teams as ownership expands.
+* @blanho
 
 # Infrastructure
-/deploy/ @your-team/devops-team
-/.github/ @your-team/devops-team
+/deploy/ @blanho
+/.github/ @blanho
+/scripts/ @blanho
 
 # Services
-/src/Services/Identity/ @your-team/identity-team
-/src/Services/Payment/ @your-team/payment-team
-/src/Services/Auction/ @your-team/auction-team
-/src/Services/Bidding/ @your-team/auction-team
-/src/Services/Notification/ @your-team/notification-team
-/src/Services/Analytics/ @your-team/analytics-team
-/src/Services/Search/ @your-team/search-team
-/src/Services/Storage/ @your-team/platform-team
-/src/Services/Job/ @your-team/platform-team
-/src/Gateway/ @your-team/platform-team
+/src/Services/Identity/ @blanho
+/src/Services/Payment/ @blanho
+/src/Services/Auction/ @blanho
+/src/Services/Bidding/ @blanho
+/src/Services/Catalog/ @blanho
+/src/Services/Notification/ @blanho
+/src/Services/Analytics/ @blanho
+/src/Services/Search/ @blanho
+/src/Services/Storage/ @blanho
+/src/Services/Job/ @blanho
+/src/Gateway/ @blanho
+/src/Orchestration/ @blanho
 
 # Building Blocks (shared code)
-/src/BuildingBlocks/ @your-team/platform-team
+/src/BuildingBlocks/ @blanho
+/src/Tests/ @blanho
+/tests/ @blanho
 
-# Contracts (API changes need extra review)
-/src/Contracts/ @your-team/backend-team @your-team/platform-team
+# Contracts: keep these after service rules because the last match takes precedence.
+# When introducing contract reviewers, include the owning service team on each rule.
+/src/Contracts/ @blanho
+/src/Services/*/*.Contracts/ @blanho
+/src/Orchestration/Orchestration.Contracts/ @blanho

@@ -5,7 +5,7 @@ using Payment.Application.Features.Orders.GetOrdersBySeller;
 using Payment.Application.Filtering;
 using Payment.Domain.Entities;
 using Payment.Infrastructure.Persistence;
-using Payment.Infrastructure.Repositories;
+using Payment.Infrastructure.Persistence.Repositories;
 using Microsoft.EntityFrameworkCore;
 using TestSupport;
 using Xunit;

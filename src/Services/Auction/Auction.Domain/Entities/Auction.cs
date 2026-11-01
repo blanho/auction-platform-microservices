@@ -168,6 +168,28 @@ public class Auction : AggregateRoot
         });
     }
 
+    public bool TryActivate(DateTimeOffset now)
+    {
+        if (Status is not (Status.Inactive or Status.Scheduled) || AuctionEnd <= now)
+        {
+            return false;
+        }
+
+        ChangeStatus(Status.Live);
+        return true;
+    }
+
+    public bool TryDeactivate()
+    {
+        if (Status is not (Status.Live or Status.Scheduled))
+        {
+            return false;
+        }
+
+        ChangeStatus(Status.Inactive);
+        return true;
+    }
+
     public void ChangeStatus(Status newStatus)
     {
         GuardValidTransition(newStatus);
@@ -213,13 +235,24 @@ public class Auction : AggregateRoot
     public void ReserveBuyNow(Guid correlationId, Guid buyerId)
     {
         if (correlationId == Guid.Empty || buyerId == Guid.Empty)
+        {
             throw new DomainInvariantException("Reservation identity is required");
+        }
+
         if (CancelledBuyNowAttempts.Contains(correlationId))
+        {
             throw new DomainInvariantException("This purchase attempt was cancelled");
+        }
+
         if (BuyNowCorrelationId == correlationId && BuyNowBuyerId == buyerId && Status == Status.ReservedForBuyNow)
+        {
             return;
+        }
+
         if (!IsBuyNowAvailable || buyerId == SellerId)
+        {
             throw new DomainInvariantException("Buy now is not available for this buyer");
+        }
 
         BuyNowCorrelationId = correlationId;
         BuyNowBuyerId = buyerId;
@@ -229,13 +262,30 @@ public class Auction : AggregateRoot
     public void ReleaseBuyNow(Guid correlationId)
     {
         if (correlationId == Guid.Empty)
+        {
             throw new DomainInvariantException("Reservation identity is required");
+        }
+
         if (BuyNowCorrelationId == correlationId && BuyNowOrderId.HasValue)
+        {
             throw new DomainInvariantException("A completed purchase cannot be released");
+        }
+
         if (!CancelledBuyNowAttempts.Contains(correlationId))
+        {
             CancelledBuyNowAttempts.Add(correlationId);
-        if (BuyNowCorrelationId != correlationId) return;
-        if (Status == Status.ReservedForBuyNow) ChangeStatus(Status.Live);
+        }
+
+        if (BuyNowCorrelationId != correlationId)
+        {
+            return;
+        }
+
+        if (Status == Status.ReservedForBuyNow)
+        {
+            ChangeStatus(Status.Live);
+        }
+
         BuyNowCorrelationId = null;
         BuyNowBuyerId = null;
     }
@@ -243,10 +293,20 @@ public class Auction : AggregateRoot
     public void CompleteReservedBuyNow(Guid correlationId, Guid buyerId, string buyerUsername, Guid orderId)
     {
         if (BuyNowCorrelationId != correlationId || BuyNowBuyerId != buyerId || orderId == Guid.Empty)
+        {
             throw new DomainInvariantException("The purchase does not own this reservation");
-        if (BuyNowOrderId == orderId && Status == Status.Finished) return;
+        }
+
+        if (BuyNowOrderId == orderId && Status == Status.Finished)
+        {
+            return;
+        }
+
         if (Status != Status.ReservedForBuyNow || CancelledBuyNowAttempts.Contains(correlationId))
+        {
             throw new DomainInvariantException("The reservation is no longer active");
+        }
+
         BuyNowOrderId = orderId;
         FinishBuyNow(buyerId, buyerUsername);
     }
@@ -332,22 +392,7 @@ public class Auction : AggregateRoot
 
     public void Cancel(string reason)
     {
-        GuardValidTransition(Status.Cancelled);
-
-        var oldStatus = Status;
-        Status = Status.Cancelled;
-
-        AddDomainEvent(new AuctionStatusChangedDomainEvent
-        {
-            AuctionId = Id,
-            OldStatus = oldStatus,
-            NewStatus = Status.Cancelled,
-            SellerId = SellerId,
-            SellerUsername = SellerUsername,
-            Title = Item?.Title ?? string.Empty,
-            ReservePrice = ReservePrice,
-            AuctionEnd = AuctionEnd
-        });
+        ChangeStatus(Status.Cancelled);
     }
 
     public bool CanTransitionTo(Status newStatus)

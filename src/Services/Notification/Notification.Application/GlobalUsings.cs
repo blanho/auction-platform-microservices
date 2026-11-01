@@ -13,7 +13,7 @@ global using Notification.Domain.Entities;
 global using Notification.Domain.Enums;
 
 global using Notification.Application.DTOs;
-global using Notification.Application.Extensions.Mappings;
+global using Notification.Application.Mappings;
 global using Notification.Application.Helpers;
 
 global using FluentValidation;

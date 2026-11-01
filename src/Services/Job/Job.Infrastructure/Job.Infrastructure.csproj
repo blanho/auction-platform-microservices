@@ -16,7 +16,6 @@
     <ProjectReference Include="..\Job.Application\Job.Application.csproj" />
     <ProjectReference Include="..\Job.Contracts\JobService.Contracts.csproj" />
     <ProjectReference Include="..\..\..\BuildingBlocks\BuildingBlocks.Infrastructure\BuildingBlocks.Infrastructure.csproj" />
-    <ProjectReference Include="..\..\..\BuildingBlocks\BuildingBlocks.Web\BuildingBlocks.Web.csproj" />
   </ItemGroup>
 
   <ItemGroup>

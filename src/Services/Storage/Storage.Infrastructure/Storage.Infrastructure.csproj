@@ -26,7 +26,6 @@
     <ProjectReference Include="..\Storage.Application\Storage.Application.csproj" />
     <ProjectReference Include="..\Storage.Domain\Storage.Domain.csproj" />
     <ProjectReference Include="..\..\..\BuildingBlocks\BuildingBlocks.Infrastructure\BuildingBlocks.Infrastructure.csproj" />
-    <ProjectReference Include="..\..\..\BuildingBlocks\BuildingBlocks.Web\BuildingBlocks.Web.csproj" />
     <ProjectReference Include="..\Storage.Contracts\StorageService.Contracts.csproj" />
     <ProjectReference Include="..\..\Job\Job.Contracts\JobService.Contracts.csproj" />
   </ItemGroup>

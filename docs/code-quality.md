@@ -82,6 +82,30 @@ interfaces are registered with the existing scoped DI lifetimes. Tests cover bid
 eligibility/fallback/cancellation, notification reference mapping, delivery outcomes,
 and real ASP.NET query binding.
 
+## Service maintenance boundaries
+
+The backend cleanup keeps shared code inside its owning service and names the
+steps that coordinate side effects:
+
+| Service | Responsibility boundary |
+|---|---|
+| Analytics | Period filtering, latest auction selection, and metric calculation are distinct query stages. Select latest event IDs before further SQL filtering/counting; retain source filters before that selection. |
+| Auction | Import/export mappings and cancellation notifications are shared locally. Scheduled jobs propagate cancellation to the job host. |
+| Bidding | Request locks and auction transaction locks surround a named validation/persistence operation. Keep both locks until bid writing completes. |
+| Catalog | Guard clauses retain validation precedence; named mutation arguments make category and brand updates explicit. |
+| Identity | Administrator DTO mapping attaches roles in one place; status changes keep event and audit publication after a successful update. |
+| Job | Item eligibility checks precede command dispatch; dispatch preserves correlation IDs, retry attempts, and requesting-user ownership. |
+| Notification | Job-item validation and recipient failure isolation have separate methods. Channel delivery retains its idempotency checks and serialized record persistence. |
+| Payment | Report request parsing precedes generation, storage, and completion reporting. Failed generation returns through the job failure path. |
+| Search | Paging validation and Elasticsearch request construction are separate from response handling. Keep filters, highlights, facets, and deterministic sorting in the generated request. |
+| Storage | File summaries and image/checksum details have explicit mappings. Upload rollback and committed-report detection remain in the upload workflow. |
+| Gateway | Token-validation settings, hub query-token extraction, and local-environment detection have named helpers. Query tokens are accepted only under `/hubs`. |
+| Orchestration | Recovery retries keep their transaction and advisory lock in the endpoint; workflow-specific retry helpers enforce the existing recovery-state checks. |
+
+Use `scripts/run-backend-tests.sh` after a Release build to verify results from
+every test project. Missing, empty, or failed test reports are errors. See
+[backend testing](testing.md) for disposable providers and local skip behavior.
+
 ## Runtime and tooling configuration
 
 Design-time EF factories now read `ConnectionStrings__DefaultConnection`. Set it

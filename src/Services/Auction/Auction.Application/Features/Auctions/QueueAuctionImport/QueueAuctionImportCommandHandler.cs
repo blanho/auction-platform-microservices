@@ -55,8 +55,10 @@ public class QueueAuctionImportCommandHandler : ICommandHandler<QueueAuctionImpo
         }).ToList();
 
         var totalRows = payloadRows.Count;
-        var batches = ChunkList(payloadRows, AuctionDefaults.Batch.RowsPerImportBatch);
-        var totalBatches = batches.Count;
+        var batches = payloadRows.Chunk(AuctionDefaults.Batch.RowsPerImportBatch)
+            .Select(batch => batch.ToList())
+            .ToArray();
+        var totalBatches = batches.Length;
 
         for (var i = 0; i < totalBatches; i++)
         {
@@ -89,13 +91,4 @@ public class QueueAuctionImportCommandHandler : ICommandHandler<QueueAuctionImpo
             Message: BuildingBlocks.Application.Localization.UserMessageLocalizer.Translate($"Import of {totalRows} auctions has been queued for background processing ({totalBatches} batches).")));
     }
 
-    private static List<List<T>> ChunkList<T>(List<T> source, int chunkSize)
-    {
-        var chunks = new List<List<T>>();
-        for (var i = 0; i < source.Count; i += chunkSize)
-        {
-            chunks.Add(source.GetRange(i, Math.Min(chunkSize, source.Count - i)));
-        }
-        return chunks;
-    }
 }

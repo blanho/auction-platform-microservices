@@ -27,7 +27,7 @@ public class ImportConsumerFailureCountTests
             [
                 new ImportAuctionItemPayload
                 {
-                    RowNumber = 1,
+                    RowNumber = 73,
                     Title = "",
                     Description = "",
                     ReservePrice = -1m,
@@ -57,6 +57,7 @@ public class ImportConsumerFailureCountTests
         var completed = Assert.Single(published.OfType<AuctionImportCompletedEvent>());
         Assert.Equal(1, completed.FailedCount);
         Assert.True(completed.Errors.Count > 1);
+        Assert.All(completed.Errors, error => Assert.Equal(73, error.RowNumber));
         Assert.Equal(culture == "ja-JP" ? "タイトルは必須です。" : "Title is required.",
             completed.Errors.First(error => error.Field == "Title").ErrorMessage);
         var failure = Assert.Single(published.OfType<FailJobByCorrelationCommand>());
@@ -80,7 +81,7 @@ public class ImportConsumerFailureCountTests
             [
                 new ImportAuctionItemPayload
                 {
-                    RowNumber = 1,
+                    RowNumber = 73,
                     Title = "",
                     Description = "",
                     ReservePrice = -1m,
@@ -113,6 +114,7 @@ public class ImportConsumerFailureCountTests
         var completed = Assert.Single(published.OfType<AuctionImportCompletedEvent>());
         Assert.Equal(1, completed.FailedCount);
         Assert.True(completed.Errors.Count > 1);
+        Assert.All(completed.Errors, error => Assert.Equal(73, error.RowNumber));
         Assert.Equal(culture == "ja-JP" ? "タイトルは必須です。" : "Title is required.",
             completed.Errors.First(error => error.Field == "Title").ErrorMessage);
     }

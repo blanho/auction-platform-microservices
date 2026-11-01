@@ -1,7 +1,7 @@
 using MediatR;
 using Analytics.Application.DTOs;
 using Analytics.Application.Interfaces;
-using Analytics.Application.Mappers;
+using Analytics.Application.Mappings;
 using Analytics.Application.Errors;
 using BuildingBlocks.Application.Abstractions;
 

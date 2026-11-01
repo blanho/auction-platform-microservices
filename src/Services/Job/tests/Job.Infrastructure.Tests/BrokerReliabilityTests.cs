@@ -39,13 +39,15 @@ public class BrokerReliabilityTests
         services.AddScoped<IJobItemRepository, JobItemRepository>();
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddScoped<IJobItemDispatcher, JobItemDispatcher>();
-        services.AddMassTransitWithOutbox(new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?>
+        var configuration = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?>
         {
             ["RabbitMQ:Host"] = "localhost",
             ["RabbitMQ:Port"] = Environment.GetEnvironmentVariable("BACKEND_TEST_RABBIT_PORT"),
             ["RabbitMQ:Username"] = "guest",
             ["RabbitMQ:Password"] = "guest"
-        }).Build());
+        }).Build();
+        services.AddSingleton<IConfiguration>(configuration);
+        services.AddMassTransitWithOutbox(configuration);
         await using var provider = services.BuildServiceProvider();
         var bus = provider.GetRequiredService<IBusControl>();
         using var lifetime = new CancellationTokenSource(TimeSpan.FromSeconds(90));

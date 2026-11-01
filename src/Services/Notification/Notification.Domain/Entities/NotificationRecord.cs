@@ -1,3 +1,5 @@
+using Notification.Domain.Enums;
+
 namespace Notification.Domain.Entities;
 
 public class NotificationRecord : BaseEntity

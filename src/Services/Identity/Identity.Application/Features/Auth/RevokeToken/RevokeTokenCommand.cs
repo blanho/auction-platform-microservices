@@ -1,0 +1,19 @@
+namespace Identity.Application.Features.Auth.RevokeToken;
+
+using Identity.Application.DTOs;
+using Identity.Application.Interfaces;
+using BuildingBlocks.Application.Abstractions;
+using MediatR;
+using Microsoft.AspNetCore.Identity;
+
+public record RevokeTokenCommand(string Token, string IpAddress) : ICommand;
+
+public class RevokeTokenCommandHandler(
+    ITokenGenerationService tokenService) : ICommandHandler<RevokeTokenCommand>
+{
+    public async Task<Result> Handle(RevokeTokenCommand command, CancellationToken cancellationToken)
+    {
+        await tokenService.RevokeTokenAsync(command.Token, command.IpAddress);
+        return Result.Success();
+    }
+}

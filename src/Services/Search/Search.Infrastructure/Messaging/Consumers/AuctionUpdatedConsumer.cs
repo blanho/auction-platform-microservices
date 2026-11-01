@@ -7,7 +7,7 @@ using BuildingBlocks.Application.Abstractions.Providers;
 using Search.Domain.Constants;
 using Search.Infrastructure.Services;
 
-namespace Search.Infrastructure.Consumers;
+namespace Search.Infrastructure.Messaging.Consumers;
 
 public class AuctionUpdatedConsumer : IConsumer<AuctionUpdatedEvent>
 {

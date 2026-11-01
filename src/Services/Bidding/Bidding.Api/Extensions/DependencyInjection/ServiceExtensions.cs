@@ -4,7 +4,7 @@ using Bidding.Application.Mappings;
 using Bidding.Application.Services;
 using Bidding.Infrastructure.Extensions;
 using Bidding.Infrastructure.Persistence;
-using Bidding.Infrastructure.Repositories;
+using Bidding.Infrastructure.Persistence.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 using BuildingBlocks.Application.Abstractions.Providers;

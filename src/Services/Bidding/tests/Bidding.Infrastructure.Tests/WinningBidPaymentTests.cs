@@ -3,7 +3,7 @@ using Bidding.Application.Features.Bids.GetWinningBids;
 using Bidding.Application.Interfaces;
 using Bidding.Domain.Entities;
 using Bidding.Infrastructure.Persistence;
-using Bidding.Infrastructure.Repositories;
+using Bidding.Infrastructure.Persistence.Repositories;
 using BuildingBlocks.Application.Abstractions.Providers;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;

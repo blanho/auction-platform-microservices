@@ -5,7 +5,7 @@ using Payment.Application.Interfaces;
 using Payment.Infrastructure.Configuration;
 using Payment.Infrastructure.Extensions;
 using Payment.Infrastructure.Persistence;
-using Payment.Infrastructure.Repositories;
+using Payment.Infrastructure.Persistence.Repositories;
 using Payment.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
 using BuildingBlocks.Infrastructure.Extensions;

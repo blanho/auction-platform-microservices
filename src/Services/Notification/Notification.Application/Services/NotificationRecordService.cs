@@ -1,3 +1,4 @@
+using Notification.Domain.Enums;
 using BuildingBlocks.Application.Abstractions;
 using BuildingBlocks.Application.Localization;
 using Notification.Application.DTOs;

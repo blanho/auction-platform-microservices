@@ -56,83 +56,16 @@ public class UpdateAuctionCommandHandler : ICommandHandler<UpdateAuctionCommand,
 
         var modifiedFields = new List<string>();
 
-        if (request.Title != null && request.Title != auction.Item.Title)
+        UpdateItemDetails(auction.Item, request, modifiedFields);
+        UpdatePrices(auction, request, modifiedFields);
+
+        var catalogError = await UpdateCatalogAsync(auction.Item, request, modifiedFields, cancellationToken);
+        if (catalogError is not null)
         {
-            auction.Item.UpdateTitle(_sanitizationService.SanitizeText(request.Title));
-            modifiedFields.Add(nameof(auction.Item.Title));
+            return Result.Failure<bool>(catalogError);
         }
 
-        if (request.Description != null && request.Description != auction.Item.Description)
-        {
-            auction.Item.UpdateDescription(_sanitizationService.SanitizeHtml(request.Description));
-            modifiedFields.Add(nameof(auction.Item.Description));
-        }
-
-        if (request.Condition != null && request.Condition != auction.Item.Condition)
-        {
-            auction.Item.UpdateCondition(request.Condition);
-            modifiedFields.Add(nameof(auction.Item.Condition));
-        }
-
-        if (request.YearManufactured != null && request.YearManufactured != auction.Item.YearManufactured)
-        {
-            auction.Item.UpdateYearManufactured(request.YearManufactured);
-            modifiedFields.Add(nameof(auction.Item.YearManufactured));
-        }
-
-        if (request.Attributes != null)
-        {
-            foreach (var attr in request.Attributes)
-            {
-                auction.Item.SetAttribute(attr.Key, attr.Value);
-            }
-            modifiedFields.Add(nameof(auction.Item.Attributes));
-        }
-
-        if (request.ReservePrice.HasValue && request.ReservePrice.Value != auction.ReservePrice)
-        {
-            auction.UpdateReservePrice(request.ReservePrice.Value);
-            modifiedFields.Add(nameof(auction.ReservePrice));
-        }
-
-        if (request.BuyNowPrice != null && request.BuyNowPrice != auction.BuyNowPrice)
-        {
-            auction.UpdateBuyNowPrice(request.BuyNowPrice);
-            modifiedFields.Add(nameof(auction.BuyNowPrice));
-        }
-
-        if (request.CategoryId.HasValue && request.CategoryId != auction.Item.CategoryId)
-        {
-            var categoryInfo = await _catalogClient.GetCategoryAsync(request.CategoryId.Value, cancellationToken);
-            if (categoryInfo == null)
-                return Result.Failure<bool>(AuctionErrors.Category.NotFoundById(request.CategoryId.Value));
-
-            auction.Item.UpdateCategory(request.CategoryId, categoryInfo.Value.Name);
-            modifiedFields.Add(nameof(auction.Item.CategoryId));
-        }
-
-        if (request.BrandId.HasValue && request.BrandId != auction.Item.BrandId)
-        {
-            var brandInfo = await _catalogClient.GetBrandAsync(request.BrandId.Value, cancellationToken);
-            if (brandInfo == null)
-                return Result.Failure<bool>(AuctionErrors.Brand.NotFoundById(request.BrandId.Value));
-
-            auction.Item.UpdateBrand(request.BrandId, brandInfo.Value.Name);
-            modifiedFields.Add(nameof(auction.Item.BrandId));
-        }
-
-        if (request.IsFeatured.HasValue && request.IsFeatured.Value != auction.IsFeatured)
-        {
-            auction.SetFeatured(request.IsFeatured.Value);
-            modifiedFields.Add(nameof(auction.IsFeatured));
-        }
-
-        if (request.AuctionEnd.HasValue && request.AuctionEnd.Value != auction.AuctionEnd)
-        {
-            var extension = request.AuctionEnd.Value - auction.AuctionEnd;
-            auction.ExtendAuctionEnd(extension);
-            modifiedFields.Add(nameof(auction.AuctionEnd));
-        }
+        UpdateListingDetails(auction, request, modifiedFields);
 
         auction.RaiseUpdatedEvent(modifiedFields);
 
@@ -151,5 +84,105 @@ public class UpdateAuctionCommandHandler : ICommandHandler<UpdateAuctionCommand,
         _logger.LogInformation("Updated auction {AuctionId} with fields: {ModifiedFields}",
             request.Id, string.Join(", ", modifiedFields));
         return Result.Success(true);
+    }
+
+    private void UpdateItemDetails(Item item, UpdateAuctionCommand request, List<string> modifiedFields)
+    {
+        if (request.Title != null && request.Title != item.Title)
+        {
+            item.UpdateTitle(_sanitizationService.SanitizeText(request.Title));
+            modifiedFields.Add(nameof(item.Title));
+        }
+
+        if (request.Description != null && request.Description != item.Description)
+        {
+            item.UpdateDescription(_sanitizationService.SanitizeHtml(request.Description));
+            modifiedFields.Add(nameof(item.Description));
+        }
+
+        if (request.Condition != null && request.Condition != item.Condition)
+        {
+            item.UpdateCondition(request.Condition);
+            modifiedFields.Add(nameof(item.Condition));
+        }
+
+        if (request.YearManufactured != null && request.YearManufactured != item.YearManufactured)
+        {
+            item.UpdateYearManufactured(request.YearManufactured);
+            modifiedFields.Add(nameof(item.YearManufactured));
+        }
+
+        if (request.Attributes != null)
+        {
+            foreach (var attribute in request.Attributes)
+            {
+                item.SetAttribute(attribute.Key, attribute.Value);
+            }
+            modifiedFields.Add(nameof(item.Attributes));
+        }
+    }
+
+    private static void UpdatePrices(Auction auction, UpdateAuctionCommand request, List<string> modifiedFields)
+    {
+        if (request.ReservePrice.HasValue && request.ReservePrice.Value != auction.ReservePrice)
+        {
+            auction.UpdateReservePrice(request.ReservePrice.Value);
+            modifiedFields.Add(nameof(auction.ReservePrice));
+        }
+
+        if (request.BuyNowPrice != null && request.BuyNowPrice != auction.BuyNowPrice)
+        {
+            auction.UpdateBuyNowPrice(request.BuyNowPrice);
+            modifiedFields.Add(nameof(auction.BuyNowPrice));
+        }
+    }
+
+    private async Task<Error?> UpdateCatalogAsync(
+        Item item,
+        UpdateAuctionCommand request,
+        List<string> modifiedFields,
+        CancellationToken cancellationToken)
+    {
+        if (request.CategoryId.HasValue && request.CategoryId != item.CategoryId)
+        {
+            var categoryInfo = await _catalogClient.GetCategoryAsync(request.CategoryId.Value, cancellationToken);
+            if (categoryInfo is null)
+            {
+                return AuctionErrors.Category.NotFoundById(request.CategoryId.Value);
+            }
+
+            item.UpdateCategory(request.CategoryId, categoryInfo.Value.Name);
+            modifiedFields.Add(nameof(item.CategoryId));
+        }
+
+        if (request.BrandId.HasValue && request.BrandId != item.BrandId)
+        {
+            var brandInfo = await _catalogClient.GetBrandAsync(request.BrandId.Value, cancellationToken);
+            if (brandInfo is null)
+            {
+                return AuctionErrors.Brand.NotFoundById(request.BrandId.Value);
+            }
+
+            item.UpdateBrand(request.BrandId, brandInfo.Value.Name);
+            modifiedFields.Add(nameof(item.BrandId));
+        }
+
+        return null;
+    }
+
+    private static void UpdateListingDetails(Auction auction, UpdateAuctionCommand request, List<string> modifiedFields)
+    {
+        if (request.IsFeatured.HasValue && request.IsFeatured.Value != auction.IsFeatured)
+        {
+            auction.SetFeatured(request.IsFeatured.Value);
+            modifiedFields.Add(nameof(auction.IsFeatured));
+        }
+
+        if (request.AuctionEnd.HasValue && request.AuctionEnd.Value != auction.AuctionEnd)
+        {
+            var extension = request.AuctionEnd.Value - auction.AuctionEnd;
+            auction.ExtendAuctionEnd(extension);
+            modifiedFields.Add(nameof(auction.AuctionEnd));
+        }
     }
 }

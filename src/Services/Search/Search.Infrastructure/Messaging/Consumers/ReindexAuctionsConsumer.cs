@@ -5,7 +5,7 @@ using Microsoft.Extensions.Options;
 using Search.Infrastructure.Configuration;
 using SearchService.Contracts.Commands;
 
-namespace Search.Infrastructure.Consumers;
+namespace Search.Infrastructure.Messaging.Consumers;
 
 public sealed class ReindexAuctionsConsumer(ElasticsearchClient client, IOptions<ElasticsearchOptions> options)
     : IConsumer<ReindexAuctionsCommand>

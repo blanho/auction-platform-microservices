@@ -8,12 +8,12 @@ using BuildingBlocks.Web.Authorization;
 using BuildingBlocks.Web.Helpers;
 using Identity.Application.DTOs;
 using Identity.Application.Errors;
-using Identity.Application.Features.TwoFactor.Queries.GetStatus;
-using Identity.Application.Features.TwoFactor.Commands.SetupAuthenticator;
-using Identity.Application.Features.TwoFactor.Commands.EnableAuthenticator;
-using Identity.Application.Features.TwoFactor.Commands.DisableAuthenticator;
-using Identity.Application.Features.TwoFactor.Commands.GenerateRecoveryCodes;
-using Identity.Application.Features.TwoFactor.Commands.ForgetBrowser;
+using Identity.Application.Features.TwoFactor.GetStatus;
+using Identity.Application.Features.TwoFactor.SetupAuthenticator;
+using Identity.Application.Features.TwoFactor.EnableAuthenticator;
+using Identity.Application.Features.TwoFactor.DisableAuthenticator;
+using Identity.Application.Features.TwoFactor.GenerateRecoveryCodes;
+using Identity.Application.Features.TwoFactor.ForgetBrowser;
 
 namespace Identity.Api.Endpoints.TwoFactor;
 

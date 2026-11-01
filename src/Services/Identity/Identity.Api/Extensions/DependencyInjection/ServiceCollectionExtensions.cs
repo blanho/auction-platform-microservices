@@ -3,8 +3,6 @@ using BuildingBlocks.Application.Abstractions.Messaging;
 using BuildingBlocks.Infrastructure.Authorization;
 using Identity.Infrastructure.Persistence;
 using Identity.Infrastructure.Persistence.Repositories;
-using Identity.Application.Features.Auth.Helpers;
-using Identity.Application.Features.Users.Helpers;
 using Identity.Application.Interfaces;
 using Identity.Infrastructure.Jobs;
 using Identity.Application.Mappings;

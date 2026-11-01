@@ -1,4 +1,4 @@
-using Analytics.Application.Mappers;
+using Analytics.Application.Mappings;
 using Analytics.Domain.Entities;
 using Analytics.Domain.Enums;
 using System.Text.Json;

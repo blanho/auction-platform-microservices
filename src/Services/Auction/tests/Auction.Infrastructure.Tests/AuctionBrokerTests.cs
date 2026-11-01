@@ -44,6 +44,7 @@ public class AuctionBrokerTests
             ["ReportStorage:ApiKey"] = "test-key"
         }).Build();
         var services = new ServiceCollection();
+        services.AddSingleton<IConfiguration>(configuration);
         services.AddLogging(b => b.AddConsole().SetMinimumLevel(LogLevel.Warning));
         services.AddDbContext<AuctionDbContext>(o => o.UseNpgsql(database.ConnectionString));
         services.AddSingleton<IDateTimeProvider, DateTimeProvider>();

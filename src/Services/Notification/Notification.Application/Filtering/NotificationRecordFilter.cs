@@ -1,3 +1,4 @@
+using Notification.Domain.Enums;
 using BuildingBlocks.Application.Filtering;
 using BuildingBlocks.Application.Paging;
 using Notification.Domain.Entities;

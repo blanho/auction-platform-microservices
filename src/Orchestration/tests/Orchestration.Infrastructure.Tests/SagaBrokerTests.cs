@@ -24,7 +24,7 @@ using OrchestrationService.Contracts.Events;
 using Payment.Application.Interfaces;
 using Payment.Infrastructure.Extensions;
 using Payment.Infrastructure.Persistence;
-using Payment.Infrastructure.Repositories;
+using Payment.Infrastructure.Persistence.Repositories;
 using TestSupport;
 using Xunit;
 using AuctionEntity = Auctions.Domain.Entities.Auction;
@@ -143,17 +143,20 @@ public class SagaBrokerTests
         ["RabbitMQ:Username"] = "guest",
         ["RabbitMQ:Password"] = "guest"
     }).Build();
-    private static ServiceCollection Services()
+    private static ServiceCollection Services(string connection)
     {
-        var s = new ServiceCollection(); s.AddLogging(x => x.AddConsole().SetMinimumLevel(LogLevel.Warning)); return s;
+        var services = new ServiceCollection();
+        services.AddSingleton<IConfiguration>(Config(connection));
+        services.AddLogging(logging => logging.AddConsole().SetMinimumLevel(LogLevel.Warning));
+        return services;
     }
     private static ServiceProvider HostProvider(string connection)
     {
-        var s = Services(); s.AddOrchestration(Config(connection)); return s.BuildServiceProvider();
+        var s = Services(connection); s.AddOrchestration(Config(connection)); return s.BuildServiceProvider();
     }
     private static ServiceProvider AuctionProvider(string connection)
     {
-        var s = Services(); s.AddDbContext<AuctionDbContext>(x => x.UseNpgsql(connection));
+        var s = Services(connection); s.AddDbContext<AuctionDbContext>(x => x.UseNpgsql(connection));
         s.AddMediatR(x => x.RegisterServicesFromAssembly(typeof(BuyNowCommand).Assembly));
         s.AddSingleton<IDateTimeProvider, DateTimeProvider>();
         s.AddSingleton(TestProxy.Create<IAuditContext>((m, _) => m.Name == "get_UserId" ? Guid.Empty : null));
@@ -167,7 +170,7 @@ public class SagaBrokerTests
     }
     private static ServiceProvider PaymentProvider(string connection)
     {
-        var s = Services(); s.AddDbContext<PaymentDbContext>(x => x.UseNpgsql(connection));
+        var s = Services(connection); s.AddDbContext<PaymentDbContext>(x => x.UseNpgsql(connection));
         s.AddSingleton<IDateTimeProvider, DateTimeProvider>();
         s.AddSingleton(TestProxy.Create<IAuditContext>((m, _) => m.Name == "get_UserId" ? Guid.Empty : null));
         s.AddMediatR(x => x.RegisterServicesFromAssembly(typeof(Payment.Application.EventHandlers.OrderCreatedDomainEventHandler).Assembly));
@@ -177,7 +180,7 @@ public class SagaBrokerTests
     }
     private static ServiceProvider NotificationProvider(string connection)
     {
-        var s = Services(); s.AddDbContext<NotificationDbContext>(x => x.UseNpgsql(connection));
+        var s = Services(connection); s.AddDbContext<NotificationDbContext>(x => x.UseNpgsql(connection));
         s.AddScoped<INotificationService>(sp => TestProxy.Create<INotificationService>((m, a) =>
             m.Name == nameof(INotificationService.CreateNotificationAsync)
                 ? PersistNotification(sp.GetRequiredService<NotificationDbContext>(), (CreateNotificationDto)a![0]!)

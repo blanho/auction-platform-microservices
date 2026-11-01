@@ -29,24 +29,16 @@ public class UserUpdatedConsumer : IConsumer<UserUpdatedEvent>
             message.UserId,
             message.Username);
 
-        var updatedCount = 0;
         var userId = Guid.Parse(message.UserId);
 
         var sellerAuctions = await _readRepository.GetAllBySellerIdAsync(
             userId,
             context.CancellationToken);
 
-        foreach (var auction in sellerAuctions)
-        {
-            if (auction.SellerUsername != message.Username)
-            {
-                auction.UpdateSellerUsername(message.Username);
-                await _writeRepository.UpdateAsync(auction, context.CancellationToken);
-                updatedCount++;
-            }
-        }
+        var updatedSellerCount = await UpdateSellerUsernamesAsync(
+            sellerAuctions, message.Username, context.CancellationToken);
 
-        if (sellerAuctions.Any())
+        if (sellerAuctions.Count > 0)
         {
             _logger.LogInformation(
                 "Updated seller username in {Count} auctions for user {UserId}",
@@ -58,17 +50,10 @@ public class UserUpdatedConsumer : IConsumer<UserUpdatedEvent>
             userId,
             context.CancellationToken);
 
-        foreach (var auction in wonAuctions)
-        {
-            if (auction.WinnerUsername != message.Username)
-            {
-                auction.UpdateWinnerUsername(message.Username);
-                await _writeRepository.UpdateAsync(auction, context.CancellationToken);
-                updatedCount++;
-            }
-        }
+        var updatedWinnerCount = await UpdateWinnerUsernamesAsync(
+            wonAuctions, message.Username, context.CancellationToken);
 
-        if (wonAuctions.Any())
+        if (wonAuctions.Count > 0)
         {
             _logger.LogInformation(
                 "Updated winner username in {Count} auctions for user {UserId}",
@@ -76,21 +61,58 @@ public class UserUpdatedConsumer : IConsumer<UserUpdatedEvent>
                 message.UserId);
         }
 
-        if (updatedCount > 0)
+        var updatedCount = updatedSellerCount + updatedWinnerCount;
+        if (updatedCount == 0)
         {
-            await _unitOfWork.SaveChangesAsync(context.CancellationToken);
-            _logger.LogInformation(
-                "Successfully synced username for user {UserId}. Total records updated: {Count} (Seller: {SellerCount}, Winner: {WinnerCount})",
-                message.UserId,
-                updatedCount,
-                sellerAuctions.Count,
-                wonAuctions.Count);
+            _logger.LogDebug("No username changes needed for user {UserId}", message.UserId);
+            return;
         }
-        else
+
+        await _unitOfWork.SaveChangesAsync(context.CancellationToken);
+        _logger.LogInformation(
+            "Successfully synced username for user {UserId}. Total records updated: {Count} (Seller: {SellerCount}, Winner: {WinnerCount})",
+            message.UserId, updatedCount, sellerAuctions.Count, wonAuctions.Count);
+    }
+
+    private async Task<int> UpdateSellerUsernamesAsync(
+        IReadOnlyList<Auction> auctions,
+        string username,
+        CancellationToken cancellationToken)
+    {
+        var updatedCount = 0;
+        foreach (var auction in auctions)
         {
-            _logger.LogDebug(
-                "No username changes needed for user {UserId}",
-                message.UserId);
+            if (auction.SellerUsername == username)
+            {
+                continue;
+            }
+
+            auction.UpdateSellerUsername(username);
+            await _writeRepository.UpdateAsync(auction, cancellationToken);
+            updatedCount++;
         }
+
+        return updatedCount;
+    }
+
+    private async Task<int> UpdateWinnerUsernamesAsync(
+        IReadOnlyList<Auction> auctions,
+        string username,
+        CancellationToken cancellationToken)
+    {
+        var updatedCount = 0;
+        foreach (var auction in auctions)
+        {
+            if (auction.WinnerUsername == username)
+            {
+                continue;
+            }
+
+            auction.UpdateWinnerUsername(username);
+            await _writeRepository.UpdateAsync(auction, cancellationToken);
+            updatedCount++;
+        }
+
+        return updatedCount;
     }
 }

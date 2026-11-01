@@ -6,12 +6,12 @@ using MediatR;
 using Search.Domain.Constants;
 using Search.Domain.Documents;
 using Search.Domain.Models;
-using Search.Application.Features.Auctions.Queries.SearchAuctions;
-using Search.Application.Features.Auctions.Queries.Autocomplete;
-using Search.Application.Features.Auctions.Queries.GetAuction;
-using Search.Application.Features.RecentSearches.Queries.GetRecentSearches;
-using Search.Application.Features.RecentSearches.Commands.ClearRecentSearches;
-using Search.Application.Features.RecentSearches.Queries.GetPopularSearches;
+using Search.Application.Features.Auctions.SearchAuctions;
+using Search.Application.Features.Auctions.Autocomplete;
+using Search.Application.Features.Auctions.GetAuction;
+using Search.Application.Features.RecentSearches.GetRecentSearches;
+using Search.Application.Features.RecentSearches.ClearRecentSearches;
+using Search.Application.Features.RecentSearches.GetPopularSearches;
 
 namespace Search.Api.Endpoints.Auctions;
 

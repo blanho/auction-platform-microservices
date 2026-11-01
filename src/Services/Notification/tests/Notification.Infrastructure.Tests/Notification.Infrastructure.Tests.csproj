@@ -1,6 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <ItemGroup>
     <Compile Include="../../../../Tests/TestSupport/PostgresTestDatabase.cs" Link="TestSupport/PostgresTestDatabase.cs" />
+    <Compile Include="../../../../Tests/TestSupport/TestProxy.cs" Link="TestSupport/TestProxy.cs" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
     <PackageReference Include="xunit" />
     <PackageReference Include="xunit.runner.visualstudio">
@@ -10,5 +11,6 @@
 
   <ItemGroup>
     <ProjectReference Include="../../Notification.Infrastructure/Notification.Infrastructure.csproj" />
+    <ProjectReference Include="../../../../BuildingBlocks/BuildingBlocks.Web/BuildingBlocks.Web.csproj" />
   </ItemGroup>
 </Project>

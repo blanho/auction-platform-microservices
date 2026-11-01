@@ -4,7 +4,7 @@ using Search.Application.Interfaces;
 
 using BidService.Contracts.Events;
 
-namespace Search.Infrastructure.Consumers;
+namespace Search.Infrastructure.Messaging.Consumers;
 
 public class BidRetractedConsumer : IConsumer<BidRetractedEvent>
 {

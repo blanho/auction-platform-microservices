@@ -1,7 +1,7 @@
 using BuildingBlocks.Application.Abstractions.Messaging;
 using Auctions.Domain.Enums;
 using IdentityService.Contracts.Events;
-using NotificationService.Contracts.Events;
+using Auctions.Infrastructure.Messaging;
 
 namespace Auctions.Infrastructure.Messaging.Consumers;
 
@@ -36,8 +36,8 @@ public class UserDeletedConsumer : IConsumer<UserDeletedEvent>
             message.Username);
 
         var userId = Guid.Parse(message.UserId);
-        await CancelActiveAuctions(userId, message, context.CancellationToken);
-        await AnonymizeFinishedAuctions(userId, message, context.CancellationToken);
+        await CancelActiveAuctionsAsync(userId, message, context.CancellationToken);
+        await AnonymizeFinishedAuctionsAsync(userId, message, context.CancellationToken);
 
         await _unitOfWork.SaveChangesAsync(context.CancellationToken);
 
@@ -48,18 +48,20 @@ public class UserDeletedConsumer : IConsumer<UserDeletedEvent>
             allAuctions.Count);
     }
 
-    private async Task CancelActiveAuctions(Guid userId, UserDeletedEvent message, CancellationToken cancellationToken)
+    private async Task CancelActiveAuctionsAsync(Guid userId, UserDeletedEvent message, CancellationToken cancellationToken)
     {
         var activeAuctions = await _readRepository.GetActiveAuctionsBySellerIdAsync(userId, cancellationToken);
 
-        if (!activeAuctions.Any())
+        if (activeAuctions.Count == 0)
+        {
             return;
+        }
 
-        var affectedBidderAuctions = new Dictionary<string, List<string>>();
+        var notifications = new AuctionCancellationNotifications();
 
         foreach (var auction in activeAuctions)
         {
-            CollectAffectedBidder(auction, affectedBidderAuctions);
+            notifications.CollectAffectedBidder(auction);
             auction.Cancel("Seller account deleted");
             await _writeRepository.UpdateAsync(auction, cancellationToken);
 
@@ -71,55 +73,26 @@ public class UserDeletedConsumer : IConsumer<UserDeletedEvent>
                 auction.CurrentHighBid.HasValue);
         }
 
-        await NotifyAffectedBidders(affectedBidderAuctions, cancellationToken);
+        await notifications.PublishAsync(_eventPublisher, "Seller account no longer active", cancellationToken);
 
         _logger.LogWarning(
             "Cancelled {Count} active auctions for deleted user {UserId}. Affected bidders: {BidderCount}",
             activeAuctions.Count,
             message.UserId,
-            affectedBidderAuctions.Count);
+            notifications.BidderCount);
     }
 
-    private static void CollectAffectedBidder(Auction auction, Dictionary<string, List<string>> affectedBidderAuctions)
-    {
-        if (!auction.CurrentHighBid.HasValue || string.IsNullOrEmpty(auction.WinnerUsername))
-            return;
-
-        var auctionTitle = auction.Item?.Title ?? "Unknown";
-        if (!affectedBidderAuctions.TryGetValue(auction.WinnerUsername, out var titles))
-        {
-            titles = new List<string>();
-            affectedBidderAuctions[auction.WinnerUsername] = titles;
-        }
-        titles.Add(auctionTitle);
-    }
-
-    private async Task NotifyAffectedBidders(Dictionary<string, List<string>> affectedBidderAuctions, CancellationToken cancellationToken)
-    {
-        foreach (var (bidderUsername, auctionTitles) in affectedBidderAuctions)
-        {
-            foreach (var auctionTitle in auctionTitles)
-            {
-                await _eventPublisher.PublishAsync(new AuctionCancelledNotificationEvent
-                {
-                    RecipientUsername = bidderUsername,
-                    AuctionTitle = auctionTitle,
-                    Reason = "Seller account no longer active",
-                    RefundExpected = true
-                }, cancellationToken);
-            }
-        }
-    }
-
-    private async Task AnonymizeFinishedAuctions(Guid userId, UserDeletedEvent message, CancellationToken cancellationToken)
+    private async Task AnonymizeFinishedAuctionsAsync(Guid userId, UserDeletedEvent message, CancellationToken cancellationToken)
     {
         var allAuctions = await _readRepository.GetAllBySellerIdAsync(userId, cancellationToken);
         var finishedAuctions = allAuctions
             .Where(a => a.Status == Status.Finished)
             .ToList();
 
-        if (!finishedAuctions.Any())
+        if (finishedAuctions.Count == 0)
+        {
             return;
+        }
 
         foreach (var auction in finishedAuctions)
         {

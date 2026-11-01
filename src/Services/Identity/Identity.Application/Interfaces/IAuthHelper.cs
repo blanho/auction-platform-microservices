@@ -1,0 +1,12 @@
+namespace Identity.Application.Interfaces;
+
+using Identity.Application.DTOs;
+using Identity.Domain.Entities;
+
+public interface IAuthHelper
+{
+    Task<Result<LoginResponse>> GenerateLoginResponseAsync(ApplicationUser user, string ipAddress);
+    Task<string> GenerateUniqueUsernameAsync(string baseName);
+    Task PublishEmailEventAsync(string userId, string email, string name, string templateKey, string subject, Dictionary<string, string> data);
+    Task<ApplicationUser?> FindUserByUsernameOrEmailAsync(string usernameOrEmail);
+}

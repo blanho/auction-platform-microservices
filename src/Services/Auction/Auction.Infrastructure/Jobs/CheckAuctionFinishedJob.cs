@@ -67,7 +67,7 @@ public class CheckAuctionFinishedJob : BaseJob
                 dbContext.ChangeTracker.Clear();
                 processedCount++;
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is not OperationCanceledException)
             {
                 failedCount++;
                 failedAuctionIds.Add(auction.Id);

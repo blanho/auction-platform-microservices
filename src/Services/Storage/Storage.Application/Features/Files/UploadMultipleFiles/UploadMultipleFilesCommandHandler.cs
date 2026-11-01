@@ -1,3 +1,4 @@
+using Storage.Application.Mappings;
 using BuildingBlocks.Application.Abstractions.Auditing;
 using BuildingBlocks.Application.Abstractions.Storage;
 using BuildingBlocks.Application.CQRS.Commands;
@@ -83,7 +84,7 @@ public class UploadMultipleFilesCommandHandler(
         logger.LogInformation("Uploaded {SuccessCount}/{TotalCount} files",
             successfulFiles.Count, request.Files.Count);
 
-        var dtos = successfulFiles.Select(MapToDto).ToList();
+        var dtos = successfulFiles.Select(file => file.ToSummaryDto()).ToList();
         return Result.Success(new BatchUploadResultDto(dtos));
     }
 
@@ -164,7 +165,4 @@ public class UploadMultipleFilesCommandHandler(
     private sealed record UploadBatchContext(SemaphoreSlim Semaphore, StoredFile?[] Results,
         List<string> Errors, StorageProvider Provider);
 
-    private static StoredFileDto MapToDto(StoredFile file) =>
-        new(file.Id, file.FileName, file.ContentType, file.FileSize,
-            file.Url, file.CreatedAt);
 }

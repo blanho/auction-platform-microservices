@@ -67,15 +67,15 @@ public class SendBulkNotificationConsumer : IConsumer<SendBulkNotificationComman
 
         if (message.ParentJobId.HasValue)
         {
-            var validationError = ValidateJobItem(message);
+            var validationError = BulkNotificationJobValidator.Validate(message);
             if (validationError is not null)
             {
-                await PublishItemResult(context, validationError);
+                await PublishItemResultAsync(context, validationError);
                 return;
             }
         }
         else
-            await PublishJobStarted(context, message);
+            await PublishJobStartedAsync(context, message);
 
         var template = await _templateRepo.GetByKeyAsync(message.TemplateKey, context.CancellationToken);
 
@@ -92,26 +92,8 @@ public class SendBulkNotificationConsumer : IConsumer<SendBulkNotificationComman
 
         foreach (var batch in batches)
         {
-            var batchTasks = batch.Select(async recipient =>
-            {
-                try
-                {
-                    return await ProcessRecipientAsync(
-                        message,
-                        recipient,
-                        template,
-                        context.CancellationToken);
-                }
-                catch (Exception ex) when (ex is not OperationCanceledException)
-                {
-                    _logger.LogWarning(
-                        ex,
-                        "Failed to send notification to {UserId} in bulk job {CorrelationId}",
-                        recipient.UserId, correlationId);
-                    return false;
-                }
-            });
-
+            var batchTasks = batch.Select(recipient =>
+                ProcessRecipientSafelyAsync(message, recipient, template, context.CancellationToken));
             var results = await Task.WhenAll(batchTasks);
             context.CancellationToken.ThrowIfCancellationRequested();
 
@@ -138,7 +120,7 @@ public class SendBulkNotificationConsumer : IConsumer<SendBulkNotificationComman
         stopwatch.Stop();
 
         if (message.ParentJobId.HasValue)
-            await PublishItemResult(context, failureCount == 0 ? null :
+            await PublishItemResultAsync(context, failureCount == 0 ? null :
                 new LocalizedMessage(BulkNotificationMessageKeys.DeliveryFailed,
                     failureCount.ToString(CultureInfo.InvariantCulture),
                     message.Recipients.Count.ToString(CultureInfo.InvariantCulture)));
@@ -158,6 +140,25 @@ public class SendBulkNotificationConsumer : IConsumer<SendBulkNotificationComman
         _logger.LogInformation(
             "Bulk notification completed {CorrelationId} - Success: {SuccessCount}, Failed: {FailureCount}, Duration: {Duration}ms",
             correlationId, successCount, failureCount, stopwatch.ElapsedMilliseconds);
+    }
+
+    private async Task<bool> ProcessRecipientSafelyAsync(
+        SendBulkNotificationCommand message,
+        BulkNotificationRecipient recipient,
+        NotificationTemplate? template,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            return await ProcessRecipientAsync(message, recipient, template, cancellationToken);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            _logger.LogWarning(ex,
+                "Failed to send notification to {UserId} in bulk job {CorrelationId}",
+                recipient.UserId, message.CorrelationId.ToString());
+            return false;
+        }
     }
 
     private async Task<bool> ProcessRecipientAsync(
@@ -227,41 +228,7 @@ public class SendBulkNotificationConsumer : IConsumer<SendBulkNotificationComman
         }
     }
 
-    private static LocalizedMessage? ValidateJobItem(SendBulkNotificationCommand message)
-    {
-        if (!message.ParentJobItemId.HasValue || message.ParentJobItemId == Guid.Empty ||
-            message.ParentJobId == Guid.Empty || message.RequestedBy == Guid.Empty)
-            return new(BulkNotificationMessageKeys.RequesterRequired);
-        if (string.IsNullOrWhiteSpace(message.TemplateKey) || string.IsNullOrWhiteSpace(message.Title) ||
-            string.IsNullOrWhiteSpace(message.Message) || message.GlobalParameters is null)
-            return new(BulkNotificationMessageKeys.ContentRequired);
-        if (message.BatchSize < NotificationDefaults.Bulk.MinBatchSize ||
-            message.BatchSize > NotificationDefaults.Bulk.MaxBatchSize)
-            return new(BulkNotificationMessageKeys.BatchSizeOutOfRange,
-                NotificationDefaults.Bulk.MinBatchSize.ToString(CultureInfo.InvariantCulture),
-                NotificationDefaults.Bulk.MaxBatchSize.ToString(CultureInfo.InvariantCulture));
-        if (message.Recipients is null || message.Recipients.Count == 0 ||
-            message.Recipients.Count > NotificationDefaults.Bulk.MaxRecipients ||
-            message.Recipients.Any(r => r is null || r.UserId == Guid.Empty || r.Parameters is null))
-            return new(BulkNotificationMessageKeys.RecipientsRequired);
-        if (message.Recipients.Select(r => r.UserId).Distinct().Count() != message.Recipients.Count)
-            return new(BulkNotificationMessageKeys.DuplicateRecipients);
-        if (message.Channels is null || message.Channels.Count == 0 || message.Channels.Any(c =>
-                c is not (NotificationChannelNames.Email or NotificationChannelNames.Sms or
-                    NotificationChannelNames.Push or NotificationChannelNames.InApp)))
-            return new(BulkNotificationMessageKeys.ChannelsRequired);
-        if (message.Channels.Contains(NotificationChannelNames.Email) &&
-            message.Recipients.Any(r => string.IsNullOrWhiteSpace(r.Email)))
-            return new(BulkNotificationMessageKeys.EmailRequired);
-        if (message.Channels.Contains(NotificationChannelNames.Sms) &&
-            message.Recipients.Any(r => string.IsNullOrWhiteSpace(r.PhoneNumber)))
-            return new(BulkNotificationMessageKeys.PhoneRequired);
-        if (message.ScheduledAt.HasValue)
-            return new(BulkNotificationMessageKeys.SchedulingUnsupported);
-        return null;
-    }
-
-    private static Task PublishItemResult(ConsumeContext<SendBulkNotificationCommand> context, LocalizedMessage? error)
+    private static Task PublishItemResultAsync(ConsumeContext<SendBulkNotificationCommand> context, LocalizedMessage? error)
     {
         var message = context.Message;
         return context.Publish(new ReportJobItemResultCommand
@@ -407,7 +374,7 @@ public class SendBulkNotificationConsumer : IConsumer<SendBulkNotificationComman
         return sent;
     }
 
-    private async Task PublishJobStarted(
+    private async Task PublishJobStartedAsync(
         ConsumeContext<SendBulkNotificationCommand> context,
         SendBulkNotificationCommand message)
     {

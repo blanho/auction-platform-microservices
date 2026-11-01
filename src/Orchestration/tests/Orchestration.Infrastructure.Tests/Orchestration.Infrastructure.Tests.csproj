@@ -5,6 +5,7 @@
     <PackageReference Include="xunit" />
     <PackageReference Include="xunit.runner.visualstudio"><PrivateAssets>all</PrivateAssets></PackageReference>
     <Compile Include="../../../Tests/TestSupport/PostgresTestDatabase.cs" Link="TestSupport/PostgresTestDatabase.cs" />
+    <Compile Include="../../../Tests/TestSupport/TestProxy.cs" Link="TestSupport/TestProxy.cs" />
     <ProjectReference Include="../../Orchestration.Infrastructure/Orchestration.Infrastructure.csproj" />
     <ProjectReference Include="../../../Services/Auction/Auction.Infrastructure/Auction.Infrastructure.csproj" />
     <ProjectReference Include="../../../Services/Payment/Payment.Infrastructure/Payment.Infrastructure.csproj" />

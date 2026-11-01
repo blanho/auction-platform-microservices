@@ -11,7 +11,7 @@ using Payment.Application.Features.Wallets.ProcessWalletPayment;
 using Payment.Domain.Entities;
 using Payment.Domain.Enums;
 using Payment.Infrastructure.Persistence;
-using Payment.Infrastructure.Repositories;
+using Payment.Infrastructure.Persistence.Repositories;
 using TestSupport;
 using Xunit;
 
