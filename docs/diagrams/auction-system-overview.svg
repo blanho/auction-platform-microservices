@@ -1,0 +1,85 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="1060" viewBox="0 0 960 1060" role="img" aria-labelledby="title description">
+  <title id="title">Auction platform system overview</title>
+  <desc id="description">The React web app calls the YARP gateway over HTTPS. The gateway routes HTTP and WebSocket traffic to ten domain services. Services own their data in PostgreSQL, Redis, or Elasticsearch and exchange commands and events through RabbitMQ. Orchestration coordinates buy-now and auction completion using PostgreSQL-backed sagas and RabbitMQ. Internal gRPC connects Auction with Bidding and Catalog.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto-start-reverse" markerUnits="userSpaceOnUse">
+      <path d="M0 0 L9 4.5 L0 9 Z" fill="#475569"/>
+    </marker>
+  </defs>
+  <rect width="960" height="1060" rx="16" fill="#f8fafc"/>
+  <g font-family="Arial, Helvetica, sans-serif" fill="#0f172a">
+    <text x="40" y="50" font-size="32" font-weight="700">Auction platform</text>
+    <text x="40" y="80" font-size="20" fill="#475569">Request flow, service boundaries, and infrastructure</text>
+
+    <!-- Client and gateway: the main request path. -->
+    <rect x="200" y="108" width="560" height="84" rx="12" fill="#ffffff" stroke="#94a3b8" stroke-width="2"/>
+    <text x="480" y="144" text-anchor="middle" font-size="26" font-weight="700">React web app</text>
+    <text x="480" y="173" text-anchor="middle" font-size="22" fill="#334155">Browser · REST and SignalR client</text>
+    <path d="M480 194 V248" fill="none" stroke="#475569" stroke-width="2.5" marker-end="url(#arrow)"/>
+    <text x="500" y="229" font-size="20" fill="#475569">HTTPS</text>
+
+    <rect x="160" y="250" width="640" height="90" rx="12" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+    <text x="480" y="286" text-anchor="middle" font-size="26" font-weight="700">API gateway · YARP</text>
+    <text x="480" y="316" text-anchor="middle" font-size="22" fill="#1e3a8a">JWT validation · rate limits · routing</text>
+    <path d="M480 342 V398" fill="none" stroke="#475569" stroke-width="2.5" marker-end="url(#arrow)"/>
+    <text x="500" y="377" font-size="20" fill="#475569">HTTP / WebSocket</text>
+
+    <!-- Services share a boundary, not a database or domain model. -->
+    <rect x="40" y="400" width="880" height="280" rx="12" fill="#eff6ff" stroke="#93c5fd" stroke-width="2"/>
+    <text x="64" y="438" font-size="20" font-weight="700" fill="#1e3a8a">10 DOMAIN SERVICES · .NET 9</text>
+    <g fill="#ffffff" stroke="#93c5fd" stroke-width="1.5">
+      <rect x="64" y="460" width="160" height="58" rx="8"/>
+      <rect x="232" y="460" width="160" height="58" rx="8"/>
+      <rect x="400" y="460" width="160" height="58" rx="8"/>
+      <rect x="568" y="460" width="160" height="58" rx="8"/>
+      <rect x="736" y="460" width="160" height="58" rx="8"/>
+      <rect x="64" y="532" width="160" height="58" rx="8"/>
+      <rect x="232" y="532" width="160" height="58" rx="8"/>
+      <rect x="400" y="532" width="160" height="58" rx="8"/>
+      <rect x="568" y="532" width="160" height="58" rx="8"/>
+      <rect x="736" y="532" width="160" height="58" rx="8"/>
+    </g>
+    <g text-anchor="middle" font-size="24">
+      <text x="144" y="497">Identity</text>
+      <text x="312" y="497">Auction</text>
+      <text x="480" y="497">Bidding</text>
+      <text x="648" y="497">Payment</text>
+      <text x="816" y="497">Catalog</text>
+      <text x="144" y="569">Notification</text>
+      <text x="312" y="569">Search</text>
+      <text x="480" y="569">Storage</text>
+      <text x="648" y="569">Analytics</text>
+      <text x="816" y="569">Job</text>
+    </g>
+    <text x="480" y="632" text-anchor="middle" font-size="22" fill="#1e3a8a">Internal gRPC: Auction ↔ Bidding · Auction → Catalog</text>
+    <text x="480" y="662" text-anchor="middle" font-size="20" fill="#334155">Independent data ownership · event-driven integration</text>
+
+    <!-- One connection per concern keeps the overview readable at README width. -->
+    <path d="M250 682 V756" fill="none" stroke="#475569" stroke-width="2.5" marker-end="url(#arrow)"/>
+    <rect x="132" y="701" width="236" height="30" rx="4" fill="#f8fafc"/>
+    <text x="250" y="724" text-anchor="middle" font-size="20" fill="#475569">Persistence &amp; caching</text>
+    <path d="M710 684 V754" fill="none" stroke="#475569" stroke-width="2.5" marker-start="url(#arrow)" marker-end="url(#arrow)"/>
+    <rect x="602" y="701" width="216" height="30" rx="4" fill="#f8fafc"/>
+    <text x="710" y="724" text-anchor="middle" font-size="20" fill="#475569">Commands &amp; events</text>
+
+    <rect x="40" y="758" width="420" height="268" rx="12" fill="#f0fdf4" stroke="#86b99a" stroke-width="2"/>
+    <text x="64" y="796" font-size="26" font-weight="700" fill="#14532d">Service-owned data</text>
+    <text x="64" y="836" font-size="24" font-weight="700">PostgreSQL</text>
+    <text x="64" y="862" font-size="20" fill="#334155">Separate databases per service</text>
+    <text x="64" y="906" font-size="24" font-weight="700">Redis</text>
+    <text x="64" y="932" font-size="20" fill="#334155">Caching and distributed locks</text>
+    <text x="64" y="976" font-size="24" font-weight="700">Elasticsearch</text>
+    <text x="64" y="1002" font-size="20" fill="#334155">Search-owned auction index</text>
+
+    <rect x="500" y="758" width="420" height="106" rx="12" fill="#fff7ed" stroke="#d6a16a" stroke-width="2"/>
+    <text x="710" y="796" text-anchor="middle" font-size="26" font-weight="700" fill="#7c2d12">RabbitMQ</text>
+    <text x="710" y="832" text-anchor="middle" font-size="22" fill="#334155">MassTransit commands and events</text>
+    <path d="M710 868 V928" fill="none" stroke="#475569" stroke-width="2.5" marker-start="url(#arrow)" marker-end="url(#arrow)"/>
+    <rect x="722" y="881" width="158" height="28" rx="4" fill="#f8fafc"/>
+    <text x="730" y="902" font-size="20" fill="#475569">Saga messages</text>
+
+    <rect x="500" y="932" width="420" height="94" rx="12" fill="#f5f3ff" stroke="#a78bca" stroke-width="2"/>
+    <text x="710" y="969" text-anchor="middle" font-size="26" font-weight="700" fill="#4c1d95">Orchestration</text>
+    <text x="710" y="1001" text-anchor="middle" font-size="20" fill="#334155">Buy-now / close · PostgreSQL state</text>
+  </g>
+</svg>

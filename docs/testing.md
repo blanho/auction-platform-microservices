@@ -72,3 +72,29 @@ Verify the result checker independently:
 ```bash
 python3 -m unittest discover -s scripts/tests -v
 ```
+
+## Frontend and browser tests
+
+Frontend behavioral tests cover live auction updates and reconnects, subscription
+enable/disable and pending-join cleanup, bid rejection, buy-now polling and outcomes,
+auto-bid and seller-list mutation refreshes, transient HTTP retry limits, authentication
+refresh, seller confirmations, and order fulfillment permissions, validation, pending
+requests, failure recovery, and state isolation when navigating between orders.
+Chromium journeys run the real app against disposable API fixtures; no
+payment provider is contacted. They cover buy-now completion/failure, order progress,
+seller shipment, and buyer delivery confirmation.
+
+```bash
+cd web
+npm ci
+npm test
+npm run validate
+npm run build
+npx playwright install --with-deps chromium
+npm run test:e2e
+```
+
+Additional full-stack browser journeys are defined in `web/system-tests/`, with
+configuration in `web/playwright.system.config.ts`. These require a separately
+provisioned application stack and test users; the Playwright configuration does
+not start or clean up the stack.

@@ -106,6 +106,57 @@ Use `scripts/run-backend-tests.sh` after a Release build to verify results from
 every test project. Missing, empty, or failed test reports are errors. See
 [backend testing](testing.md) for disposable providers and local skip behavior.
 
+### Auction service
+
+Keep handlers focused on the sequence of the use case. Extract a helper when it
+names a distinct responsibility, such as updating item details, resolving catalog
+references, or starting a purchase. Avoid generic pipelines that hide domain rules
+or side effects. Use named arguments for long command/data mappings.
+
+Import rules and entity creation have one implementation shared by the direct
+command handler and both consumers. Map message payloads into application rows at
+the consumer boundary. Preserve the message's row numbers; direct imports use the
+row's one-based position. Validation returns raw diagnostics, and the response or
+event boundary applies the request culture. Pass the current time explicitly to
+row validation so date and manufacturing-year boundaries can be tested.
+
+#### Workflow invariants
+
+- A purchase retry must resolve its existing purchase before checking whether the
+  auction is available for a new purchase. Correlation ownership includes both
+  buyer and auction. The distributed lock must cover the lookup and all writes.
+- A new purchase reserves the auction, records the purchase, publishes the saga
+  start, updates the aggregate, publishes the audit, and saves. Keep cancellation
+  and concurrency handling intact when changing this sequence.
+- Updates collect modified fields in the order they are applied. Preserve the
+  original audit snapshot and validate catalog references before publishing the
+  update event, audit, or save.
+- Import counts represent rows, not the number of validation messages. Keep
+  insert/save/checkpoint ordering, batch sizes, receipt keys, progress identifiers,
+  and completion semantics intact when changing import processing.
+- Bulk activation and deactivation use the aggregate's `TryActivate` and
+  `TryDeactivate` methods. Activation requires an eligible state and an end time
+  strictly after the supplied clock value; reserved purchases and terminal states
+  must be left alone. Preserve update counts, batch saves, and request order.
+- Direct and queued exports share row mapping. Queued exports use storage's
+  returned metadata in completion events and distinguish standalone job progress
+  from parent-item results. Upload failures must remain retryable without a
+  completed receipt; unsupported formats follow the explicit failure/completion
+  path.
+- Browse filters run before count, sorting, and paging. Keep tracking behavior
+  explicit: read-only browse results use `AsNoTracking`; write repositories retain
+  the aggregate tracking required by outbox persistence.
+- Cancellation uses the aggregate's shared transition guard and status-change
+  event. Preserve event payloads and public contracts during internal refactors.
+- Seller-event notifications retain one message per affected auction and group
+  titles by bidder in encounter order. Suspension and role-change consumers save
+  before queuing notifications. Account deletion queues notifications before its
+  final save, which also persists finished-auction anonymization. Keep these
+  boundaries explicit when changing the shared notification collector.
+- Username synchronization updates only changed seller/winner names and saves
+  once after both sets have been processed. A replay with matching names performs
+  no writes or saves.
+
 ## Runtime and tooling configuration
 
 Design-time EF factories now read `ConnectionStrings__DefaultConnection`. Set it
@@ -146,3 +197,17 @@ its existing schema history and no-op migration behavior are preserved.
 
 Sonar documents standalone package configuration in the
 [official analyzer repository](https://github.com/SonarSource/sonar-dotnet).
+
+## Code and localization conventions
+
+Keep handwritten backend source free of comments; document business rules and
+failure-handling rationale in the architecture guide. Preserve transactions,
+outbox ordering, and public contracts during refactors. Avoid abstractions whose
+only purpose is reducing method or file length.
+
+Backend user-facing messages require matching English (`en-US`) and Japanese
+(`ja-JP`) resources. Persist background-job diagnostics unchanged and localize
+DTOs in the reader's request culture. Use `LocalizableError.WithDiagnostic` for
+nested failure reasons, keeping error codes, API fields, and user content stable.
+See [architecture localization](architecture.md#localization) and the
+[background jobs guide](background-jobs.md) for message keys and migration order.
