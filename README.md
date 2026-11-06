@@ -7,35 +7,17 @@ The system supports real-time bidding, authoritative auction closing, buy-now fl
 [![CD](https://github.com/blanho/auction-platform-microservices/actions/workflows/cd.yml/badge.svg)](https://github.com/blanho/auction-platform-microservices/actions/workflows/cd.yml)
 [![Sonar Analysis](https://github.com/blanho/auction-platform-microservices/actions/workflows/sonar.yml/badge.svg)](https://github.com/blanho/auction-platform-microservices/actions/workflows/sonar.yml)
 
----
-
-## Table of Contents
+## Contents
 
 - [Architecture Overview](#architecture-overview)
 - [System Architecture Diagram](#system-architecture-diagram)
 - [Service Map](#service-map)
 - [Tech Stack](#tech-stack)
-- [Communication Patterns](#communication-patterns)
 - [Key Workflows](#key-workflows)
-  - [Place a Bid](#1-place-a-bid)
-  - [Authoritative Auction Close](#2-authoritative-auction-close)
-  - [Buy-Now Flow](#3-buy-now-flow)
-- [Project Structure](#project-structure)
 - [Getting Started](#getting-started)
-- [Environment Variables](#environment-variables)
-- [API Gateway Routes](#api-gateway-routes)
 - [Cloud and Deployment](#cloud-and-deployment)
-  - [Deployment Topology](#deployment-topology)
-    - [Managed HA Configuration](#managed-ha-configuration)
-    - [Azure Deployment — Baseline](#azure-deployment--baseline)
-    - [Runtime Flows — Baseline](#runtime-flows--baseline)
-    - [Kubernetes Details — Baseline](#kubernetes-details--baseline)
-- [Observability](#observability)
 - [Testing](#testing)
-- [Code Quality](#code-quality)
 - [Documentation](#documentation)
-
----
 
 ## Architecture Overview
 
@@ -63,13 +45,9 @@ Click the diagram to open the full-size SVG.
 
 For service responsibilities, see the [Service Map](#service-map). For detailed
 interactions, external integrations, and observability, see the
-[Architecture Guide](docs/architecture.md). The [cloud deployment diagrams](#deployment-topology)
+[Architecture Guide](docs/architecture.md). The [cloud deployment diagrams](docs/diagrams/README.md)
 show Azure and Kubernetes details, with an
 [editable draw.io file](docs/diagrams/auction-azure-architecture.drawio).
-
-Workflow diagrams below use Mermaid and can be edited in [Mermaid Live](https://mermaid.live).
-
----
 
 ## Service Map
 
@@ -144,239 +122,15 @@ queries, transactions, and deletion policies remain explicit. See the
 | HTTP Client | Axios |
 | Linting / Formatting | ESLint 9, Prettier 3, Husky + lint-staged |
 
----
-
-## Communication Patterns
-
-```mermaid
-graph LR
-    subgraph Synchronous
-        REST["REST / HTTP 1.1<br/>(via YARP Gateway)"]
-        GRPC["gRPC / HTTP 2<br/>(service-to-service)"]
-    end
-
-    subgraph Asynchronous
-        OUTBOX["Transactional Outbox<br/>(at-least-once delivery)"]
-        AMQP["RabbitMQ / AMQP<br/>(MassTransit)"]
-    end
-
-    subgraph Realtime
-        WS["SignalR WebSocket<br/>(Notification Hub)"]
-    end
-
-    Frontend["React SPA"] --REST--> REST
-    REST --routed--> Backends["Auction / Bidding /<br/>Payment / Identity /<br/>Search / Storage"]
-    Backends --gRPC--> GRPC
-    Backends --domain events--> OUTBOX
-    OUTBOX --relay--> AMQP
-    AMQP --consume--> Subscribers["Search / Notification /<br/>Analytics / Payment"]
-    Subscribers --push--> WS
-    WS --real-time--> Frontend
-```
-
-| Pattern | Where Used | Purpose |
-|---|---|---|
-| REST (HTTP/1.1) | Frontend → Gateway → Services | Standard CRUD operations and queries |
-| gRPC (HTTP/2) | Auction ↔ Bidding; Auction → Catalog | Bid validation fallback, authoritative winner finalization, catalog queries |
-| MassTransit + RabbitMQ | All services | Async domain events, integration events, commands |
-| Transactional Outbox | Auction, Bidding, Payment | Guarantee message delivery after DB commit |
-| Event fan-out | Payment, Search, Analytics, Notification | Idempotent reactions to committed integration events |
-| SignalR | Notification → Browser | Real-time bid updates, auction status, notifications |
-| CQRS | All domain services | Separate read/write models via MediatR |
-
----
-
 ## Key Workflows
 
-### 1. Place a Bid
+- **Place a bid:** Bidding validates auction eligibility and persists the bid with an outbox message. Bid placement and winner selection share a per-auction PostgreSQL advisory lock.
+- **Close an auction:** Auction's scheduled close asks Bidding for the authoritative winner, persists the final state, and starts durable order creation for a sold auction.
+- **Buy now:** Auction reserves the listing and returns a purchase receipt with `202 Accepted`. Orchestration creates a held order, completes the auction, and confirms the order; the browser polls the receipt for the outcome.
 
-```mermaid
-sequenceDiagram
-    participant B as Browser
-    participant GW as Gateway
-    participant BID as Bidding Service
-    participant AUC as Auction Service
-    participant DB as bid_db
-    participant MQ as RabbitMQ
-    participant SRC as Search Service
-    participant NOT as Notification Service
-
-    B->>GW: POST /bids {auctionId, amount}
-    GW->>BID: Forward (JWT validated)
-    BID->>BID: Acquire Redis bid lock
-    BID->>DB: Acquire PostgreSQL advisory lock for auction
-    BID->>BID: Validate local auction snapshot
-    opt Snapshot missing
-        BID->>AUC: gRPC ValidateAuction(auctionId)
-        AUC-->>BID: AuctionDetails (status, reserve, endTime)
-    end
-    BID->>BID: Apply domain rules (min increment, active status)
-    BID->>DB: Save Bid + Outbox message (single transaction)
-    DB-->>BID: OK
-    BID-->>GW: 201 Created
-    GW-->>B: 201 Created
-
-    Note over BID,MQ: Outbox relay (background)
-    BID->>MQ: Publish BidPlacedEvent
-
-    par Event Fanout
-        MQ->>SRC: Update search index (current price)
-        MQ->>NOT: Notify outbid users
-        MQ->>AUC: Update current price on auction
-    end
-
-    NOT->>B: SignalR push to auction group
-```
-
-### 2. Authoritative Auction Close
-
-```mermaid
-sequenceDiagram
-    participant AUC as Auction Service scheduler
-    participant BID as Bidding Service
-    participant MQ as RabbitMQ
-    participant PAY as Payment Service
-    participant READ as Search / Analytics / Bidding projections
-
-    AUC->>BID: gRPC FinalizeAuction(auctionId)
-    BID->>BID: Acquire auction advisory lock
-    BID-->>AUC: Authoritative winner and amount
-    AUC->>AUC: Persist final auction status
-    AUC->>MQ: AuctionFinishedEvent (via Outbox)
-    par Event fan-out
-        MQ->>PAY: Saga requests idempotent winner order when sold
-        MQ->>READ: Update projections and analytics
-    end
-```
-
-Bid placement and winner selection use the same per-auction PostgreSQL advisory
-lock. Once the auction end time has passed, this creates a single serialization
-boundary between the last acceptable bid and the winning-bid read. The scheduled
-close job itself also uses the shared Redis-backed job lock, so only one replica
-processes a given schedule at a time.
-
-### 3. Buy-Now Flow
-
-```mermaid
-sequenceDiagram
-    participant B as Browser
-    participant GW as Gateway
-    participant AUC as Auction Service
-    participant MQ as RabbitMQ
-    participant PAY as Payment Service
-    participant ANA as Analytics Service
-
-    B->>GW: POST /auctions/{id}/buy-now
-    GW->>AUC: Forward
-    AUC->>AUC: Reserve auction and persist purchase receipt
-    AUC->>MQ: BuyNowSagaStarted (via Outbox)
-    AUC-->>B: 202 Accepted (Processing, correlationId)
-    MQ->>PAY: Saga requests order creation (payment held)
-    PAY->>MQ: Order created
-    MQ->>AUC: Saga requests auction completion
-    AUC->>MQ: Auction completed
-    MQ->>PAY: Saga requests payment hold removal
-    PAY->>MQ: Order confirmed
-    MQ->>AUC: BuyNowSagaCompleted
-    B->>AUC: Poll purchase status
-    AUC-->>B: Completed, orderId
-    AUC->>ANA: Public sale event via RabbitMQ
-```
-
----
-
-## Project Structure
-
-```
-auction-platform-microservices/
-├── Directory.Build.props              # Shared MSBuild properties
-├── Directory.Packages.props           # Centralized NuGet package versions
-├── global.json                        # Pinned .NET SDK version
-├── auction.sln
-│
-├── src/
-│   ├── BuildingBlocks/                # Shared cross-cutting libraries
-│   │   ├── BuildingBlocks.Domain/     # Base entities, domain events, value objects
-│   │   ├── BuildingBlocks.Application/# CQRS abstractions, behaviors, paging, filtering
-│   │   ├── BuildingBlocks.Infrastructure/ # EF, Redis, MassTransit, Audit, Resilience
-│   │   └── BuildingBlocks.Web/        # Auth, rate limiting, middleware, health checks
-│   │
-│   ├── Contracts/
-│   │   └── Common.Contracts/          # Shared event base types, common enums
-│   │
-│   ├── Services/
-│   │   ├── Auction/                   # Domain / Application / Infrastructure / API / tests
-│   │   ├── Bidding/
-│   │   ├── Catalog/
-│   │   ├── Payment/
-│   │   ├── Notification/
-│   │   ├── Identity/
-│   │   ├── Search/
-│   │   ├── Storage/
-│   │   ├── Analytics/
-│   │   └── Job/
-│   │
-│   ├── Gateway/
-│   │   └── Gateway.Api/               # YARP config, JWT middleware, rate limiting
-│   │
-│   ├── Orchestration/
-│   │   ├── Orchestration.Contracts/   # Commands and acknowledgements
-│   │   ├── Orchestration.Sagas/       # Sale state machines
-│   │   ├── Orchestration.Infrastructure/ # PostgreSQL saga storage, outbox, deadlines
-│   │   ├── Orchestration.Api/         # Worker host and Admin recovery API
-│   │   └── tests/                    # Saga and infrastructure tests
-│   │
-│   └── Tests/
-│       ├── Architecture.Tests/        # Repository and dependency rules
-│       ├── BuildingBlocks.Domain.Tests/
-│       ├── BuildingBlocks.Application.Tests/
-│       ├── BuildingBlocks.Infrastructure.Tests/
-│       ├── BuildingBlocks.Web.Tests/
-│       └── TestSupport/               # Shared PostgreSQL/broker fixtures
-│
-├── web/                               # React 19 SPA
-│   └── src/
-│       ├── modules/                   # Feature modules (auctions, bidding, auth, payments)
-│       ├── shared/                    # Shared components, hooks, utils, theme
-│       ├── services/                  # API clients, SignalR connection
-│       ├── config/                    # Environment config
-│       └── i18n/                      # Translations (en, vi)
-│
-├── docs/                              # Architecture and onboarding documentation
-├── scripts/                           # Backend test runner and result verification
-│   └── tests/                         # Tests for automation scripts
-├── tests/
-│   └── load/                          # Whole-platform load scenarios
-│
-└── deploy/
-    ├── docker/
-    │   ├── docker-compose.yml         # Full local development stack
-    │   └── scripts/init-databases.sh
-    ├── config/
-    │   └── appsettings.Production.template.json
-    ├── kubernetes/
-    │   ├── base/                      # Kustomize base manifests
-    │   └── overlays/                  # dev / staging / production / production-managed
-    └── azure/                         # Bicep, Key Vault bootstrap, AKS render script
-```
-
-Each microservice follows **Clean Architecture** layering:
-
-```
-Services/{Name}/
-├── {Name}.Contracts/       # Message contracts (co-located with service)
-├── {Name}.Domain/          # Entities, Value Objects, Domain Events, Enums
-├── {Name}.Application/     # Commands, Queries, Handlers, DTOs, Validators
-├── {Name}.Infrastructure/  # EF DbContext, Repositories, External Service Clients
-├── {Name}.Api/             # Minimal API Endpoints (Carter), gRPC, DI Configuration
-└── tests/
-    ├── {Name}.Domain.Tests/
-    ├── {Name}.Application.Tests/
-    ├── {Name}.Infrastructure.Tests/   # When persistence/integration behavior is tested
-    └── {Name}.Api.Tests/              # When HTTP/API behavior is tested
-```
-
----
+See the [Architecture Guide](docs/architecture.md) for communication patterns and
+consistency boundaries, and [Orchestration](src/Orchestration/README.md) for state
+transitions, compensation, and recovery.
 
 ## Getting Started
 
@@ -409,337 +163,37 @@ docker compose -f deploy/docker/docker-compose.yml ps
 cd web && npm install && npm run dev
 ```
 
-### Local Service URLs
-
-| Service | URL |
-|---|---|
-| Frontend (dev) | http://localhost:5173 |
-| API Gateway | http://localhost:6001 |
-| Identity | http://localhost:5001 |
-| Auction | http://localhost:5002 |
-| Bidding | http://localhost:5003 |
-| Payment | http://localhost:5004 |
-| Notification | http://localhost:5005 |
-| Analytics | http://localhost:5007 |
-| Catalog | http://localhost:5013 |
-| Search | http://localhost:5008 |
-| Storage | http://localhost:5009 |
-| RabbitMQ Management | http://localhost:15672 |
-| Elasticsearch | http://localhost:9200 |
-| Seq (Logs) | http://localhost:5341 |
-
-### Running Individually
-
-```bash
-# Single backend service
-cd src/Services/Auction/Auction.Api && dotnet run
-
-# Frontend
-cd web && npm install && npm run dev
-
-# Current backend unit tests
-dotnet test src/Services/Payment/tests/Payment.Domain.Tests/Payment.Domain.Tests.csproj
-
-# Frontend validation
-cd web && npm run validate
-```
-
----
-
-## Environment Variables
-
-Copy `.env.example` to `.env` and fill in all values:
-
-| Variable | Description |
-|---|---|
-| `POSTGRES_USER` / `POSTGRES_PASSWORD` | PostgreSQL credentials |
-| `RABBITMQ_USER` / `RABBITMQ_PASS` | RabbitMQ credentials |
-| `REDIS_PASSWORD` | Redis password |
-| `JWT_SECRET_KEY` | Minimum 64-character random string |
-| `STRIPE_SECRET_KEY` | From Stripe dashboard |
-| `STRIPE_WEBHOOK_SECRET` | From Stripe webhook config |
-| `SENDGRID_API_KEY` | SendGrid API key |
-| `TWILIO_ACCOUNT_SID` / `TWILIO_AUTH_TOKEN` | Twilio credentials |
-| `FIREBASE_SERVICE_ACCOUNT_JSON` | Firebase service account JSON |
-| `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | Google OAuth |
-| `FACEBOOK_APP_ID` / `FACEBOOK_APP_SECRET` | Facebook OAuth |
-| `FRONTEND_URL` | Frontend origin (e.g. `https://your-domain.com`) |
-| `GATEWAY_URL` | API gateway URL (e.g. `https://api.your-domain.com`) |
-
----
-
-## API Gateway Routes
-
-All client traffic enters through the YARP gateway on port **6001**. JWT tokens are validated at the gateway before forwarding.
-
-| Route | Upstream | Notes |
-|---|---|---|
-| `/auctions/**` | Auction Service | Rate limited |
-| `/categories/**` | Catalog Service | |
-| `/brands/**` | Catalog Service | |
-| `/bookmarks/**` | Auction Service | Auth required |
-| `/reviews/**` | Auction Service | |
-| `/bids/**` | Bidding Service | Rate limited |
-| `/autobids/**` | Bidding Service | Rate limited |
-| `/payments/**` | Payment Service | Auth required |
-| `/identity/**` | Identity Service | |
-| `/search/**` | Search Service | |
-| `/storage/**` | Storage Service | Auth required |
-| `/analytics/**` | Analytics Service | Auth required |
-| `/hubs/**` | Notification Service | WebSocket |
-
----
+The full Compose stack serves the frontend at http://localhost:3000; Vite serves
+it at http://localhost:5173. The gateway is at http://localhost:6001.
+See [Getting Started](docs/getting-started.md) for environment configuration,
+individual services, debugging, and troubleshooting.
 
 ## Cloud and Deployment
 
-### Infrastructure and Deployment Tools
+Azure production uses Bicep, AKS, ACR, Key Vault, PostgreSQL Flexible Server,
+Azure Managed Redis, and Blob Storage. The default overlay runs RabbitMQ and
+Elasticsearch in AKS; the optional managed-provider overlay connects to HA
+providers and enables Azure SignalR. Cloud capacity and failover still require
+staging validation.
 
-Terraform is not required for the current Azure deployment. The repository
-already defines its Azure infrastructure as code with Bicep, with separate
-configuration for running and deploying the application:
-
-| Purpose | Tool | Configuration |
-|---|---|---|
-| Run the local stack | Docker Compose | [`deploy/docker/docker-compose.yml`](deploy/docker/docker-compose.yml) |
-| Provision Azure infrastructure | Bicep | [`deploy/azure/main.bicep`](deploy/azure/main.bicep) |
-| Configure Kubernetes workloads per environment | Kubernetes manifests + Kustomize | [`deploy/kubernetes/`](deploy/kubernetes/) |
-| Build container images and deploy to AKS | GitHub Actions | [`.github/workflows/cd.yml`](.github/workflows/cd.yml) |
-
-The Bicep template provisions AKS, Azure Container Registry, PostgreSQL Flexible
-Server, optional Azure Managed Redis, Key Vault, Blob Storage, networking,
-identities, and Log Analytics. Kubernetes manifests define the application
-workloads running on that infrastructure.
-
-Keep Bicep for the current Azure deployment. Consider Terraform if the team
-standardizes on it or needs to manage infrastructure across multiple providers.
-Adopting it would require a deliberate migration of resource ownership; do not
-manage the same resources with both Bicep and Terraform. See Microsoft's
-[Bicep and Terraform comparison](https://learn.microsoft.com/en-us/azure/developer/terraform/comparing-terraform-and-bicep)
-for the tooling tradeoffs.
-
-### Docker Compose (Local)
-
-`deploy/docker/docker-compose.yml` defines the complete local stack:
-- **5 infrastructure services** — PostgreSQL, Redis, RabbitMQ, Elasticsearch, Seq
-- **12 backend containers** — 10 microservices, the orchestration host, and the gateway
-- **1 frontend container** — Nginx-served React SPA
-- Health checks on every container, named volumes, shared bridge network
-- Frontend available at **http://localhost:3000** when running the full Compose stack
-
-### Azure AKS (Production)
-
-The supported production path is Azure. It uses Bicep for infrastructure and
-Kustomize for the application manifests:
-
-```mermaid
-graph TB
-    subgraph Azure
-        ACR["Azure Container Registry"]
-        AKS["AKS"]
-        KV["Key Vault"]
-        PG["PostgreSQL Flexible Server"]
-        REDIS["Azure Managed Redis"]
-        BLOB["Blob Storage"]
-    end
-
-    GH["GitHub Actions (OIDC)"] --> ACR
-    GH --> AKS
-    KV --> AKS
-    AKS --> PG & REDIS & BLOB
-```
-
-RabbitMQ and Elasticsearch remain in AKS because replacing either one requires
-application code and data-migration work. PostgreSQL, Redis, Blob Storage,
-container images, secrets, TLS, and workload identity are Azure-managed.
-
-For provisioning, required GitHub variables, DNS, and the manual production
-rollout, follow the [Azure deployment guide](deploy/azure/README.md).
-
-### CI/CD Pipelines
-
-GitHub Actions workflows in `.github/workflows/`:
-
-```mermaid
-graph LR
-    PR["Pull Request"] --> PRC["pr-checks.yml<br/>Build + Test + Lint"]
-    Push["Push to main"] --> CI["ci.yml<br/>Build + Test + Coverage"]
-    CI --> SONAR["sonar.yml<br/>Local Sonar Analysis"]
-    CI --> CD["cd.yml<br/>Build images in ACR"]
-    CD --> DEPLOY["Manual Azure AKS deployment"]
-    CRON["Cron Schedule"] --> SCHED["scheduled.yml<br/>Vulnerability Scans"]
-```
-
-| Workflow | Trigger | Purpose |
-|---|---|---|
-| `ci.yml` | Push / pull request | Validate frontend, build and test backend, compile Bicep |
-| `cd.yml` | Successful main CI / manual run | Build immutable ACR images; deploy to AKS only when manually enabled |
-| `pr-checks.yml` | Pull request | Validate build, tests, and lint before merge |
-| `sonar.yml` | Pushes and pull requests | Local Sonar C# analysis; warnings fail the build |
-| `scheduled.yml` | Cron | Dependency vulnerability scans |
-
-### Deployment Topology
-
-All four diagrams from [docs/diagrams](docs/diagrams/README.md) are shown below.
-Click any preview to open the full-size SVG.
-
-#### Managed HA Configuration
-
-The managed-provider deployment option adds Azure SignalR, short-lived browse
-caching, replica spreading, TLS connections to RabbitMQ/Elasticsearch providers,
-and optional Front Door caching for frontend assets. These are repository
-configurations; cloud capacity and failover have not yet been validated.
-
-[![Managed Azure deployment with CDN, SignalR, AKS and HA data providers](docs/diagrams/auction-managed-ha.svg)](docs/diagrams/auction-managed-ha.svg)
-
-[Rollout, migration and remaining HA limits](docs/production-readiness.md) ·
-[Capacity and failure tests](tests/load/README.md) ·
-[Editable draw.io file — page 04](docs/diagrams/auction-azure-architecture.drawio)
-
-The following three diagrams preserve the 24 October baseline, including the
-single-pod RabbitMQ/Elasticsearch deployment. Use page 04 above for the new
-managed-provider configuration.
-
-#### Azure Deployment — Baseline
-
-[![Azure deployment architecture with AKS, private PostgreSQL, managed Redis, Blob Storage, Key Vault, and GitHub Actions](docs/diagrams/auction-azure-deployment.svg)](docs/diagrams/auction-azure-deployment.svg)
-
-[Editable draw.io file](docs/diagrams/auction-azure-architecture.drawio) ·
-[Architecture notes and deployment findings](docs/cloud-deployment-architecture.md) ·
-[Editing instructions](docs/diagrams/README.md)
-
-The editable file includes four pages: **Azure deployment**, **Runtime flows**,
-**Kubernetes details**, and **Managed HA configuration**. Open it in [draw.io](https://app.diagrams.net/) with
-**File → Open From → Device**.
-
-#### Runtime Flows — Baseline
-
-[![Service runtime flows for bid entry, gRPC queries, sale coordination, notifications, search, and file storage](docs/diagrams/auction-runtime-flows.svg)](docs/diagrams/auction-runtime-flows.svg)
-
-#### Kubernetes Details — Baseline
-
-[![Production Kubernetes deployment details for all 13 application Deployments, autoscaling ranges, Service port mappings, and backend connections](docs/diagrams/auction-kubernetes-details.svg)](docs/diagrams/auction-kubernetes-details.svg)
-
----
-
-## Observability
-
-| Tool | Purpose | Access |
-|---|---|---|
-| Seq (local only) | Centralized structured log aggregation | http://localhost:5341 |
-| Serilog | Structured logging with correlation IDs | Per-service config |
-| OpenTelemetry | Distributed tracing instrumentation | Configurable OTLP collector |
-| Azure Monitor / Log Analytics | AKS platform logs and metrics | Azure portal |
-| Sonar C# analyzer | Local static analysis during every backend build | [Quality guide](docs/code-quality.md) |
-
-**Health check endpoints** (every service):
-
-```
-GET /health        # Overall health
-GET /health/ready  # Readiness probe (K8s)
-GET /health/live   # Liveness probe (K8s)
-```
-
-Production deployment does not install Jaeger, Seq, or Prometheus CRDs. Add a
-managed observability integration only when the project needs it.
-
----
+- [Deployment guide](docs/deployment.md): Docker, Kubernetes, CI/CD, secrets, monitoring, and rollback.
+- [Azure deployment guide](deploy/azure/README.md): provisioning, GitHub configuration, DNS, and production rollout.
+- [Architecture diagrams](docs/diagrams/README.md): Azure deployment, runtime flows, Kubernetes details, and the editable draw.io file.
+- [Production readiness](docs/production-readiness.md): managed-provider migration, rollout checks, and remaining limits.
 
 ## Testing
 
-The backend has service and shared-library test projects covering behavior, architecture rules,
-PostgreSQL persistence, bid/finalization serialization, and RabbitMQ-backed sale
-workflow recovery. Start disposable PostgreSQL and RabbitMQ before running the
-backend tests so provider-backed coverage can execute.
+Follow the [testing guide](docs/testing.md) to build and run all backend projects
+with disposable PostgreSQL, RabbitMQ, and Elasticsearch, and to run frontend and
+browser checks. The backend runner rejects failed, missing, or unexpectedly
+skipped results. Use the [load-testing guide](tests/load/README.md) for staging
+capacity and failure drills.
 
-Architecture guards cover every service and the orchestration host: cross-service
-references must use contracts, contracts cannot depend on implementations, and
-shared building blocks cannot depend on service projects. Recovery tests cover
-operator retries, purchase correlation isolation, duplicate recovery records,
-late acknowledgements, and wallet rollback after audit failure or cancellation.
-
-```bash
-docker compose -p auction-reliability-tests -f deploy/docker/docker-compose.tests.yml up -d --wait
-export BACKEND_TEST_POSTGRES='Host=localhost;Port=15432;Database=postgres;Username=auction_test;Password=auction_test'
-export BACKEND_TEST_RABBIT_PORT=15673
-export BACKEND_TEST_ELASTICSEARCH='http://localhost:19200'
-dotnet restore auction.sln
-dotnet build auction.sln -c Release --no-restore
-bash scripts/run-backend-tests.sh
-docker compose -p auction-reliability-tests -f deploy/docker/docker-compose.tests.yml down -v
-```
-
-The runner checks every test project's TRX results and rejects unexpected skips
-or missing results. For a local run without disposable providers, build first
-and use `bash scripts/run-backend-tests.sh --allow-skips`; this is partial
-coverage. Elasticsearch coverage is optional until `BACKEND_TEST_ELASTICSEARCH`
-is configured. See [Backend testing](docs/testing.md) for test locations and details.
-
-Frontend behavioral tests cover live auction updates and reconnects, subscription
-enable/disable and pending-join cleanup, bid rejection, buy-now polling and outcomes,
-auto-bid and seller-list mutation refreshes, transient HTTP retry limits, authentication
-refresh, seller confirmations, and order fulfillment permissions, validation, pending
-requests, failure recovery, and state isolation when navigating between orders.
-Chromium journeys run the real app against disposable API fixtures; no
-payment provider is contacted. They cover buy-now completion/failure, order progress,
-seller shipment, and buyer delivery confirmation.
-
-```bash
-cd web
-npm ci
-npm test
-npm run validate
-npm run build
-npx playwright install --with-deps chromium
-npm run test:e2e
-```
-
-Additional full-stack browser journeys are defined in `web/system-tests/`, with
-configuration in `web/playwright.system.config.ts`. These require a separately
-provisioned application stack and test users; the Playwright configuration does
-not start or clean up the stack.
-
----
-
-## Code Quality
-
-- **Sonar C# analyzer** — pinned locally, checked during every backend build; `sonar.yml` enforces a full Release analysis on `main`/`develop` pushes and pull requests
-- **ESLint 9** + **Prettier 3** — frontend style enforcement
-- **Husky + lint-staged** — pre-commit hooks
-- **FluentValidation** — request validation
-- **Directory.Packages.props** — centralized NuGet version pinning
-
-Use meaningful names, cohesive responsibilities, and explicit side effects when
-refactoring. Keep handwritten backend source free of comments; document business
-rules and failure-handling rationale in the architecture and service guides.
-Keep database transactions, outbox ordering, and public contracts intact; validate
-behavior before and after changes. Avoid introducing abstractions only to reduce
-method or file length.
-
-Backend user-facing messages must support English (`en-US`) and Japanese
-(`ja-JP`). Use the service/shared resources for API errors and validation. Persist
-background-job diagnostics unchanged, then localize job DTOs in the reader's
-request culture. Add matching English/Japanese resources and localization tests
-for new messages. Mark nested failure reasons with `LocalizableError.WithDiagnostic`
-so they are translated inside localized errors; keep error codes, API fields, and
-user-authored content stable. New notification job validation uses stable message
-keys and arguments, persisted with an English compatibility fallback; see the
-[background jobs guide](docs/background-jobs.md) for the required Job migration.
-
-
----
+Backend builds run the pinned Sonar C# analyzer with warnings treated as errors.
+Frontend validation uses ESLint and TypeScript. See [Code Quality](docs/code-quality.md)
+for commands, maintenance boundaries, and localization requirements.
 
 ## Documentation
-
-The Job service can dispatch auction imports, bulk auction updates, auction
-exports, order reports, bulk notifications, image processing, upload
-finalization, bounded search reindexing, and daily analytics aggregation to their
-owning services. See the
-[background jobs guide](docs/background-jobs.md) for request payloads, retry
-behavior, and the remaining implementation stages.
-
-Identity also runs scheduled inactivity locks, expired refresh-token cleanup,
-and disabled-account session revocation. The guide documents their schedules,
-retention, batch limits, and token security behavior.
 
 | Document | Description |
 |---|---|
@@ -748,13 +202,15 @@ retention, batch limits, and token security behavior.
 | [Getting Started Guide](docs/getting-started.md) | Step-by-step onboarding for new developers |
 | [API Reference](docs/api-reference.md) | Gateway routes, authentication, request/response schemas |
 | [Background Jobs](docs/background-jobs.md) | Supported job operations, payload examples, retries, and staged roadmap |
-| [Paging Consistency](docs/paging-consistency.md) | Shared paging rules, typed immutable sort maps across services, compatibility differences, and verification |
+| [Paging Guide and Consistency](docs/paging-consistency.md) | Shared paging rules, typed immutable sort maps across services, compatibility differences, and verification |
 | [Code Quality](docs/code-quality.md) | Local Sonar analysis, verification commands, security configuration, and reviewed exceptions |
 | [Common Repositories](docs/common-repositories.md) | Research, shared EF Core CRUD and queries, audit policies, transaction boundaries, and adoption |
 | [Deployment Guide](docs/deployment.md) | Docker, Kubernetes, CI/CD pipeline details |
 | [Azure Deployment Guide](deploy/azure/README.md) | Provision and deploy the Azure AKS environment |
-
----
+| [Testing](docs/testing.md) | Backend test runner, disposable providers, frontend checks, and browser journeys |
+| [Orchestration](src/Orchestration/README.md) | Durable sale workflows, compensation, deployment, and operator recovery |
+| [Production Readiness](docs/production-readiness.md) | Managed providers, rollout, capacity validation, and remaining HA limits |
+| [Load Testing](tests/load/README.md) | Staging capacity tests and failure drills |
 
 ## License
 

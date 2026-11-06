@@ -93,7 +93,7 @@ auction-platform-microservices/
 │   ├── Contracts/             # Shared message contracts
 │   ├── Services/              # The 10 microservices (each with 4-5 layers)
 │   ├── Gateway/               # YARP API gateway
-│   └── Orchestration/         # Inactive future saga contracts/state-machine definitions
+│   └── Orchestration/         # Durable sale sagas, host, contracts, and recovery API
 ├── web/                       # React frontend
 ├── deploy/                    # Docker and Kubernetes configs
 └── docs/                      # You are here
