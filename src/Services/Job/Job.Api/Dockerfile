@@ -35,7 +35,7 @@ RUN dotnet publish "Job.Api.csproj" \
     --no-restore \
     --self-contained false
 
-FROM mcr.microsoft.com/dotnet/aspnet:9.0-alpine@sha256:1bd70a86abe101145238b07e7462e5f9e5ab0fa50c6fdeff3c3ac6941da56939 AS runtime
+FROM mcr.microsoft.com/dotnet/aspnet:11.0-alpine@sha256:d39b72ad1534fa0faf52b488bffb0762df7ba269d120f0338713d4dda2a41bf5 AS runtime
 ARG BUILD_VERSION=dev
 ARG VCS_REF=unknown
 LABEL org.opencontainers.image.version=$BUILD_VERSION \
