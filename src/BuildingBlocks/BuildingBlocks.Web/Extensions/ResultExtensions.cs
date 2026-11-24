@@ -11,9 +11,7 @@ public static class ResultExtensions
         if (result.IsSuccess)
             return onSuccess(result.Value!);
 
-        return result.Error!.Code.EndsWith(".NotFound")
-            ? Results.NotFound(ProblemDetailsHelper.FromError(result.Error))
-            : Results.BadRequest(ProblemDetailsHelper.FromError(result.Error));
+        return ToErrorResult(result.Error!);
     }
 
     public static IResult ToApiResult(this Result result, Func<IResult> onSuccess)
@@ -21,9 +19,7 @@ public static class ResultExtensions
         if (result.IsSuccess)
             return onSuccess();
 
-        return result.Error!.Code.EndsWith(".NotFound")
-            ? Results.NotFound(ProblemDetailsHelper.FromError(result.Error))
-            : Results.BadRequest(ProblemDetailsHelper.FromError(result.Error));
+        return ToErrorResult(result.Error!);
     }
 
     public static IResult ToNoContentResult<T>(this Result<T> result)
@@ -39,5 +35,13 @@ public static class ResultExtensions
     public static IResult ToOkResult<T>(this Result<T> result)
     {
         return result.ToApiResult(value => Results.Ok(value));
+    }
+
+    private static IResult ToErrorResult(Error error)
+    {
+        var problem = ProblemDetailsHelper.FromError(error);
+        return error.Code.EndsWith(".NotFound", StringComparison.Ordinal)
+            ? Results.NotFound(problem)
+            : Results.BadRequest(problem);
     }
 }

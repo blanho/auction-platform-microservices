@@ -1,5 +1,4 @@
 using BuildingBlocks.Domain.Entities;
-using BuildingBlocks.Domain.Events;
 using BuildingBlocks.Domain.Exceptions;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -20,14 +19,27 @@ public abstract class BaseUnitOfWork<TContext> : IUnitOfWork
 
     public virtual async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
+        await PublishDomainEventsAsync(cancellationToken);
+        try
+        {
+            return await Context.SaveChangesAsync(cancellationToken);
+        }
+        catch (DbUpdateConcurrencyException ex)
+        {
+            throw new ConcurrencyException("A concurrency conflict occurred while saving changes.", ex);
+        }
+    }
+
+    private async Task PublishDomainEventsAsync(CancellationToken cancellationToken)
+    {
         var entities = Context.ChangeTracker
             .Entries<BaseEntity>()
-            .Where(e => e.Entity.DomainEvents.Any())
-            .Select(e => e.Entity)
+            .Select(entry => entry.Entity)
+            .Where(entity => entity.DomainEvents.Count > 0)
             .ToList();
 
         var domainEvents = entities
-            .SelectMany(e => e.DomainEvents)
+            .SelectMany(entity => entity.DomainEvents)
             .ToList();
 
         foreach (var entity in entities)
@@ -39,18 +51,6 @@ public abstract class BaseUnitOfWork<TContext> : IUnitOfWork
         {
             await _mediator.Publish(domainEvent, cancellationToken);
         }
-
-        int result;
-        try
-        {
-            result = await Context.SaveChangesAsync(cancellationToken);
-        }
-        catch (DbUpdateConcurrencyException ex)
-        {
-            throw new ConcurrencyException("A concurrency conflict occurred while saving changes.", ex);
-        }
-
-        return result;
     }
 
     public async Task BeginTransactionAsync(CancellationToken cancellationToken = default)

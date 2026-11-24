@@ -5,6 +5,9 @@ namespace BuildingBlocks.Domain.Entities;
 
 public abstract class BaseEntity : IAuditableEntity, IEquatable<BaseEntity>
 {
+    private readonly List<IDomainEvent> _domainEvents = [];
+    private IReadOnlyCollection<IDomainEvent>? _domainEventsView;
+
     public Guid Id { get; protected set; } = Guid.NewGuid();
     public DateTimeOffset CreatedAt { get; protected set; }
     public Guid CreatedBy { get; protected set; }
@@ -41,10 +44,8 @@ public abstract class BaseEntity : IAuditableEntity, IEquatable<BaseEntity>
         DeletedBy = Guid.Empty;
     }
 
-    private readonly List<IDomainEvent> _domainEvents = new();
-
     [NotMapped]
-    public IReadOnlyCollection<IDomainEvent> DomainEvents => _domainEvents.AsReadOnly();
+    public IReadOnlyCollection<IDomainEvent> DomainEvents => _domainEventsView ??= _domainEvents.AsReadOnly();
 
     public void AddDomainEvent(IDomainEvent domainEvent)
     {

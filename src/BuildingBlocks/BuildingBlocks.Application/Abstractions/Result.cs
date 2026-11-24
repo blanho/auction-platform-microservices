@@ -78,9 +78,7 @@ public static class ResultExtensions
         Func<TIn, Task<Result<TOut>>> next)
     {
         var result = await resultTask;
-        return result.IsFailure
-            ? Result.Failure<TOut>(result.Error!)
-            : await next(result.Value!);
+        return await result.BindAsync(next);
     }
 
     public static Result<TOut> Map<TIn, TOut>(
@@ -97,9 +95,7 @@ public static class ResultExtensions
         Func<TIn, TOut> mapper)
     {
         var result = await resultTask;
-        return result.IsFailure
-            ? Result.Failure<TOut>(result.Error!)
-            : Result.Success(mapper(result.Value!));
+        return result.Map(mapper);
     }
 
     public static Result<T> Tap<T>(this Result<T> result, Action<T> action)

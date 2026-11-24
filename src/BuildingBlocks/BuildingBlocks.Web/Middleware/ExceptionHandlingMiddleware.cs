@@ -52,28 +52,14 @@ public static class ExceptionHandlingMiddleware
             _ => HttpStatusCode.InternalServerError
         };
 
-        var problem = new ProblemDetails
-        {
-            Title = UserMessageLocalizer.Translate(ex.Message),
-            Detail = UserMessageLocalizer.TranslateOptional(ex.Details),
-            Status = (int)status,
-            Type = $"https://httpstatuses.com/{(int)status}",
-            Instance = context.Request.Path
-        };
+        var problem = CreateProblem(context, status, ex.Message, ex.Details);
 
         if (ex is ValidationAppException vex && vex.Errors.Count > 0)
         {
             problem.Extensions[ProblemDetailsExtensionKeys.Errors] = ValidationErrorLocalizer.Localize(vex.Errors, context.RequestServices.GetService<ILocalizationService>());
         }
 
-        if (context.Request.Headers.TryGetValue(HeaderConstants.CorrelationId, out var cid))
-        {
-            problem.Extensions[ProblemDetailsExtensionKeys.CorrelationId] = cid.ToString();
-        }
-
-        context.Response.ContentType = MediaTypeConstants.ProblemJson;
-        context.Response.StatusCode = problem.Status ?? (int)HttpStatusCode.InternalServerError;
-        return context.Response.WriteAsJsonAsync(problem, cancellationToken: context.RequestAborted);
+        return WriteResponseAsync(context, problem, status);
     }
 
     private static Task WriteDomainExceptionAsync(HttpContext context, DomainException ex)
@@ -89,23 +75,7 @@ public static class ExceptionHandlingMiddleware
             _ => (HttpStatusCode.BadRequest, localizer?[LocalizationKeys.Errors.BadRequest] ?? "Domain error")
         };
 
-        var problem = new ProblemDetails
-        {
-            Title = UserMessageLocalizer.Translate(title),
-            Detail = UserMessageLocalizer.Translate(ex.Message),
-            Status = (int)status,
-            Type = $"https://httpstatuses.com/{(int)status}",
-            Instance = context.Request.Path
-        };
-
-        if (context.Request.Headers.TryGetValue(HeaderConstants.CorrelationId, out var cid))
-        {
-            problem.Extensions[ProblemDetailsExtensionKeys.CorrelationId] = cid.ToString();
-        }
-
-        context.Response.ContentType = MediaTypeConstants.ProblemJson;
-        context.Response.StatusCode = problem.Status ?? (int)HttpStatusCode.BadRequest;
-        return context.Response.WriteAsJsonAsync(problem, cancellationToken: context.RequestAborted);
+        return WriteResponseAsync(context, CreateProblem(context, status, title, ex.Message), status);
     }
 
     private static Task WriteGenericExceptionAsync(HttpContext context, Exception ex)
@@ -115,34 +85,15 @@ public static class ExceptionHandlingMiddleware
         var localizer = context.RequestServices.GetService<ILocalizationService>();
         var isDevelopment = env?.IsDevelopment() ?? false;
 
-        var status = HttpStatusCode.InternalServerError;
-        var title = localizer?[LocalizationKeys.Errors.InternalServerError] ?? "An unexpected error occurred.";
-
-        if (ex is ArgumentException or ArgumentNullException)
+        var (status, title) = ex switch
         {
-            status = HttpStatusCode.BadRequest;
-            title = localizer?[LocalizationKeys.Errors.BadRequest] ?? "Invalid argument";
-        }
-        else if (ex is UnauthorizedAccessException)
-        {
-            status = HttpStatusCode.Unauthorized;
-            title = localizer?[LocalizationKeys.Errors.Unauthorized] ?? "Unauthorized";
-        }
-        else if (ex is KeyNotFoundException)
-        {
-            status = HttpStatusCode.NotFound;
-            title = localizer?[LocalizationKeys.Errors.NotFound] ?? "Resource not found";
-        }
-        else if (ex is InvalidOperationException)
-        {
-            status = HttpStatusCode.BadRequest;
-            title = localizer?[LocalizationKeys.Errors.BadRequest] ?? "Invalid operation";
-        }
-        else if (ex is TimeoutException or OperationCanceledException)
-        {
-            status = HttpStatusCode.GatewayTimeout;
-            title = localizer?[LocalizationKeys.Errors.ServiceUnavailable] ?? "Request timeout";
-        }
+            ArgumentException => (HttpStatusCode.BadRequest, localizer?[LocalizationKeys.Errors.BadRequest] ?? "Invalid argument"),
+            UnauthorizedAccessException => (HttpStatusCode.Unauthorized, localizer?[LocalizationKeys.Errors.Unauthorized] ?? "Unauthorized"),
+            KeyNotFoundException => (HttpStatusCode.NotFound, localizer?[LocalizationKeys.Errors.NotFound] ?? "Resource not found"),
+            InvalidOperationException => (HttpStatusCode.BadRequest, localizer?[LocalizationKeys.Errors.BadRequest] ?? "Invalid operation"),
+            TimeoutException or OperationCanceledException => (HttpStatusCode.GatewayTimeout, localizer?[LocalizationKeys.Errors.ServiceUnavailable] ?? "Request timeout"),
+            _ => (HttpStatusCode.InternalServerError, localizer?[LocalizationKeys.Errors.InternalServerError] ?? "An unexpected error occurred.")
+        };
 
         if (status == HttpStatusCode.InternalServerError)
         {
@@ -155,27 +106,35 @@ public static class ExceptionHandlingMiddleware
         else if (status == HttpStatusCode.InternalServerError)
             detail = localizer?[LocalizationKeys.Errors.InternalServerError] ?? "An internal server error occurred. Please try again later.";
 
-        var problem = new ProblemDetails
-        {
-            Title = UserMessageLocalizer.Translate(title),
-            Detail = UserMessageLocalizer.Translate(detail),
-            Status = (int)status,
-            Type = $"https://httpstatuses.com/{(int)status}",
-            Instance = context.Request.Path
-        };
-
-        if (context.Request.Headers.TryGetValue(HeaderConstants.CorrelationId, out var cid))
-        {
-            problem.Extensions[ProblemDetailsExtensionKeys.CorrelationId] = cid.ToString();
-        }
+        var problem = CreateProblem(context, status, title, detail);
 
         if (isDevelopment && status == HttpStatusCode.InternalServerError)
         {
             problem.Extensions[ProblemDetailsExtensionKeys.Exception] = ex.ToString();
         }
 
+        return WriteResponseAsync(context, problem, status);
+    }
+
+    private static ProblemDetails CreateProblem(HttpContext context, HttpStatusCode status, string title, string? detail) =>
+        new()
+        {
+            Title = UserMessageLocalizer.Translate(title),
+            Detail = UserMessageLocalizer.TranslateOptional(detail),
+            Status = (int)status,
+            Type = $"https://httpstatuses.com/{(int)status}",
+            Instance = context.Request.Path
+        };
+
+    private static Task WriteResponseAsync(HttpContext context, ProblemDetails problem, HttpStatusCode status)
+    {
+        if (context.Request.Headers.TryGetValue(HeaderConstants.CorrelationId, out var cid))
+        {
+            problem.Extensions[ProblemDetailsExtensionKeys.CorrelationId] = cid.ToString();
+        }
+
         context.Response.ContentType = MediaTypeConstants.ProblemJson;
-        context.Response.StatusCode = problem.Status ?? (int)HttpStatusCode.InternalServerError;
+        context.Response.StatusCode = (int)status;
         return context.Response.WriteAsJsonAsync(problem, cancellationToken: context.RequestAborted);
     }
 }

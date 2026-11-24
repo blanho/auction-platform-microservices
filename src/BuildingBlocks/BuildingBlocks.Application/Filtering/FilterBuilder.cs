@@ -14,40 +14,20 @@ public sealed class FilterBuilder<T> where T : class
     }
 
     public FilterBuilder<T> WhenNotNull<TValue>(TValue? value, Expression<Func<T, bool>> predicate)
-    {
-        if (value is not null)
-            _predicates.Add(predicate);
-        return this;
-    }
+        => When(value is not null, predicate);
 
     public FilterBuilder<T> WhenHasValue<TValue>(TValue? value, Expression<Func<T, bool>> predicate) where TValue : struct
-    {
-        if (value.HasValue)
-            _predicates.Add(predicate);
-        return this;
-    }
+        => When(value.HasValue, predicate);
 
     public FilterBuilder<T> WhenNotEmpty(string? value, Expression<Func<T, bool>> predicate)
-    {
-        if (!string.IsNullOrWhiteSpace(value))
-            _predicates.Add(predicate);
-        return this;
-    }
+        => When(!string.IsNullOrWhiteSpace(value), predicate);
 
     public FilterBuilder<T> WhenNotEmpty<TCollection>(IEnumerable<TCollection>? collection, Expression<Func<T, bool>> predicate)
-    {
-        if (collection?.Any() == true)
-            _predicates.Add(predicate);
-        return this;
-    }
+        => When(collection?.Any() == true, predicate);
 
     public FilterBuilder<T> WhenInRange<TValue>(TValue? from, TValue? to, Expression<Func<T, bool>> predicate)
         where TValue : struct
-    {
-        if (from.HasValue || to.HasValue)
-            _predicates.Add(predicate);
-        return this;
-    }
+        => When(from.HasValue || to.HasValue, predicate);
 
     public IQueryable<T> Apply(IQueryable<T> query)
     {

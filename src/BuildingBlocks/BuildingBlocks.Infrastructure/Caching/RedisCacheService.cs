@@ -1,4 +1,3 @@
-using System.Text;
 using System.Text.Json;
 using BuildingBlocks.Application.Abstractions;
 using Microsoft.Extensions.Caching.Distributed;
@@ -24,24 +23,16 @@ public class RedisCacheService : ICacheService
     public async Task<T?> GetAsync<T>(string key, CancellationToken cancellationToken = default)
     {
         var bytes = await _cache.GetAsync(key, cancellationToken);
-        if (bytes == null || bytes.Length == 0)
-            return default;
-
-        var json = Encoding.UTF8.GetString(bytes);
-        return JsonSerializer.Deserialize<T>(json, JsonOptions);
+        return bytes is { Length: > 0 } ? Deserialize<T>(bytes) : default;
     }
 
     public async Task SetAsync<T>(string key, T value, TimeSpan? expiration = null, CancellationToken cancellationToken = default)
     {
-        var json = JsonSerializer.Serialize(value, JsonOptions);
-        var bytes = Encoding.UTF8.GetBytes(json);
-
-        var options = new DistributedCacheEntryOptions();
-        if (expiration.HasValue)
+        var bytes = JsonSerializer.SerializeToUtf8Bytes(value, JsonOptions);
+        var options = new DistributedCacheEntryOptions
         {
-            options.AbsoluteExpirationRelativeToNow = expiration;
-        }
-
+            AbsoluteExpirationRelativeToNow = expiration
+        };
         await _cache.SetAsync(key, bytes, options, cancellationToken);
     }
 
@@ -67,8 +58,8 @@ public class RedisCacheService : ICacheService
         TimeSpan? expiration = null,
         CancellationToken cancellationToken = default)
     {
-        var cached = await GetAsync<T>(key, cancellationToken);
-        if (cached is not null)
+        var bytes = await _cache.GetAsync(key, cancellationToken);
+        if (bytes is { Length: > 0 } && Deserialize<T>(bytes) is { } cached)
         {
             return cached;
         }
@@ -77,6 +68,8 @@ public class RedisCacheService : ICacheService
         await SetAsync(key, value, expiration, cancellationToken);
         return value;
     }
+
+    private static T? Deserialize<T>(byte[] bytes) => JsonSerializer.Deserialize<T>(bytes, JsonOptions);
 
     public async Task RemoveByPrefixAsync(string prefix, CancellationToken cancellationToken = default)
     {

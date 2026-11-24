@@ -11,13 +11,13 @@ public static partial class UserMessageLocalizer
     private const string DefaultFallback = "The operation could not be completed. Please try again or contact support.";
     private static readonly ResourceManager Resources = new(
         "BuildingBlocks.Application.Resources.UserMessages", typeof(UserMessageLocalizer).Assembly);
-    private static readonly Lazy<(string Key, Regex Pattern)[]> Templates = new(() =>
+    private static readonly Lazy<MessageTemplate[]> Templates = new(() =>
         Resources.GetResourceSet(CultureInfo.InvariantCulture, true, true)!
             .Cast<DictionaryEntry>()
             .Select(entry => (string)entry.Key)
             .Where(key => !key.StartsWith("Label.", StringComparison.Ordinal))
             .OrderByDescending(key => key.Length)
-            .Select(key => (key, BuildPattern(key)))
+            .Select(BuildTemplate)
             .ToArray());
 
     public static string? TranslateOptional(string? message) => message is null ? null : Translate(message);
@@ -58,13 +58,12 @@ public static partial class UserMessageLocalizer
 
         if (message.Length <= 2048)
         {
-            foreach (var (key, pattern) in Templates.Value)
+            foreach (var (key, pattern, argumentIndexes) in Templates.Value)
             {
                 var match = pattern.Match(message);
                 if (!match.Success) continue;
-                var arguments = Placeholder().Matches(key)
-                    .Select(m => int.Parse(m.Groups[1].Value, CultureInfo.InvariantCulture))
-                    .Distinct().Order().Select(index => (object)Label(match.Groups[$"p{index}"].Value))
+                var arguments = argumentIndexes
+                    .Select(index => (object)Label(match.Groups[$"p{index}"].Value))
                     .ToArray();
                 return string.Format(culture, Resources.GetString(key, culture)!, arguments);
             }
@@ -82,21 +81,27 @@ public static partial class UserMessageLocalizer
         return resources.GetString("Label." + value, true) ?? value;
     }
 
-    private static Regex BuildPattern(string template)
+    private static MessageTemplate BuildTemplate(string template)
     {
         var pattern = new StringBuilder("^");
+        var argumentIndexes = new SortedSet<int>();
         var offset = 0;
         foreach (Match match in Placeholder().Matches(template))
         {
             pattern.Append(Regex.Escape(template[offset..match.Index]));
-            pattern.Append("(?<p").Append(match.Groups[1].Value).Append(">.*?)");
+            var index = match.Groups[1].Value;
+            pattern.Append("(?<p").Append(index).Append(">.*?)");
+            argumentIndexes.Add(int.Parse(index, CultureInfo.InvariantCulture));
             offset = match.Index + match.Length;
         }
         var suffix = template[offset..].TrimEnd('.');
         pattern.Append(Regex.Escape(suffix)).Append("\\.?$");
-        return new Regex(pattern.ToString(), RegexOptions.CultureInvariant | RegexOptions.NonBacktracking,
+        var regex = new Regex(pattern.ToString(), RegexOptions.CultureInvariant | RegexOptions.NonBacktracking,
             TimeSpan.FromMilliseconds(100));
+        return new MessageTemplate(template, regex, argumentIndexes.ToArray());
     }
+
+    private sealed record MessageTemplate(string Key, Regex Pattern, int[] ArgumentIndexes);
 
     [GeneratedRegex(@"\{(\d+)\}")]
     private static partial Regex Placeholder();
