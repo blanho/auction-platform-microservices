@@ -39,10 +39,16 @@ public class UserMessageLocalizationTests
             : new InvalidOperationException("Payment is temporarily unavailable. Please try again later.");
         app.Run(_ => throw exception);
         var context = new DefaultHttpContext { RequestServices = services };
+        context.Request.Path = "/auctions";
+        context.Request.Headers["X-Correlation-Id"] = "test-correlation";
         context.Response.Body = new MemoryStream();
         await app.Build()(context);
         context.Response.Body.Position = 0;
         using var result = await JsonDocument.ParseAsync(context.Response.Body);
+        Assert.Equal(StatusCodes.Status400BadRequest, context.Response.StatusCode);
+        Assert.Equal(StatusCodes.Status400BadRequest, result.RootElement.GetProperty("status").GetInt32());
+        Assert.Equal("/auctions", result.RootElement.GetProperty("instance").GetString());
+        Assert.Equal("test-correlation", result.RootElement.GetProperty("correlationId").GetString());
         Assert.Equal(title, result.RootElement.GetProperty("title").GetString());
         Assert.Equal(detail, result.RootElement.GetProperty("detail").GetString());
     }

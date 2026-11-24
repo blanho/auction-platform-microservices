@@ -90,8 +90,7 @@ public abstract class EfRepository<TEntity, TContext> : IRepository<TEntity>, IB
         Expression<Func<TEntity, bool>> predicate, int page, int pageSize, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(predicate);
-        return Query.AsNoTracking().Where(predicate)
-            .OrderByDescending(entity => entity.CreatedAt).ThenBy(entity => entity.Id)
+        return BuildOrderedPageQuery(predicate)
             .ToPaginatedResultAsync(page, pageSize, cancellationToken);
     }
 
@@ -104,10 +103,14 @@ public abstract class EfRepository<TEntity, TContext> : IRepository<TEntity>, IB
     {
         ArgumentNullException.ThrowIfNull(predicate);
         ArgumentNullException.ThrowIfNull(selector);
-        return Query.AsNoTracking().Where(predicate)
-            .OrderByDescending(entity => entity.CreatedAt).ThenBy(entity => entity.Id)
+        return BuildOrderedPageQuery(predicate)
             .ToPaginatedResultAsync(page, pageSize, selector, cancellationToken);
     }
+
+    private IOrderedQueryable<TEntity> BuildOrderedPageQuery(Expression<Func<TEntity, bool>> predicate) =>
+        Query.AsNoTracking().Where(predicate)
+            .OrderByDescending(entity => entity.CreatedAt)
+            .ThenBy(entity => entity.Id);
 
     public Task<TEntity> AddAsync(TEntity entity, CancellationToken cancellationToken = default) =>
         CreateAsync(entity, cancellationToken);
@@ -123,8 +126,7 @@ public abstract class EfRepository<TEntity, TContext> : IRepository<TEntity>, IB
     public virtual Task UpdateAsync(TEntity entity, CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        entity.SetUpdatedAudit(GetUpdatedBy(entity), Clock.UtcNowOffset);
-        TrackUpdate(entity);
+        StageUpdate(entity, Clock.UtcNowOffset);
         return Task.CompletedTask;
     }
 
@@ -165,8 +167,7 @@ public abstract class EfRepository<TEntity, TContext> : IRepository<TEntity>, IB
         foreach (var entity in entities)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            entity.SetUpdatedAudit(GetUpdatedBy(entity), timestamp);
-            TrackUpdate(entity);
+            StageUpdate(entity, timestamp);
         }
         return Task.CompletedTask;
     }
@@ -207,6 +208,12 @@ public abstract class EfRepository<TEntity, TContext> : IRepository<TEntity>, IB
         var entry = Context.Entry(entity);
         if (entry.State == EntityState.Detached)
             entry.State = EntityState.Modified;
+    }
+
+    private void StageUpdate(TEntity entity, DateTimeOffset timestamp)
+    {
+        entity.SetUpdatedAudit(GetUpdatedBy(entity), timestamp);
+        TrackUpdate(entity);
     }
 
     private static async Task<List<TEntity>> LoadByIdsAsync(

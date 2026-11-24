@@ -18,16 +18,8 @@ public static class ProblemDetailsHelper
 
     public static ProblemDetails FromError(Error error, ILocalizationService? localizer, string? errorTypeBaseUrl = null)
     {
-        var baseUrl = errorTypeBaseUrl ?? DefaultErrorTypeBaseUrl;
         var detail = ResolveLocalizedMessage(error, localizer);
-
-        var problemDetails = new ProblemDetails
-        {
-            Title = error.Code,
-            Detail = UserMessageLocalizer.Translate(detail),
-            Status = GetStatusCode(error),
-            Type = $"{baseUrl}/{error.Code.ToLowerInvariant().Replace('.', '-')}"
-        };
+        var problemDetails = Create(error.Code, detail, GetStatusCode(error), errorTypeBaseUrl);
 
         if (error is ValidationError validationError)
         {
@@ -96,11 +88,8 @@ public static class ProblemDetailsHelper
         string? errorTypeBaseUrl = null)
     {
         var localizer = RequestLocalizationContext.Current;
-        var localizedErrors = ValidationErrorLocalizer.Localize(errors, localizer);
         var detail = localizer?.GetString(LocalizationKeys.Validation.Failed) ?? "Validation failed";
-        var problemDetails = ValidationError(detail, errorTypeBaseUrl);
-        problemDetails.Extensions[ProblemDetailsExtensionKeys.Errors] = localizedErrors;
-        return problemDetails;
+        return ValidationError(detail, errors, errorTypeBaseUrl);
     }
 
     public static ProblemDetails ValidationError(

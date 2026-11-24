@@ -1,6 +1,7 @@
-using FluentValidation;
-using MediatR;
 using BuildingBlocks.Application.Abstractions;
+using FluentValidation;
+using FluentValidation.Results;
+using MediatR;
 
 namespace BuildingBlocks.Application.Behaviors;
 
@@ -20,54 +21,55 @@ public class ValidationBehavior<TRequest, TResponse> : IPipelineBehavior<TReques
         RequestHandlerDelegate<TResponse> next,
         CancellationToken cancellationToken)
     {
-        if (!_validators.Any())
+        var failures = await ValidateAsync(request, cancellationToken);
+        if (failures.Count == 0)
         {
             return await next();
         }
 
-        var context = new ValidationContext<TRequest>(request);
+        var errors = failures
+            .GroupBy(failure => failure.PropertyName)
+            .ToDictionary(
+                group => group.Key,
+                group => group.Select(failure => failure.ErrorMessage).ToArray());
 
-        var validationResults = await Task.WhenAll(
-            _validators.Select(v => v.ValidateAsync(context, cancellationToken)));
-
-        var failures = validationResults
-            .SelectMany(r => r.Errors)
-            .Where(f => f != null)
-            .ToList();
-
-        if (failures.Count != 0)
-        {
-            var errors = failures
-                .GroupBy(f => f.PropertyName)
-                .ToDictionary(
-                    g => g.Key,
-                    g => g.Select(f => f.ErrorMessage).ToArray());
-
-            var error = ValidationError.WithErrors(errors);
-            return CreateFailureResult(error);
-        }
-
-        return await next();
+        return FailureResultFactory<TResponse>.Create(ValidationError.WithErrors(errors));
     }
 
-    private static TResponse CreateFailureResult(Error error)
+    private async Task<List<ValidationFailure>> ValidateAsync(TRequest request, CancellationToken cancellationToken)
     {
-        if (typeof(TResponse) == typeof(Result))
+        var failures = new List<ValidationFailure>();
+        foreach (var validator in _validators)
         {
-            return (TResponse)(object)Result.Failure(error);
+            var context = new ValidationContext<TRequest>(request);
+            var result = await validator.ValidateAsync(context, cancellationToken);
+            failures.AddRange(result.Errors.Where(failure => failure is not null));
         }
 
+        return failures;
+    }
+}
+
+internal static class FailureResultFactory<TResponse> where TResponse : Result
+{
+    public static readonly Func<Error, TResponse> Create = BuildFactory();
+
+    private static Func<Error, TResponse> BuildFactory()
+    {
         var resultType = typeof(TResponse);
+        if (resultType == typeof(Result))
+        {
+            return error => (TResponse)Result.Failure(error);
+        }
+
         if (resultType.IsGenericType && resultType.GetGenericTypeDefinition() == typeof(Result<>))
         {
-            var valueType = resultType.GetGenericArguments()[0];
-            var failureMethod = typeof(Result)
+            return typeof(Result)
                 .GetMethod(nameof(Result.Failure), 1, new[] { typeof(Error) })!
-                .MakeGenericMethod(valueType);
-
-            return (TResponse)failureMethod.Invoke(null, new object[] { error })!;
+                .MakeGenericMethod(resultType.GetGenericArguments())
+                .CreateDelegate<Func<Error, TResponse>>();
         }
 
-        throw new InvalidOperationException($"Cannot create failure result for type {typeof(TResponse)}");
+        return _ => throw new InvalidOperationException($"Cannot create failure result for type {resultType}");
     }
 }

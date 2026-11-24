@@ -7,52 +7,42 @@ namespace BuildingBlocks.Infrastructure.Extensions;
 
 public static class EfCoreQueryExtensions
 {
-    public static async Task<PaginatedResult<T>> ToPaginatedResultAsync<T>(
+    public static Task<PaginatedResult<T>> ToPaginatedResultAsync<T>(
         this IQueryable<T> query,
         int page,
         int pageSize,
-        CancellationToken cancellationToken = default)
-    {
-        var parameters = QueryParameters.Create(page, pageSize);
+        CancellationToken cancellationToken = default) =>
+        query.ToPaginatedResultAsync(QueryParameters.Create(page, pageSize), cancellationToken);
 
-        var totalCount = await query.CountAsync(cancellationToken);
-
-        var items = await query
-            .ApplyPaging(parameters)
-            .ToListAsync(cancellationToken);
-
-        return new PaginatedResult<T>(items, totalCount, parameters.Page, parameters.PageSize);
-    }
-
-    public static async Task<PaginatedResult<T>> ToPaginatedResultAsync<T>(
+    public static Task<PaginatedResult<T>> ToPaginatedResultAsync<T>(
         this IQueryable<T> query,
         QueryParameters parameters,
         CancellationToken cancellationToken = default) =>
-        await query.ToPaginatedResultAsync(parameters.Page, parameters.PageSize, cancellationToken);
+        ReadPageAsync(query, query.ApplyPaging(parameters), parameters, cancellationToken);
 
-    public static async Task<PaginatedResult<TResult>> ToPaginatedResultAsync<T, TResult>(
+    public static Task<PaginatedResult<TResult>> ToPaginatedResultAsync<T, TResult>(
         this IQueryable<T> query,
         int page,
         int pageSize,
         Expression<Func<T, TResult>> selector,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default) =>
+        query.ToPaginatedResultAsync(QueryParameters.Create(page, pageSize), selector, cancellationToken);
+
+    public static Task<PaginatedResult<TResult>> ToPaginatedResultAsync<T, TResult>(
+        this IQueryable<T> query,
+        QueryParameters parameters,
+        Expression<Func<T, TResult>> selector,
+        CancellationToken cancellationToken = default) =>
+        ReadPageAsync(query, query.ApplyPaging(parameters).Select(selector), parameters, cancellationToken);
+
+    private static async Task<PaginatedResult<TResult>> ReadPageAsync<T, TResult>(
+        IQueryable<T> query,
+        IQueryable<TResult> pageQuery,
+        QueryParameters parameters,
+        CancellationToken cancellationToken)
     {
-        var parameters = QueryParameters.Create(page, pageSize);
-
         var totalCount = await query.CountAsync(cancellationToken);
-
-        var items = await query
-            .ApplyPaging(parameters)
-            .Select(selector)
-            .ToListAsync(cancellationToken);
-
+        var items = await pageQuery.ToListAsync(cancellationToken);
         return new PaginatedResult<TResult>(items, totalCount, parameters.Page, parameters.PageSize);
     }
-
-    public static async Task<PaginatedResult<TResult>> ToPaginatedResultAsync<T, TResult>(
-        this IQueryable<T> query,
-        QueryParameters parameters,
-        Expression<Func<T, TResult>> selector,
-        CancellationToken cancellationToken = default) =>
-        await query.ToPaginatedResultAsync(parameters.Page, parameters.PageSize, selector, cancellationToken);
 }

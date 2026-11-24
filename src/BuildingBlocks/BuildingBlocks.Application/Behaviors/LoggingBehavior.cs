@@ -8,6 +8,8 @@ namespace BuildingBlocks.Application.Behaviors;
 public class LoggingBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>
     where TRequest : notnull
 {
+    private const long SlowRequestThresholdMilliseconds = 500;
+
     private readonly ILogger<LoggingBehavior<TRequest, TResponse>> _logger;
     private readonly IUserContext? _userContext;
 
@@ -38,32 +40,23 @@ public class LoggingBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, 
             correlationId,
             _userContext?.UserIdOrDefault);
 
-        var stopwatch = Stopwatch.StartNew();
+        var startedAt = Stopwatch.GetTimestamp();
+        var response = await next();
+        var elapsedMilliseconds = Stopwatch.GetElapsedTime(startedAt).Ticks / TimeSpan.TicksPerMillisecond;
 
-        try
-        {
-            var response = await next();
-
-            stopwatch.Stop();
-
-            if (stopwatch.ElapsedMilliseconds > 500)
-                _logger.LogWarning(
-                    "[SLOW] {RequestName} CorrelationId={CorrelationId} took {ElapsedMilliseconds}ms",
-                    requestName,
-                    correlationId,
-                    stopwatch.ElapsedMilliseconds);
-
-            _logger.LogInformation(
-                "[END] {RequestName} CorrelationId={CorrelationId} completed in {ElapsedMilliseconds}ms",
+        if (elapsedMilliseconds > SlowRequestThresholdMilliseconds)
+            _logger.LogWarning(
+                "[SLOW] {RequestName} CorrelationId={CorrelationId} took {ElapsedMilliseconds}ms",
                 requestName,
                 correlationId,
-                stopwatch.ElapsedMilliseconds);
+                elapsedMilliseconds);
 
-            return response;
-        }
-        finally
-        {
-            stopwatch.Stop();
-        }
+        _logger.LogInformation(
+            "[END] {RequestName} CorrelationId={CorrelationId} completed in {ElapsedMilliseconds}ms",
+            requestName,
+            correlationId,
+            elapsedMilliseconds);
+
+        return response;
     }
 }

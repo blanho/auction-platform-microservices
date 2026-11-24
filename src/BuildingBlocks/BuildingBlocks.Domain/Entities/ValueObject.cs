@@ -24,15 +24,11 @@ public abstract class ValueObject : IEquatable<ValueObject>
 
     public override int GetHashCode()
     {
-        return GetEqualityComponents()
-            .Aggregate(
-                default(HashCode),
-                (hash, component) =>
-                {
-                    hash.Add(component);
-                    return hash;
-                })
-            .ToHashCode();
+        var hash = new HashCode();
+        foreach (var component in GetEqualityComponents())
+            hash.Add(component);
+
+        return hash.ToHashCode();
     }
 
     public static bool operator ==(ValueObject? left, ValueObject? right)
